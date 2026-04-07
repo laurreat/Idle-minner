@@ -1347,6 +1347,15 @@ window.addEventListener("beforeunload", () => {
 });
 
 // ============================================================
+// WATCH REWARD AD
+// ============================================================
+function watchRewardAd() {
+  game.cash += 500;
+  game.totalEarned += 500;
+  showToast('📺 +500 oro por ver anuncio');
+}
+
+// ============================================================
 // INIT
 // ============================================================
 if ('serviceWorker' in navigator) {

@@ -29,7 +29,9 @@ self.addEventListener('fetch', e => {
   if (e.request.method !== 'GET') return;
   e.respondWith(
     caches.match(e.request).then(r => r || fetch(e.request).then(res => {
-      if (res && res.status === 200) caches.open(CACHE_NAME).then(c => c.put(e.request, res.clone()));
+      if (!res || res.status !== 200) return res;
+      const responseToCache = res.clone();
+      caches.open(CACHE_NAME).then(c => c.put(e.request, responseToCache));
       return res;
     }).catch(() => e.request.destination === 'document' ? caches.match('./index.html') : null))
   );
