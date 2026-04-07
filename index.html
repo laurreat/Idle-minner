@@ -4,25 +4,78 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
 <title>Idle Miner - Deep Earth</title>
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#0d0d1a">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<link rel="icon" type="image/png" href="pwa/icon-192.png">
+<link rel="apple-touch-icon" href="pwa/icon-192.png">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 <style>
+  @import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');
+
   * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+
   body {
     display: flex; justify-content: center; align-items: center;
-    min-height: 100vh; background: #0a0a15;
-    font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+    min-height: 100vh; background: #050510;
+    font-family: 'Segoe UI', system-ui, sans-serif;
     overflow: hidden; user-select: none;
   }
-  #gameWrapper {
-    position: relative; width: 100vw; max-width: 800px;
-    aspect-ratio: 4/3; max-height: 100vh;
+
+  /* Main Layout: Ad | Game | Ad */
+  #mainLayout {
+    display: flex; align-items: center; justify-content: center;
+    width: 100vw; height: 100vh; gap: 8px;
+    padding: 4px;
   }
+
+  .ad-sidebar {
+    width: 160px; min-width: 120px; height: 100%;
+    display: flex; flex-direction: column; gap: 8px;
+    align-items: center; justify-content: center;
+  }
+
+  .ad-box {
+    width: 160px; height: 600px;
+    background: rgba(255,255,255,0.02);
+    border: 1px dashed rgba(255,255,255,0.06);
+    border-radius: 8px;
+    display: flex; align-items: center; justify-content: center;
+    color: #1a1a2e; font-size: 10px;
+    position: relative; overflow: hidden;
+  }
+  .ad-box::after { content: 'Ad 160x600'; }
+  .ad-box-horizontal {
+    width: 160px; height: 80px;
+    background: rgba(255,255,255,0.02);
+    border: 1px dashed rgba(255,255,255,0.06);
+    border-radius: 8px;
+    display: flex; align-items: center; justify-content: center;
+    color: #1a1a2e; font-size: 10px;
+  }
+  .ad-box-horizontal::after { content: 'Ad 160x80'; }
+
+  /* Game Area */
+  #gameArea {
+    position: relative;
+    flex: 1; max-width: 1000px;
+    height: 100%; max-height: 750px;
+    display: flex; flex-direction: column;
+  }
+
   #gameCanvas {
-    width: 100%; height: 100%; display: block;
-    border-radius: 8px; image-rendering: pixelated;
+    width: 100%; height: 100%;
+    display: block; border-radius: 8px;
+    image-rendering: pixelated;
+    border: 2px solid rgba(255,255,255,0.08);
+    box-shadow: 0 0 40px rgba(16,185,129,0.1);
   }
+
+  /* HUD Overlay */
   #hud {
     position: absolute; top: 0; left: 0; right: 0;
-    padding: 8px 12px; display: none;
+    padding: 10px 16px; display: none;
     pointer-events: none; z-index: 10;
   }
   #hud.active { display: flex; justify-content: space-between; align-items: flex-start; }
@@ -30,246 +83,477 @@
   .hud-center { text-align: center; }
   .hud-right { text-align: right; }
   .hud-cash {
-    font-size: clamp(16px, 3vw, 24px); font-weight: 800;
-    color: #FFD700; text-shadow: 0 2px 8px rgba(0,0,0,0.8);
+    font-family: 'Press Start 2P', monospace;
+    font-size: clamp(10px, 1.8vw, 16px);
+    color: #FFD700; text-shadow: 2px 2px 0 #000, 0 0 10px rgba(255,215,0,0.3);
   }
   .hud-gems {
-    font-size: clamp(12px, 2vw, 16px); font-weight: 600;
-    color: #a78bfa; text-shadow: 0 2px 8px rgba(0,0,0,0.8);
+    font-family: 'Press Start 2P', monospace;
+    font-size: clamp(8px, 1.2vw, 12px);
+    color: #a78bfa; text-shadow: 2px 2px 0 #000;
+    margin-top: 4px;
   }
   .hud-floor {
-    font-size: clamp(11px, 1.8vw, 14px); font-weight: 600;
-    color: #94a3b8; text-shadow: 0 2px 8px rgba(0,0,0,0.8);
+    font-family: 'Press Start 2P', monospace;
+    font-size: clamp(8px, 1.4vw, 12px);
+    color: #94a3b8; text-shadow: 2px 2px 0 #000;
   }
   .hud-score {
-    font-size: clamp(10px, 1.5vw, 13px); color: #64748b;
-    text-shadow: 0 2px 8px rgba(0,0,0,0.8);
+    font-size: clamp(8px, 1.2vw, 11px); color: #64748b;
+    text-shadow: 1px 1px 0 #000; margin-top: 3px;
   }
-  #startMenu {
-    position: absolute; inset: 0;
-    display: flex; flex-direction: column;
-    justify-content: center; align-items: center;
-    background: linear-gradient(180deg, #0a0a15 0%, #1a1a2e 50%, #16213e 100%);
-    z-index: 100; transition: opacity 0.5s, transform 0.5s;
-  }
-  #startMenu.hidden { opacity: 0; pointer-events: none; transform: scale(1.05); }
-  .menu-title {
-    font-size: clamp(28px, 6vw, 48px); font-weight: 900;
-    background: linear-gradient(135deg, #FFD700, #FFA500, #FFD700);
-    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
-    background-clip: text; margin-bottom: 4px; text-align: center;
-  }
-  .menu-subtitle {
-    font-size: clamp(12px, 2.5vw, 18px); color: #64748b;
-    margin-bottom: 40px; text-align: center;
-  }
-  .menu-btn {
-    width: min(280px, 80vw); padding: 14px 24px;
-    border: none; border-radius: 12px; font-size: 16px;
-    font-weight: 700; cursor: pointer; margin-bottom: 12px;
-    transition: all 0.2s; display: flex; align-items: center;
-    justify-content: center; gap: 8px;
-  }
-  .menu-btn:active { transform: scale(0.96); }
-  .btn-play {
-    background: linear-gradient(135deg, #10b981, #059669);
-    color: #fff; box-shadow: 0 4px 20px rgba(16,185,129,0.4);
-  }
-  .btn-play:hover { box-shadow: 0 6px 30px rgba(16,185,129,0.6); }
-  .btn-continue {
-    background: linear-gradient(135deg, #6366f1, #4f46e5);
-    color: #fff; box-shadow: 0 4px 20px rgba(99,102,241,0.4);
-  }
-  .btn-prestige {
-    background: linear-gradient(135deg, #f59e0b, #d97706);
-    color: #fff; box-shadow: 0 4px 20px rgba(245,158,11,0.3);
-  }
-  .menu-save-info { font-size: 11px; color: #475569; margin-top: 16px; text-align: center; }
-  .menu-stats { font-size: 12px; color: #64748b; margin-top: 8px; text-align: center; line-height: 1.6; }
+
+  /* Side Buttons */
   #sideButtons {
-    position: absolute; right: 8px; top: 50%; transform: translateY(-50%);
+    position: absolute; right: 10px; top: 50%; transform: translateY(-50%);
     display: none; flex-direction: column; gap: 6px; z-index: 20;
   }
   #sideButtons.active { display: flex; }
   .side-btn {
-    width: 40px; height: 40px; border-radius: 10px;
-    border: 1px solid rgba(255,255,255,0.1);
-    background: rgba(0,0,0,0.6); backdrop-filter: blur(10px);
+    width: 44px; height: 44px; border-radius: 8px;
+    border: 2px solid rgba(255,255,255,0.1);
+    background: rgba(0,0,0,0.7); backdrop-filter: blur(10px);
     color: #94a3b8; font-size: 16px; cursor: pointer;
     display: flex; align-items: center; justify-content: center;
     transition: all 0.2s;
   }
-  .side-btn:hover { background: rgba(255,255,255,0.1); color: #fff; }
+  .side-btn:hover { background: rgba(255,255,255,0.15); color: #fff; border-color: rgba(255,255,255,0.2); }
+  .side-btn:active { transform: scale(0.9); }
+
+  /* Floor Bar */
+  #floorBar {
+    position: absolute; left: 10px; top: 50%; transform: translateY(-50%);
+    display: none; flex-direction: column; gap: 5px; z-index: 15;
+  }
+  #floorBar.active { display: flex; }
+  .floor-dot {
+    width: 12px; height: 12px; border-radius: 3px;
+    border: 2px solid rgba(255,255,255,0.15);
+    background: transparent; cursor: pointer; transition: all 0.2s;
+  }
+  .floor-dot.current { background: #10b981; border-color: #10b981; box-shadow: 0 0 8px rgba(16,185,129,0.6); }
+  .floor-dot.unlocked { background: rgba(255,255,255,0.25); border-color: rgba(255,255,255,0.35); }
+  .floor-dot.locked { opacity: 0.25; }
+
+  /* ==================== START MENU ==================== */
+  #startMenu {
+    position: absolute; inset: 0;
+    display: flex; flex-direction: column;
+    justify-content: center; align-items: center;
+    z-index: 100;
+    background:
+      radial-gradient(ellipse at 50% 30%, rgba(16,185,129,0.08) 0%, transparent 60%),
+      linear-gradient(180deg, #0d0d1a 0%, #1a1a2e 40%, #0f1a2e 100%);
+    transition: opacity 0.6s, transform 0.6s;
+  }
+  #startMenu.hidden { opacity: 0; pointer-events: none; transform: scale(1.05); }
+
+  /* Pixel art decorative border */
+  .menu-border {
+    position: absolute; inset: 12px;
+    border: 2px solid rgba(255,215,0,0.15);
+    border-radius: 4px; pointer-events: none;
+  }
+  .menu-border::before {
+    content: ''; position: absolute; inset: 4px;
+    border: 1px solid rgba(255,215,0,0.08);
+    border-radius: 2px;
+  }
+
+  .menu-logo {
+    position: relative; z-index: 1;
+    margin-bottom: 8px;
+  }
+  .menu-logo i {
+    font-size: clamp(36px, 7vw, 64px);
+    color: #FFD700;
+    filter: drop-shadow(0 0 20px rgba(255,215,0,0.4));
+    animation: logoFloat 3s ease-in-out infinite;
+  }
+  @keyframes logoFloat {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-8px); }
+  }
+
+  .menu-title {
+    position: relative; z-index: 1;
+    font-family: 'Press Start 2P', monospace;
+    font-size: clamp(16px, 3.5vw, 28px);
+    color: #FFD700;
+    text-shadow: 3px 3px 0 #000, 0 0 20px rgba(255,215,0,0.3);
+    margin-bottom: 6px;
+    letter-spacing: 2px;
+  }
+  .menu-subtitle {
+    position: relative; z-index: 1;
+    font-size: clamp(10px, 1.8vw, 14px);
+    color: #475569; letter-spacing: 4px;
+    text-transform: uppercase; margin-bottom: 36px;
+  }
+
+  .menu-card {
+    position: relative; z-index: 1;
+    width: min(320px, 85vw);
+    background: rgba(255,255,255,0.03);
+    border: 1px solid rgba(255,255,255,0.06);
+    border-radius: 12px; padding: 24px;
+    backdrop-filter: blur(10px);
+  }
+
+  .menu-btn {
+    width: 100%; padding: 14px 20px;
+    border: none; border-radius: 8px; font-size: 14px;
+    font-weight: 700; cursor: pointer; margin-bottom: 10px;
+    transition: all 0.2s; display: flex; align-items: center;
+    justify-content: center; gap: 10px;
+    font-family: 'Segoe UI', system-ui, sans-serif;
+    letter-spacing: 0.5px;
+  }
+  .menu-btn:active { transform: scale(0.97); }
+  .menu-btn i { font-size: 16px; }
+
+  .btn-play {
+    background: linear-gradient(135deg, #10b981, #059669);
+    color: #fff; box-shadow: 0 4px 20px rgba(16,185,129,0.3);
+  }
+  .btn-play:hover { box-shadow: 0 6px 30px rgba(16,185,129,0.5); transform: translateY(-2px); }
+
+  .btn-continue {
+    background: linear-gradient(135deg, #6366f1, #4f46e5);
+    color: #fff; box-shadow: 0 4px 20px rgba(99,102,241,0.3);
+  }
+  .btn-continue:hover { box-shadow: 0 6px 30px rgba(99,102,241,0.5); transform: translateY(-2px); }
+
+  .btn-prestige {
+    background: linear-gradient(135deg, #f59e0b, #d97706);
+    color: #fff; box-shadow: 0 4px 20px rgba(245,158,11,0.3);
+  }
+  .btn-prestige:hover { box-shadow: 0 6px 30px rgba(245,158,11,0.5); transform: translateY(-2px); }
+
+  .btn-reward-ad {
+    background: linear-gradient(135deg, #0ea5e9, #0284c7);
+    color: #fff; box-shadow: 0 4px 20px rgba(14,165,233,0.3);
+  }
+  .btn-reward-ad:hover { box-shadow: 0 6px 30px rgba(14,165,233,0.5); transform: translateY(-2px); }
+
+  .menu-divider {
+    height: 1px; background: rgba(255,255,255,0.06);
+    margin: 14px 0;
+  }
+
+  .menu-stats {
+    font-size: 11px; color: #475569; text-align: center;
+    line-height: 1.8;
+  }
+  .menu-stats span { color: #64748b; }
+
+  .menu-footer {
+    position: relative; z-index: 1;
+    margin-top: 20px; text-align: center;
+  }
+  .menu-footer p {
+    font-size: 10px; color: #333;
+  }
+
+  /* ==================== PANELS ==================== */
   .panel-overlay {
     position: absolute; inset: 0;
-    background: rgba(0,0,0,0.7); backdrop-filter: blur(4px);
+    background: rgba(0,0,0,0.75); backdrop-filter: blur(6px);
     z-index: 50; display: none;
     justify-content: center; align-items: center;
   }
   .panel-overlay.active { display: flex; }
+
   .panel {
-    width: min(360px, 90vw); max-height: 80vh;
-    background: #1e1e32; border: 1px solid rgba(255,255,255,0.1);
-    border-radius: 16px; overflow: hidden;
+    width: min(400px, 92vw); max-height: 85vh;
+    background: #14142a; border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 12px; overflow: hidden;
     display: flex; flex-direction: column;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.5);
   }
+
   .panel-header {
-    padding: 16px 20px; display: flex; justify-content: space-between;
-    align-items: center; border-bottom: 1px solid rgba(255,255,255,0.08);
+    padding: 14px 18px; display: flex; justify-content: space-between;
+    align-items: center;
+    background: rgba(255,255,255,0.03);
+    border-bottom: 1px solid rgba(255,255,255,0.06);
   }
-  .panel-header h2 { font-size: 18px; color: #fff; font-weight: 700; }
+  .panel-header h2 {
+    font-size: 15px; color: #fff; font-weight: 700;
+    display: flex; align-items: center; gap: 8px;
+  }
+  .panel-header h2 i { color: #10b981; }
   .panel-close {
-    width: 32px; height: 32px; border-radius: 8px;
-    border: none; background: rgba(255,255,255,0.08);
-    color: #94a3b8; font-size: 18px; cursor: pointer;
+    width: 30px; height: 30px; border-radius: 6px;
+    border: 1px solid rgba(255,255,255,0.1); background: transparent;
+    color: #64748b; font-size: 14px; cursor: pointer;
     display: flex; align-items: center; justify-content: center;
+    transition: all 0.2s;
   }
-  .panel-body { padding: 16px 20px; overflow-y: auto; flex: 1; }
+  .panel-close:hover { background: rgba(255,255,255,0.08); color: #fff; }
+
+  .panel-body { padding: 14px 18px; overflow-y: auto; flex: 1; }
   .panel-body::-webkit-scrollbar { width: 4px; }
-  .panel-body::-webkit-scrollbar-thumb { background: #333; border-radius: 4px; }
-  .shop-section { margin-bottom: 20px; }
+  .panel-body::-webkit-scrollbar-thumb { background: #222; border-radius: 4px; }
+
+  /* Shop */
+  .shop-section { margin-bottom: 18px; }
   .shop-section h3 {
-    font-size: 13px; color: #64748b; text-transform: uppercase;
-    letter-spacing: 1px; margin-bottom: 10px; font-weight: 600;
+    font-size: 11px; color: #475569; text-transform: uppercase;
+    letter-spacing: 1.5px; margin-bottom: 10px; font-weight: 600;
+    display: flex; align-items: center; gap: 6px;
   }
+  .shop-section h3 i { color: #10b981; font-size: 12px; }
+
   .shop-item {
     display: flex; align-items: center; gap: 12px;
-    padding: 12px; border-radius: 10px;
-    background: rgba(255,255,255,0.04);
-    border: 1px solid rgba(255,255,255,0.06);
+    padding: 12px; border-radius: 8px;
+    background: rgba(255,255,255,0.02);
+    border: 1px solid rgba(255,255,255,0.05);
     margin-bottom: 8px; cursor: pointer; transition: all 0.2s;
   }
-  .shop-item:hover { background: rgba(255,255,255,0.08); }
-  .shop-item.cant-afford { opacity: 0.5; }
-  .shop-item.maxed { opacity: 0.4; border-color: rgba(34,197,94,0.3); }
+  .shop-item:hover { background: rgba(255,255,255,0.05); border-color: rgba(255,255,255,0.1); }
+  .shop-item.cant-afford { opacity: 0.45; }
+  .shop-item.maxed { opacity: 0.35; border-color: rgba(34,197,94,0.2); }
+
   .shop-icon {
-    width: 40px; height: 40px; border-radius: 8px;
+    width: 38px; height: 38px; border-radius: 8px;
     display: flex; align-items: center; justify-content: center;
-    font-size: 20px; flex-shrink: 0;
+    font-size: 16px; flex-shrink: 0;
   }
   .shop-info { flex: 1; min-width: 0; }
-  .shop-info .name { font-size: 14px; color: #fff; font-weight: 600; }
-  .shop-info .desc { font-size: 11px; color: #64748b; margin-top: 2px; }
-  .shop-info .level { font-size: 10px; color: #a78bfa; margin-top: 2px; }
+  .shop-info .name { font-size: 13px; color: #fff; font-weight: 600; }
+  .shop-info .desc { font-size: 10px; color: #475569; margin-top: 2px; }
+  .shop-info .level { font-size: 9px; color: #a78bfa; margin-top: 2px; }
   .shop-cost {
-    padding: 6px 12px; border-radius: 6px;
-    font-size: 12px; font-weight: 700; white-space: nowrap;
+    padding: 5px 10px; border-radius: 5px;
+    font-size: 11px; font-weight: 700; white-space: nowrap;
   }
-  .cost-gold { background: rgba(255,215,0,0.15); color: #FFD700; }
-  .cost-gem { background: rgba(167,139,250,0.15); color: #a78bfa; }
+  .cost-gold { background: rgba(255,215,0,0.12); color: #FFD700; }
+  .cost-gem { background: rgba(167,139,250,0.12); color: #a78bfa; }
+
+  /* Rewarded Ad Button */
+  .reward-ad-btn {
+    width: 100%; padding: 12px;
+    border-radius: 8px; border: 1px dashed rgba(14,165,233,0.3);
+    background: rgba(14,165,233,0.06);
+    color: #0ea5e9; font-size: 12px; font-weight: 600;
+    cursor: pointer; margin-top: 12px;
+    display: flex; align-items: center; justify-content: center; gap: 8px;
+    transition: all 0.2s;
+  }
+  .reward-ad-btn:hover { background: rgba(14,165,233,0.12); border-color: rgba(14,165,233,0.5); }
+
+  /* Achievements */
   .achievement {
     display: flex; align-items: center; gap: 12px;
     padding: 10px 12px; border-radius: 8px;
-    background: rgba(255,255,255,0.03);
-    border: 1px solid rgba(255,255,255,0.05);
+    background: rgba(255,255,255,0.02);
+    border: 1px solid rgba(255,255,255,0.04);
     margin-bottom: 6px;
   }
-  .achievement.unlocked { border-color: rgba(255,215,0,0.3); background: rgba(255,215,0,0.05); }
-  .achievement.locked { opacity: 0.4; }
-  .ach-icon { font-size: 22px; }
-  .ach-info .ach-name { font-size: 13px; color: #fff; font-weight: 600; }
-  .ach-info .ach-desc { font-size: 11px; color: #64748b; }
-  .ad-container {
-    width: 100%; min-height: 50px;
+  .achievement.unlocked { border-color: rgba(255,215,0,0.2); background: rgba(255,215,0,0.04); }
+  .achievement.locked { opacity: 0.35; }
+  .ach-icon { font-size: 20px; color: #FFD700; width: 28px; text-align: center; }
+  .ach-info .ach-name { font-size: 12px; color: #fff; font-weight: 600; }
+  .ach-info .ach-desc { font-size: 10px; color: #475569; }
+  .ach-info .ach-reward { font-size: 9px; color: #a78bfa; margin-top: 1px; }
+
+  /* Stats */
+  .stat-card {
+    padding: 12px; border-radius: 8px;
     background: rgba(255,255,255,0.02);
-    border: 1px dashed rgba(255,255,255,0.08);
-    border-radius: 8px;
-    display: flex; align-items: center; justify-content: center;
-    color: #333; font-size: 11px; margin: 8px 0;
+    border: 1px solid rgba(255,255,255,0.04);
+    margin-bottom: 8px;
   }
-  .ad-container::after { content: 'Ad Space'; }
+  .stat-card .stat-label { font-size: 10px; color: #475569; text-transform: uppercase; letter-spacing: 1px; }
+  .stat-card .stat-value { font-size: 18px; font-weight: 800; color: #fff; margin-top: 4px; }
+
+  /* Prestige */
+  .prestige-info { text-align: center; padding: 20px 10px; }
+  .prestige-info h3 { color: #f59e0b; font-size: 18px; margin-bottom: 12px; display: flex; align-items: center; justify-content: center; gap: 8px; }
+  .prestige-info p { color: #64748b; font-size: 13px; line-height: 1.6; margin-bottom: 8px; }
+  .prestige-gems { font-size: 32px; font-weight: 800; color: #a78bfa; margin: 16px 0; }
+  .prestige-btns { display: flex; gap: 10px; justify-content: center; margin-top: 20px; }
+  .prestige-btns button {
+    padding: 12px 24px; border-radius: 8px; border: none;
+    font-size: 13px; font-weight: 700; cursor: pointer;
+    transition: all 0.2s;
+  }
+  .btn-confirm-prestige { background: linear-gradient(135deg, #f59e0b, #d97706); color: #fff; }
+  .btn-confirm-prestige:hover { transform: translateY(-2px); box-shadow: 0 4px 20px rgba(245,158,11,0.4); }
+  .btn-cancel { background: rgba(255,255,255,0.06); color: #64748b; border: 1px solid rgba(255,255,255,0.1); }
+  .btn-cancel:hover { background: rgba(255,255,255,0.1); }
+
+  /* Toast */
   #toastContainer {
-    position: absolute; bottom: 12px; left: 50%; transform: translateX(-50%);
+    position: absolute; bottom: 16px; left: 50%; transform: translateX(-50%);
     z-index: 200; display: flex; flex-direction: column;
     align-items: center; gap: 6px; pointer-events: none;
   }
   .toast {
-    padding: 8px 16px; border-radius: 8px;
-    background: rgba(0,0,0,0.8); backdrop-filter: blur(10px);
-    color: #fff; font-size: 13px; font-weight: 600;
+    padding: 8px 16px; border-radius: 6px;
+    background: rgba(0,0,0,0.85); backdrop-filter: blur(10px);
+    color: #fff; font-size: 12px; font-weight: 600;
     animation: toastIn 0.3s ease, toastOut 0.3s ease 2.7s forwards;
-    white-space: nowrap;
+    white-space: nowrap; border: 1px solid rgba(255,255,255,0.08);
   }
-  .toast.achievement { border: 1px solid rgba(255,215,0,0.4); }
-  @keyframes toastIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
-  @keyframes toastOut { from { opacity: 1; } to { opacity: 0; transform: translateY(-10px); } }
-  #floorBar {
-    position: absolute; left: 8px; top: 50%; transform: translateY(-50%);
-    display: none; flex-direction: column; gap: 4px; z-index: 15;
+  .toast.achievement { border-color: rgba(255,215,0,0.3); }
+  @keyframes toastIn { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: translateY(0); } }
+  @keyframes toastOut { from { opacity: 1; } to { opacity: 0; transform: translateY(-8px); } }
+
+  /* ==================== MOBILE ==================== */
+  @media (max-width: 900px) {
+    .ad-sidebar { display: none; }
+    #gameArea { max-width: 100vw; max-height: 100vh; }
+    #gameCanvas { border-radius: 0; border: none; }
   }
-  #floorBar.active { display: flex; }
-  .floor-dot {
-    width: 10px; height: 10px; border-radius: 50%;
-    border: 1px solid rgba(255,255,255,0.2);
-    background: transparent; cursor: pointer; transition: all 0.2s;
+
+  @media (max-width: 500px) {
+    #sideButtons { right: 4px; }
+    .side-btn { width: 36px; height: 36px; font-size: 14px; }
+    #floorBar { left: 4px; }
+    .floor-dot { width: 10px; height: 10px; }
+    .menu-card { padding: 18px; }
   }
-  .floor-dot.current { background: #10b981; border-color: #10b981; box-shadow: 0 0 8px rgba(16,185,129,0.5); }
-  .floor-dot.unlocked { background: rgba(255,255,255,0.3); border-color: rgba(255,255,255,0.4); }
-  .floor-dot.locked { opacity: 0.3; }
 </style>
 </head>
 <body>
-<div id="gameWrapper">
-  <canvas id="gameCanvas" width="800" height="600"></canvas>
-  <div id="hud">
-    <div class="hud-left">
-      <div class="hud-cash" id="hudCash">$0</div>
-      <div class="hud-gems" id="hudGems">0</div>
-    </div>
-    <div class="hud-center">
-      <div class="hud-floor" id="hudFloor">Piso 1</div>
-      <div class="hud-score" id="hudScore">Score: 0</div>
-    </div>
-    <div class="hud-right">
-      <div class="hud-gems" id="hudPerSec">0/s</div>
-      <div class="hud-score" id="hudTime">00:00</div>
-    </div>
+<div id="mainLayout">
+  <!-- Left Ad Sidebar -->
+  <div class="ad-sidebar" id="adLeft">
+    <div class="ad-box" id="adLeft1"></div>
+    <div class="ad-box-horizontal" id="adLeft2"></div>
   </div>
-  <div id="sideButtons">
-    <button class="side-btn" onclick="openPanel('shop')">🛒</button>
-    <button class="side-btn" onclick="openPanel('achievements')">🏆</button>
-    <button class="side-btn" onclick="openPanel('stats')">📊</button>
-    <button class="side-btn" onclick="openPanel('prestige')">⭐</button>
-    <button class="side-btn" onclick="saveGame()">💾</button>
-  </div>
-  <div id="floorBar"></div>
-  <div id="startMenu">
-    <div class="menu-title">⛏️ IDLE MINER</div>
-    <div class="menu-subtitle">Deep Earth Edition</div>
-    <button class="menu-btn btn-play" onclick="startNewGame()">⛏️ Nueva Partida</button>
-    <button class="menu-btn btn-continue" id="btnContinue" style="display:none;" onclick="continueGame()">📂 Continuar</button>
-    <button class="menu-btn btn-prestige" id="btnPrestigeMenu" style="display:none;" onclick="openPanel('prestige')">⭐ Prestigio</button>
-    <div class="menu-stats" id="menuStats"></div>
-    <div class="menu-save-info">Progreso guardado automáticamente</div>
-    <div class="ad-container" style="width: min(300px, 80vw); margin-top: 20px;"></div>
-  </div>
-  <div class="panel-overlay" id="panel-shop">
-    <div class="panel">
-      <div class="panel-header"><h2>🛒 Tienda</h2><button class="panel-close" onclick="closePanel('shop')">✕</button></div>
-      <div class="panel-body" id="shopBody"></div>
-      <div class="ad-container" style="margin:0;border-radius:0;border-left:none;border-right:none;border-bottom:none;"></div>
+
+  <!-- Game Area -->
+  <div id="gameArea">
+    <canvas id="gameCanvas" width="1000" height="750"></canvas>
+
+    <!-- HUD -->
+    <div id="hud">
+      <div class="hud-left">
+        <div class="hud-cash" id="hudCash">$0</div>
+        <div class="hud-gems" id="hudGems"><i class="fas fa-gem"></i> 0</div>
+      </div>
+      <div class="hud-center">
+        <div class="hud-floor" id="hudFloor">Piso 1</div>
+        <div class="hud-score" id="hudScore">Score: 0</div>
+      </div>
+      <div class="hud-right">
+        <div class="hud-gems" id="hudPerSec">$0/s</div>
+        <div class="hud-score" id="hudTime">00:00</div>
+      </div>
     </div>
-  </div>
-  <div class="panel-overlay" id="panel-achievements">
-    <div class="panel">
-      <div class="panel-header"><h2>🏆 Logros</h2><button class="panel-close" onclick="closePanel('achievements')">✕</button></div>
-      <div class="panel-body" id="achievementsBody"></div>
+
+    <!-- Side Buttons -->
+    <div id="sideButtons">
+      <button class="side-btn" onclick="openPanel('shop')" title="Tienda"><i class="fas fa-store"></i></button>
+      <button class="side-btn" onclick="openPanel('achievements')" title="Logros"><i class="fas fa-trophy"></i></button>
+      <button class="side-btn" onclick="openPanel('stats')" title="Estadisticas"><i class="fas fa-chart-bar"></i></button>
+      <button class="side-btn" onclick="openPanel('prestige')" title="Prestigio"><i class="fas fa-star"></i></button>
+      <button class="side-btn" onclick="saveGame()" title="Guardar"><i class="fas fa-save"></i></button>
     </div>
-  </div>
-  <div class="panel-overlay" id="panel-stats">
-    <div class="panel">
-      <div class="panel-header"><h2>📊 Estadísticas</h2><button class="panel-close" onclick="closePanel('stats')">✕</button></div>
-      <div class="panel-body" id="statsBody"></div>
+
+    <!-- Floor Bar -->
+    <div id="floorBar"></div>
+
+    <!-- Start Menu -->
+    <div id="startMenu">
+      <div class="menu-border"></div>
+      <div class="menu-logo"><i class="fas fa-helmet-safety"></i></div>
+      <div class="menu-title">IDLE MINER</div>
+      <div class="menu-subtitle">Deep Earth Edition</div>
+      <div class="menu-card">
+        <button class="menu-btn btn-play" onclick="startNewGame()">
+          <i class="fas fa-play"></i> Nueva Partida
+        </button>
+        <button class="menu-btn btn-continue" id="btnContinue" style="display:none;" onclick="continueGame()">
+          <i class="fas fa-folder-open"></i> Continuar Partida
+        </button>
+        <button class="menu-btn btn-prestige" id="btnPrestigeMenu" style="display:none;" onclick="openPanel('prestige')">
+          <i class="fas fa-star"></i> Prestigio
+        </button>
+        <div class="menu-divider"></div>
+        <button class="menu-btn btn-reward-ad" onclick="watchRewardAd()">
+          <i class="fas fa-video"></i> Ver Anuncio (+500 oro)
+        </button>
+        <div class="menu-stats" id="menuStats"></div>
+      </div>
+      <div class="menu-footer">
+        <p>Progreso guardado automaticamente</p>
+      </div>
     </div>
-  </div>
-  <div class="panel-overlay" id="panel-prestige">
-    <div class="panel">
-      <div class="panel-header"><h2>⭐ Prestigio</h2><button class="panel-close" onclick="closePanel('prestige')">✕</button></div>
-      <div class="panel-body" id="prestigeBody"></div>
+
+    <!-- Shop Panel -->
+    <div class="panel-overlay" id="panel-shop">
+      <div class="panel">
+        <div class="panel-header">
+          <h2><i class="fas fa-store"></i> Tienda</h2>
+          <button class="panel-close" onclick="closePanel('shop')"><i class="fas fa-xmark"></i></button>
+        </div>
+        <div class="panel-body" id="shopBody"></div>
+      </div>
     </div>
+
+    <!-- Achievements Panel -->
+    <div class="panel-overlay" id="panel-achievements">
+      <div class="panel">
+        <div class="panel-header">
+          <h2><i class="fas fa-trophy"></i> Logros</h2>
+          <button class="panel-close" onclick="closePanel('achievements')"><i class="fas fa-xmark"></i></button>
+        </div>
+        <div class="panel-body" id="achievementsBody"></div>
+      </div>
+    </div>
+
+    <!-- Stats Panel -->
+    <div class="panel-overlay" id="panel-stats">
+      <div class="panel">
+        <div class="panel-header">
+          <h2><i class="fas fa-chart-bar"></i> Estadisticas</h2>
+          <button class="panel-close" onclick="closePanel('stats')"><i class="fas fa-xmark"></i></button>
+        </div>
+        <div class="panel-body" id="statsBody"></div>
+      </div>
+    </div>
+
+    <!-- Prestige Panel -->
+    <div class="panel-overlay" id="panel-prestige">
+      <div class="panel">
+        <div class="panel-header">
+          <h2><i class="fas fa-star"></i> Prestigio</h2>
+          <button class="panel-close" onclick="closePanel('prestige')"><i class="fas fa-xmark"></i></button>
+        </div>
+        <div class="panel-body" id="prestigeBody"></div>
+      </div>
+    </div>
+
+    <!-- Toast Container -->
+    <div id="toastContainer"></div>
   </div>
-  <div id="toastContainer"></div>
+
+  <!-- Right Ad Sidebar -->
+  <div class="ad-sidebar" id="adRight">
+    <div class="ad-box" id="adRight1"></div>
+    <div class="ad-box-horizontal" id="adRight2"></div>
+  </div>
 </div>
+
 <script src="script.js"></script>
+<!-- Google AdSense - Uncomment and replace with your ID -->
+<!-- <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-XXXXXXXX" crossorigin="anonymous"></script> -->
+<!-- <script>
+  // Initialize ad slots
+  (adsbygoogle = window.adsbygoogle || []).push({});
+  // Rewarded video ad function
+  function showRewardedAd(callback) {
+    // Google AdMob/AdSense rewarded ad integration
+    // Replace with your actual ad unit ID
+    console.log('Showing rewarded video ad...');
+    // Simulate ad completion
+    setTimeout(() => { if (callback) callback(); }, 2000);
+  }
+</script> -->
 </body>
 </html>

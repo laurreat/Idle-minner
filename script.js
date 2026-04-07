@@ -6,7 +6,8 @@
 
 const canvas = document.getElementById("gameCanvas");
 const ctx = canvas.getContext("2d");
-const W = 800, H = 600;
+const W = 1000, H = 750;
+const S = 1.25; // scale factor from original 800x600
 
 // ============================================================
 // SPRITE LOADER
@@ -78,19 +79,16 @@ function initFloor(index) {
   return {
     index: index,
     config: config,
-    miner: { x: 240, y: 400, width: 45, height: 45, material: 0, isMining: false },
-    elevator: { x: 70, y: 220, width: 45, height: 45, carrying: 0, isMoving: false, direction: 1, state: "idle", maxCapacity: 130 },
-    storage: { x: 600, y: 220, width: 45, height: 45, carrying: 0, isCollecting: false, state: "idle", currentSprite: null, initialX: 600, maxCapacity: 100, collectionTime: 500 },
-    minerBox: { x: 150, y: 400, width: 77, height: 77, material: 0 },
-    elevatorBox: { x: 65, y: 180, width: 1, height: 1, material: 0 },
+    miner: { x: 300, y: 500, width: 45, height: 45, material: 0, isMining: false },
+    elevator: { x: 88, y: 275, width: 45, height: 45, carrying: 0, isMoving: false, direction: 1, state: "idle", maxCapacity: 130 },
+    storage: { x: 750, y: 275, width: 45, height: 45, carrying: 0, isCollecting: false, state: "idle", currentSprite: null, initialX: 750, maxCapacity: 100, collectionTime: 500 },
+    minerBox: { x: 188, y: 500, width: 77, height: 77, material: 0 },
+    elevatorBox: { x: 81, y: 225, width: 1, height: 1, material: 0 },
     minerState: { isWaiting: false, miningTimeout: null, miningTime: 5000 },
     elevatorState: { isWaiting: false, elevatorTimeout: null },
     storageState: { isWaiting: false, storageTimeout: null },
-    // Auto miner (unlocks at level 3)
     autoMiner: { active: false, timer: 0, interval: 3000 },
-    // Ore particles
     particles: [],
-    // Gems found on this floor
     gemsFound: 0
   };
 }
@@ -444,9 +442,9 @@ function moveMiner(floorIdx) {
   const fu = floorUpgrades[floorIdx];
   const speedMult = getFloorSpeedMult();
 
-  if (f.miner.isMining && f.miner.x < 580) {
-    f.miner.x += 2 * speedMult;
-  } else if (f.miner.x >= 580 && !f.minerState.isWaiting) {
+  if (f.miner.isMining && f.miner.x < 725) {
+    f.miner.x += 2.5 * speedMult;
+  } else if (f.miner.x >= 725 && !f.minerState.isWaiting) {
     f.minerState.isWaiting = true;
     f.minerState.miningTimeout = setTimeout(() => {
       const amount = fu.miner.getMiningAmount();
@@ -468,10 +466,10 @@ function moveMiner(floorIdx) {
       f.miner.isMining = false;
       f.minerState.isWaiting = false;
     }, fu.miner.getMiningTime());
-  } else if (!f.miner.isMining && f.miner.x > 240) {
-    f.miner.x -= 2 * speedMult;
-    if (f.miner.x <= 240) {
-      f.miner.x = 240;
+  } else if (!f.miner.isMining && f.miner.x > 300) {
+    f.miner.x -= 2.5 * speedMult;
+    if (f.miner.x <= 300) {
+      f.miner.x = 300;
     }
   }
 }
@@ -500,7 +498,7 @@ function moveElevator(floorIdx) {
       }
     } else {
       f.elevator.y -= fu.elevator.getSpeed() * speedMult;
-      if (f.elevator.y <= 220) {
+      if (f.elevator.y <= 275) {
         f.elevator.isMoving = false;
         f.elevator.direction = 1;
         f.elevator.state = "idle";
@@ -521,8 +519,8 @@ function moveStorage(floorIdx) {
       f.storage.state = "moving";
     }
     if (f.storage.state === "moving") {
-      if (f.storage.x > 170) {
-        f.storage.x -= 2 * speedMult;
+      if (f.storage.x > 212) {
+        f.storage.x -= 2.5 * speedMult;
         f.storage.currentSprite = Math.floor(Date.now() / 200) % 2 === 0 ? sprites.miner_tolva_1 : sprites.miner_tolva_2;
       } else if (!f.storageState.isWaiting) {
         if (f.elevatorBox.material > 0) {
@@ -544,7 +542,7 @@ function moveStorage(floorIdx) {
 
   if (f.storage.state === "returning_full") {
     if (f.storage.x < f.storage.initialX) {
-      f.storage.x += 2 * speedMult;
+      f.storage.x += 2.5 * speedMult;
       f.storage.currentSprite = Math.floor(Date.now() / 200) % 2 === 0 ? sprites.miner_tolva_reverse_1 : sprites.miner_tolva_reverse_2;
     } else {
       if (f.storage.carrying > 0) {
@@ -564,7 +562,7 @@ function moveStorage(floorIdx) {
 
   if (f.storage.state === "returning_empty") {
     if (f.storage.x < f.storage.initialX) {
-      f.storage.x += 2 * speedMult;
+      f.storage.x += 2.5 * speedMult;
       f.storage.currentSprite = Math.floor(Date.now() / 200) % 2 === 0 ? sprites.miner_tolva_reverse_3 : sprites.miner_tolva_reverse_4;
     } else {
       f.storage.state = "idle";
@@ -579,7 +577,7 @@ function updateAutoMiner(floorIdx) {
   const f = floors[floorIdx];
   const fu = floorUpgrades[floorIdx];
 
-  if (fu.autoMiner.isActive() && !f.miner.isMining && !f.minerState.isWaiting && f.miner.x <= 240) {
+  if (fu.autoMiner.isActive() && !f.miner.isMining && !f.minerState.isWaiting && f.miner.x <= 300) {
     f.autoMiner.timer += 16;
     if (f.autoMiner.timer >= fu.autoMiner.getInterval()) {
       f.autoMiner.timer = 0;
@@ -682,7 +680,7 @@ function drawMiner(floorIdx) {
 
   if (f.miner.isMining) {
     spriteToDraw = Math.floor(Date.now() / 200) % 2 === 0 ? sprites.miner_walk_1 : sprites.miner_walk_2;
-  } else if (f.miner.x > 240) {
+  } else if (f.miner.x > 300) {
     spriteToDraw = Math.floor(Date.now() / 200) % 2 === 0 ? sprites.miner_walk_reverse_1 : sprites.miner_walk_reverse_2;
   } else {
     spriteToDraw = sprites.miner_idle;
@@ -742,22 +740,22 @@ function drawClickHints() {
 
   ctx.globalAlpha = pulse * 0.6;
   ctx.fillStyle = "#fff";
-  ctx.font = "14px Arial";
+  ctx.font = "16px Arial";
   ctx.textAlign = "center";
 
   // Miner click hint
-  if (!f.miner.isMining && !f.minerState.isWaiting && f.miner.x <= 240) {
-    ctx.fillText("👆 Click", f.miner.x + 40, f.miner.y + 100);
+  if (!f.miner.isMining && !f.minerState.isWaiting && f.miner.x <= 300) {
+    ctx.fillText("Click", f.miner.x + 50, f.miner.y + 120);
   }
 
   // Elevator click hint
   if (!f.elevator.isMoving) {
-    ctx.fillText("👆 Click", f.elevator.x + 40, f.elevator.y + 100);
+    ctx.fillText("Click", f.elevator.x + 50, f.elevator.y + 120);
   }
 
   // Storage click hint
   if (!f.storage.isCollecting) {
-    ctx.fillText("👆 Click", f.storage.x + 40, f.storage.y + 100);
+    ctx.fillText("Click", f.storage.x + 50, f.storage.y + 120);
   }
 
   ctx.globalAlpha = 1;
@@ -766,12 +764,12 @@ function drawClickHints() {
 function drawFloorIndicator() {
   const config = FLOOR_CONFIGS[game.currentFloor];
   ctx.fillStyle = "rgba(0,0,0,0.5)";
-  roundRect(ctx, W / 2 - 100, H - 35, 200, 28, 8);
+  roundRect(ctx, W / 2 - 130, H - 44, 260, 35, 10);
   ctx.fill();
   ctx.fillStyle = config.oreColor;
-  ctx.font = "bold 13px Arial";
+  ctx.font = "bold 15px Arial";
   ctx.textAlign = "center";
-  ctx.fillText(`⛏ ${config.name} | Valor: ${config.oreValue}x`, W / 2, H - 17);
+  ctx.fillText(`${config.name} | Valor: ${config.oreValue}x`, W / 2, H - 22);
 }
 
 function roundRect(ctx, x, y, w, h, r) {
@@ -868,7 +866,7 @@ function handleCanvasClick(event) {
   // Click on miner
   if (x >= f.miner.x && x <= f.miner.x + f.miner.width * 1.8 &&
       y >= f.miner.y && y <= f.miner.y + f.miner.height * 1.8) {
-    if (!f.miner.isMining && !f.minerState.isWaiting && f.miner.x <= 240) {
+    if (!f.miner.isMining && !f.minerState.isWaiting && f.miner.x <= 300) {
       f.miner.isMining = true;
       game.totalClicks++;
     }
