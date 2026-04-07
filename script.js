@@ -79,7 +79,7 @@ function initFloor(index) {
   return {
     index: index,
     config: config,
-    miner: { x: 350, y: 560, width: 45, height: 45, material: 0, isMining: false },
+    miner: { x: 280, y: 560, width: 45, height: 45, material: 0, isMining: false },
     elevator: { x: 100, y: 300, width: 45, height: 45, carrying: 0, isMoving: false, direction: 1, state: "idle", maxCapacity: 130 },
     storage: { x: 800, y: 300, width: 45, height: 45, carrying: 0, isCollecting: false, state: "idle", currentSprite: null, initialX: 800, maxCapacity: 100, collectionTime: 500 },
     minerBox: { x: 200, y: 560, width: 77, height: 77, material: 0 },
@@ -442,9 +442,9 @@ function moveMiner(floorIdx) {
   const fu = floorUpgrades[floorIdx];
   const speedMult = getFloorSpeedMult();
 
-  if (f.miner.isMining && f.miner.x < 800) {
+  if (f.miner.isMining && f.miner.x < 720) {
     f.miner.x += 2.5 * speedMult;
-  } else if (f.miner.x >= 800 && !f.minerState.isWaiting) {
+  } else if (f.miner.x >= 720 && !f.minerState.isWaiting) {
     f.minerState.isWaiting = true;
     f.minerState.miningTimeout = setTimeout(() => {
       const amount = fu.miner.getMiningAmount();
@@ -466,10 +466,10 @@ function moveMiner(floorIdx) {
       f.miner.isMining = false;
       f.minerState.isWaiting = false;
     }, fu.miner.getMiningTime());
-  } else if (!f.miner.isMining && f.miner.x > 350) {
+  } else if (!f.miner.isMining && f.miner.x > 280) {
     f.miner.x -= 2.5 * speedMult;
-    if (f.miner.x <= 350) {
-      f.miner.x = 350;
+    if (f.miner.x <= 280) {
+      f.miner.x = 280;
     }
   }
 }
@@ -577,7 +577,7 @@ function updateAutoMiner(floorIdx) {
   const f = floors[floorIdx];
   const fu = floorUpgrades[floorIdx];
 
-  if (fu.autoMiner.isActive() && !f.miner.isMining && !f.minerState.isWaiting && f.miner.x <= 300) {
+  if (fu.autoMiner.isActive() && !f.miner.isMining && !f.minerState.isWaiting && f.miner.x <= 280) {
     f.autoMiner.timer += 16;
     if (f.autoMiner.timer >= fu.autoMiner.getInterval()) {
       f.autoMiner.timer = 0;
@@ -680,7 +680,7 @@ function drawMiner(floorIdx) {
 
   if (f.miner.isMining) {
     spriteToDraw = Math.floor(Date.now() / 200) % 2 === 0 ? sprites.miner_walk_1 : sprites.miner_walk_2;
-  } else if (f.miner.x > 300) {
+  } else if (f.miner.x > 280) {
     spriteToDraw = Math.floor(Date.now() / 200) % 2 === 0 ? sprites.miner_walk_reverse_1 : sprites.miner_walk_reverse_2;
   } else {
     spriteToDraw = sprites.miner_idle;
@@ -700,6 +700,33 @@ function drawMiner(floorIdx) {
 
 function drawElevator(floorIdx) {
   const f = floors[floorIdx];
+  const scale = 1.8;
+
+  // Draw elevator shaft (cable + rails)
+  ctx.strokeStyle = "#555";
+  ctx.lineWidth = 3;
+  // Cable from top
+  ctx.beginPath();
+  ctx.moveTo(f.elevator.x + 40, 0);
+  ctx.lineTo(f.elevator.x + 40, f.elevator.y);
+  ctx.stroke();
+
+  // Rails on sides
+  ctx.strokeStyle = "#666";
+  ctx.lineWidth = 4;
+  ctx.beginPath();
+  ctx.moveTo(f.elevator.x - 5, 200);
+  ctx.lineTo(f.elevator.x - 5, f.elevator.y + f.elevator.height * scale + 10);
+  ctx.stroke();
+  ctx.beginPath();
+  ctx.moveTo(f.elevator.x + f.elevator.width * scale + 5, 200);
+  ctx.lineTo(f.elevator.x + f.elevator.width * scale + 5, f.elevator.y + f.elevator.height * scale + 10);
+  ctx.stroke();
+
+  // Shaft background
+  ctx.fillStyle = "rgba(0,0,0,0.3)";
+  ctx.fillRect(f.elevator.x - 10, 200, f.elevator.width * scale + 20, f.elevator.y + f.elevator.height * scale - 200 + 20);
+
   let spriteToDraw;
   switch (f.elevator.state) {
     case "down": spriteToDraw = sprites.miner_elevador_1; break;
@@ -707,7 +734,6 @@ function drawElevator(floorIdx) {
     default: spriteToDraw = sprites.miner_elevador_0;
   }
 
-  const scale = 1.8;
   if (spriteToDraw && spriteToDraw.complete) {
     ctx.drawImage(spriteToDraw,
       f.elevator.x - (f.elevator.width * (scale - 1)) / 2,
@@ -735,30 +761,7 @@ function drawStorage(floorIdx) {
 }
 
 function drawClickHints() {
-  const f = floors[game.currentFloor];
-  const pulse = Math.sin(Date.now() / 500) * 0.3 + 0.7;
-
-  ctx.globalAlpha = pulse * 0.6;
-  ctx.fillStyle = "#fff";
-  ctx.font = "16px Arial";
-  ctx.textAlign = "center";
-
-  // Miner click hint
-  if (!f.miner.isMining && !f.minerState.isWaiting && f.miner.x <= 300) {
-    ctx.fillText("Click", f.miner.x + 50, f.miner.y + 120);
-  }
-
-  // Elevator click hint
-  if (!f.elevator.isMoving) {
-    ctx.fillText("Click", f.elevator.x + 50, f.elevator.y + 120);
-  }
-
-  // Storage click hint
-  if (!f.storage.isCollecting) {
-    ctx.fillText("Click", f.storage.x + 50, f.storage.y + 120);
-  }
-
-  ctx.globalAlpha = 1;
+  // No hints - removed for cleaner look
 }
 
 function drawFloorIndicator() {
@@ -867,7 +870,7 @@ function handleCanvasClick(event) {
   // Click on miner
   if (x >= f.miner.x && x <= f.miner.x + f.miner.width * 1.8 &&
       y >= f.miner.y && y <= f.miner.y + f.miner.height * 1.8) {
-    if (!f.miner.isMining && !f.minerState.isWaiting && f.miner.x <= 300) {
+    if (!f.miner.isMining && !f.minerState.isWaiting && f.miner.x <= 280) {
       f.miner.isMining = true;
       game.totalClicks++;
     }
