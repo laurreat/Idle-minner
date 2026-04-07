@@ -1,25 +1,275 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="es">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Idle Miner Simulation</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>Idle Miner - Deep Earth</title>
 <style>
+  * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
   body {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    height: 100vh;
-    margin: 0;
-    background-color: #a3d9ff;
+    display: flex; justify-content: center; align-items: center;
+    min-height: 100vh; background: #0a0a15;
+    font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+    overflow: hidden; user-select: none;
+  }
+  #gameWrapper {
+    position: relative; width: 100vw; max-width: 800px;
+    aspect-ratio: 4/3; max-height: 100vh;
   }
   #gameCanvas {
-    border: 2px solid #333;
+    width: 100%; height: 100%; display: block;
+    border-radius: 8px; image-rendering: pixelated;
   }
+  #hud {
+    position: absolute; top: 0; left: 0; right: 0;
+    padding: 8px 12px; display: none;
+    pointer-events: none; z-index: 10;
+  }
+  #hud.active { display: flex; justify-content: space-between; align-items: flex-start; }
+  .hud-left, .hud-right, .hud-center { pointer-events: auto; }
+  .hud-center { text-align: center; }
+  .hud-right { text-align: right; }
+  .hud-cash {
+    font-size: clamp(16px, 3vw, 24px); font-weight: 800;
+    color: #FFD700; text-shadow: 0 2px 8px rgba(0,0,0,0.8);
+  }
+  .hud-gems {
+    font-size: clamp(12px, 2vw, 16px); font-weight: 600;
+    color: #a78bfa; text-shadow: 0 2px 8px rgba(0,0,0,0.8);
+  }
+  .hud-floor {
+    font-size: clamp(11px, 1.8vw, 14px); font-weight: 600;
+    color: #94a3b8; text-shadow: 0 2px 8px rgba(0,0,0,0.8);
+  }
+  .hud-score {
+    font-size: clamp(10px, 1.5vw, 13px); color: #64748b;
+    text-shadow: 0 2px 8px rgba(0,0,0,0.8);
+  }
+  #startMenu {
+    position: absolute; inset: 0;
+    display: flex; flex-direction: column;
+    justify-content: center; align-items: center;
+    background: linear-gradient(180deg, #0a0a15 0%, #1a1a2e 50%, #16213e 100%);
+    z-index: 100; transition: opacity 0.5s, transform 0.5s;
+  }
+  #startMenu.hidden { opacity: 0; pointer-events: none; transform: scale(1.05); }
+  .menu-title {
+    font-size: clamp(28px, 6vw, 48px); font-weight: 900;
+    background: linear-gradient(135deg, #FFD700, #FFA500, #FFD700);
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    background-clip: text; margin-bottom: 4px; text-align: center;
+  }
+  .menu-subtitle {
+    font-size: clamp(12px, 2.5vw, 18px); color: #64748b;
+    margin-bottom: 40px; text-align: center;
+  }
+  .menu-btn {
+    width: min(280px, 80vw); padding: 14px 24px;
+    border: none; border-radius: 12px; font-size: 16px;
+    font-weight: 700; cursor: pointer; margin-bottom: 12px;
+    transition: all 0.2s; display: flex; align-items: center;
+    justify-content: center; gap: 8px;
+  }
+  .menu-btn:active { transform: scale(0.96); }
+  .btn-play {
+    background: linear-gradient(135deg, #10b981, #059669);
+    color: #fff; box-shadow: 0 4px 20px rgba(16,185,129,0.4);
+  }
+  .btn-play:hover { box-shadow: 0 6px 30px rgba(16,185,129,0.6); }
+  .btn-continue {
+    background: linear-gradient(135deg, #6366f1, #4f46e5);
+    color: #fff; box-shadow: 0 4px 20px rgba(99,102,241,0.4);
+  }
+  .btn-prestige {
+    background: linear-gradient(135deg, #f59e0b, #d97706);
+    color: #fff; box-shadow: 0 4px 20px rgba(245,158,11,0.3);
+  }
+  .menu-save-info { font-size: 11px; color: #475569; margin-top: 16px; text-align: center; }
+  .menu-stats { font-size: 12px; color: #64748b; margin-top: 8px; text-align: center; line-height: 1.6; }
+  #sideButtons {
+    position: absolute; right: 8px; top: 50%; transform: translateY(-50%);
+    display: none; flex-direction: column; gap: 6px; z-index: 20;
+  }
+  #sideButtons.active { display: flex; }
+  .side-btn {
+    width: 40px; height: 40px; border-radius: 10px;
+    border: 1px solid rgba(255,255,255,0.1);
+    background: rgba(0,0,0,0.6); backdrop-filter: blur(10px);
+    color: #94a3b8; font-size: 16px; cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    transition: all 0.2s;
+  }
+  .side-btn:hover { background: rgba(255,255,255,0.1); color: #fff; }
+  .panel-overlay {
+    position: absolute; inset: 0;
+    background: rgba(0,0,0,0.7); backdrop-filter: blur(4px);
+    z-index: 50; display: none;
+    justify-content: center; align-items: center;
+  }
+  .panel-overlay.active { display: flex; }
+  .panel {
+    width: min(360px, 90vw); max-height: 80vh;
+    background: #1e1e32; border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 16px; overflow: hidden;
+    display: flex; flex-direction: column;
+  }
+  .panel-header {
+    padding: 16px 20px; display: flex; justify-content: space-between;
+    align-items: center; border-bottom: 1px solid rgba(255,255,255,0.08);
+  }
+  .panel-header h2 { font-size: 18px; color: #fff; font-weight: 700; }
+  .panel-close {
+    width: 32px; height: 32px; border-radius: 8px;
+    border: none; background: rgba(255,255,255,0.08);
+    color: #94a3b8; font-size: 18px; cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .panel-body { padding: 16px 20px; overflow-y: auto; flex: 1; }
+  .panel-body::-webkit-scrollbar { width: 4px; }
+  .panel-body::-webkit-scrollbar-thumb { background: #333; border-radius: 4px; }
+  .shop-section { margin-bottom: 20px; }
+  .shop-section h3 {
+    font-size: 13px; color: #64748b; text-transform: uppercase;
+    letter-spacing: 1px; margin-bottom: 10px; font-weight: 600;
+  }
+  .shop-item {
+    display: flex; align-items: center; gap: 12px;
+    padding: 12px; border-radius: 10px;
+    background: rgba(255,255,255,0.04);
+    border: 1px solid rgba(255,255,255,0.06);
+    margin-bottom: 8px; cursor: pointer; transition: all 0.2s;
+  }
+  .shop-item:hover { background: rgba(255,255,255,0.08); }
+  .shop-item.cant-afford { opacity: 0.5; }
+  .shop-item.maxed { opacity: 0.4; border-color: rgba(34,197,94,0.3); }
+  .shop-icon {
+    width: 40px; height: 40px; border-radius: 8px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 20px; flex-shrink: 0;
+  }
+  .shop-info { flex: 1; min-width: 0; }
+  .shop-info .name { font-size: 14px; color: #fff; font-weight: 600; }
+  .shop-info .desc { font-size: 11px; color: #64748b; margin-top: 2px; }
+  .shop-info .level { font-size: 10px; color: #a78bfa; margin-top: 2px; }
+  .shop-cost {
+    padding: 6px 12px; border-radius: 6px;
+    font-size: 12px; font-weight: 700; white-space: nowrap;
+  }
+  .cost-gold { background: rgba(255,215,0,0.15); color: #FFD700; }
+  .cost-gem { background: rgba(167,139,250,0.15); color: #a78bfa; }
+  .achievement {
+    display: flex; align-items: center; gap: 12px;
+    padding: 10px 12px; border-radius: 8px;
+    background: rgba(255,255,255,0.03);
+    border: 1px solid rgba(255,255,255,0.05);
+    margin-bottom: 6px;
+  }
+  .achievement.unlocked { border-color: rgba(255,215,0,0.3); background: rgba(255,215,0,0.05); }
+  .achievement.locked { opacity: 0.4; }
+  .ach-icon { font-size: 22px; }
+  .ach-info .ach-name { font-size: 13px; color: #fff; font-weight: 600; }
+  .ach-info .ach-desc { font-size: 11px; color: #64748b; }
+  .ad-container {
+    width: 100%; min-height: 50px;
+    background: rgba(255,255,255,0.02);
+    border: 1px dashed rgba(255,255,255,0.08);
+    border-radius: 8px;
+    display: flex; align-items: center; justify-content: center;
+    color: #333; font-size: 11px; margin: 8px 0;
+  }
+  .ad-container::after { content: 'Ad Space'; }
+  #toastContainer {
+    position: absolute; bottom: 12px; left: 50%; transform: translateX(-50%);
+    z-index: 200; display: flex; flex-direction: column;
+    align-items: center; gap: 6px; pointer-events: none;
+  }
+  .toast {
+    padding: 8px 16px; border-radius: 8px;
+    background: rgba(0,0,0,0.8); backdrop-filter: blur(10px);
+    color: #fff; font-size: 13px; font-weight: 600;
+    animation: toastIn 0.3s ease, toastOut 0.3s ease 2.7s forwards;
+    white-space: nowrap;
+  }
+  .toast.achievement { border: 1px solid rgba(255,215,0,0.4); }
+  @keyframes toastIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+  @keyframes toastOut { from { opacity: 1; } to { opacity: 0; transform: translateY(-10px); } }
+  #floorBar {
+    position: absolute; left: 8px; top: 50%; transform: translateY(-50%);
+    display: none; flex-direction: column; gap: 4px; z-index: 15;
+  }
+  #floorBar.active { display: flex; }
+  .floor-dot {
+    width: 10px; height: 10px; border-radius: 50%;
+    border: 1px solid rgba(255,255,255,0.2);
+    background: transparent; cursor: pointer; transition: all 0.2s;
+  }
+  .floor-dot.current { background: #10b981; border-color: #10b981; box-shadow: 0 0 8px rgba(16,185,129,0.5); }
+  .floor-dot.unlocked { background: rgba(255,255,255,0.3); border-color: rgba(255,255,255,0.4); }
+  .floor-dot.locked { opacity: 0.3; }
 </style>
 </head>
 <body>
+<div id="gameWrapper">
   <canvas id="gameCanvas" width="800" height="600"></canvas>
-  <script src="script.js"></script>
+  <div id="hud">
+    <div class="hud-left">
+      <div class="hud-cash" id="hudCash">$0</div>
+      <div class="hud-gems" id="hudGems">0</div>
+    </div>
+    <div class="hud-center">
+      <div class="hud-floor" id="hudFloor">Piso 1</div>
+      <div class="hud-score" id="hudScore">Score: 0</div>
+    </div>
+    <div class="hud-right">
+      <div class="hud-gems" id="hudPerSec">0/s</div>
+      <div class="hud-score" id="hudTime">00:00</div>
+    </div>
+  </div>
+  <div id="sideButtons">
+    <button class="side-btn" onclick="openPanel('shop')">🛒</button>
+    <button class="side-btn" onclick="openPanel('achievements')">🏆</button>
+    <button class="side-btn" onclick="openPanel('stats')">📊</button>
+    <button class="side-btn" onclick="openPanel('prestige')">⭐</button>
+    <button class="side-btn" onclick="saveGame()">💾</button>
+  </div>
+  <div id="floorBar"></div>
+  <div id="startMenu">
+    <div class="menu-title">⛏️ IDLE MINER</div>
+    <div class="menu-subtitle">Deep Earth Edition</div>
+    <button class="menu-btn btn-play" onclick="startNewGame()">⛏️ Nueva Partida</button>
+    <button class="menu-btn btn-continue" id="btnContinue" style="display:none;" onclick="continueGame()">📂 Continuar</button>
+    <button class="menu-btn btn-prestige" id="btnPrestigeMenu" style="display:none;" onclick="openPanel('prestige')">⭐ Prestigio</button>
+    <div class="menu-stats" id="menuStats"></div>
+    <div class="menu-save-info">Progreso guardado automáticamente</div>
+    <div class="ad-container" style="width: min(300px, 80vw); margin-top: 20px;"></div>
+  </div>
+  <div class="panel-overlay" id="panel-shop">
+    <div class="panel">
+      <div class="panel-header"><h2>🛒 Tienda</h2><button class="panel-close" onclick="closePanel('shop')">✕</button></div>
+      <div class="panel-body" id="shopBody"></div>
+      <div class="ad-container" style="margin:0;border-radius:0;border-left:none;border-right:none;border-bottom:none;"></div>
+    </div>
+  </div>
+  <div class="panel-overlay" id="panel-achievements">
+    <div class="panel">
+      <div class="panel-header"><h2>🏆 Logros</h2><button class="panel-close" onclick="closePanel('achievements')">✕</button></div>
+      <div class="panel-body" id="achievementsBody"></div>
+    </div>
+  </div>
+  <div class="panel-overlay" id="panel-stats">
+    <div class="panel">
+      <div class="panel-header"><h2>📊 Estadísticas</h2><button class="panel-close" onclick="closePanel('stats')">✕</button></div>
+      <div class="panel-body" id="statsBody"></div>
+    </div>
+  </div>
+  <div class="panel-overlay" id="panel-prestige">
+    <div class="panel">
+      <div class="panel-header"><h2>⭐ Prestigio</h2><button class="panel-close" onclick="closePanel('prestige')">✕</button></div>
+      <div class="panel-body" id="prestigeBody"></div>
+    </div>
+  </div>
+  <div id="toastContainer"></div>
+</div>
+<script src="script.js"></script>
 </body>
 </html>
