@@ -51,19 +51,19 @@ let game = {
 };
 
 // ============================================================
-// FLOORS (10 unique floors with different themes)
+// FLOORS (10 unique floors with different themes and materials)
 // ============================================================
 const FLOOR_CONFIGS = [
-  { name: "Superficie", bg: "#87CEEB", rockColor: "#8B7355", oreColor: "#FFD700", oreValue: 1, oreChance: 0.3, unlockCost: 0, depth: 0 },
-  { name: "Tierra", bg: "#6B4226", rockColor: "#5C3317", oreColor: "#C0C0C0", oreValue: 2, oreChance: 0.25, unlockCost: 500, depth: 100 },
-  { name: "Piedra", bg: "#4A4A4A", rockColor: "#3A3A3A", oreColor: "#CD7F32", oreValue: 5, oreChance: 0.2, unlockCost: 5000, depth: 300 },
-  { name: "Cueva Cristalina", bg: "#1a3a5c", rockColor: "#2a4a6c", oreColor: "#00CED1", oreValue: 12, oreChance: 0.18, unlockCost: 25000, depth: 600 },
-  { name: "Magma", bg: "#4a0a0a", rockColor: "#3a0a0a", oreColor: "#FF4500", oreValue: 30, oreChance: 0.15, unlockCost: 100000, depth: 1000 },
-  { name: "Obsidiana", bg: "#0a0a1a", rockColor: "#050510", oreColor: "#9400D3", oreValue: 75, oreChance: 0.12, unlockCost: 500000, depth: 1500 },
-  { name: "Diamante", bg: "#0a1a2a", rockColor: "#0a1525", oreColor: "#00FFFF", oreValue: 200, oreChance: 0.1, unlockCost: 2500000, depth: 2200 },
-  { name: "Núcleo Exterior", bg: "#2a0a00", rockColor: "#1a0500", oreColor: "#FF6347", oreValue: 500, oreChance: 0.08, unlockCost: 10000000, depth: 3000 },
-  { name: "Núcleo Interno", bg: "#1a0000", rockColor: "#0f0000", oreColor: "#FFD700", oreValue: 1500, oreChance: 0.06, unlockCost: 50000000, depth: 4000 },
-  { name: "Centro de la Tierra", bg: "#000000", rockColor: "#050005", oreColor: "#FFFFFF", oreValue: 5000, oreChance: 0.04, unlockCost: 250000000, depth: 5000 }
+  { name: "Superficie", bg: "#87CEEB", rockColor: "#8B7355", oreColor: "#FFD700", oreValue: 1, oreChance: 0.3, unlockCost: 0, depth: 0, material: "Tierra", materialIcon: "🟫" },
+  { name: "Tierra", bg: "#6B4226", rockColor: "#5C3317", oreColor: "#C0C0C0", oreValue: 2, oreChance: 0.25, unlockCost: 500, depth: 100, material: "Carbón", materialIcon: "⬛" },
+  { name: "Piedra", bg: "#4A4A4A", rockColor: "#3A3A3A", oreColor: "#CD7F32", oreValue: 5, oreChance: 0.2, unlockCost: 5000, depth: 300, material: "Hierro", materialIcon: "🔩" },
+  { name: "Cueva Cristalina", bg: "#1a3a5c", rockColor: "#2a4a6c", oreColor: "#00CED1", oreValue: 12, oreChance: 0.18, unlockCost: 25000, depth: 600, material: "Cobre", materialIcon: "🟠" },
+  { name: "Magma", bg: "#4a0a0a", rockColor: "#3a0a0a", oreColor: "#FF4500", oreValue: 30, oreChance: 0.15, unlockCost: 100000, depth: 1000, material: "Oro", materialIcon: "🟡" },
+  { name: "Obsidiana", bg: "#0a0a1a", rockColor: "#050510", oreColor: "#9400D3", oreValue: 75, oreChance: 0.12, unlockCost: 500000, depth: 1500, material: "Plata", materialIcon: "⚪" },
+  { name: "Diamante", bg: "#0a1a2a", rockColor: "#0a1525", oreColor: "#00FFFF", oreValue: 200, oreChance: 0.1, unlockCost: 2500000, depth: 2200, material: "Platino", materialIcon: "💠" },
+  { name: "Núcleo Exterior", bg: "#2a0a00", rockColor: "#1a0500", oreColor: "#FF6347", oreValue: 500, oreChance: 0.08, unlockCost: 10000000, depth: 3000, material: "Rubí", materialIcon: "🔴" },
+  { name: "Núcleo Interno", bg: "#1a0000", rockColor: "#0f0000", oreColor: "#FFD700", oreValue: 1500, oreChance: 0.06, unlockCost: 50000000, depth: 4000, material: "Esmeralda", materialIcon: "🟢" },
+  { name: "Centro de la Tierra", bg: "#000000", rockColor: "#050005", oreColor: "#FFFFFF", oreValue: 5000, oreChance: 0.04, unlockCost: 250000000, depth: 5000, material: "Diamante", materialIcon: "💎" }
 ];
 
 // Unlocked floors
@@ -79,11 +79,11 @@ function initFloor(index) {
   return {
     index: index,
     config: config,
-    miner: { x: 300, y: 500, width: 45, height: 45, material: 0, isMining: false },
-    elevator: { x: 88, y: 275, width: 45, height: 45, carrying: 0, isMoving: false, direction: 1, state: "idle", maxCapacity: 130 },
-    storage: { x: 750, y: 275, width: 45, height: 45, carrying: 0, isCollecting: false, state: "idle", currentSprite: null, initialX: 750, maxCapacity: 100, collectionTime: 500 },
-    minerBox: { x: 188, y: 500, width: 77, height: 77, material: 0 },
-    elevatorBox: { x: 81, y: 225, width: 1, height: 1, material: 0 },
+    miner: { x: 350, y: 560, width: 45, height: 45, material: 0, isMining: false },
+    elevator: { x: 100, y: 300, width: 45, height: 45, carrying: 0, isMoving: false, direction: 1, state: "idle", maxCapacity: 130 },
+    storage: { x: 800, y: 300, width: 45, height: 45, carrying: 0, isCollecting: false, state: "idle", currentSprite: null, initialX: 800, maxCapacity: 100, collectionTime: 500 },
+    minerBox: { x: 200, y: 560, width: 77, height: 77, material: 0 },
+    elevatorBox: { x: 90, y: 240, width: 1, height: 1, material: 0 },
     minerState: { isWaiting: false, miningTimeout: null, miningTime: 5000 },
     elevatorState: { isWaiting: false, elevatorTimeout: null },
     storageState: { isWaiting: false, storageTimeout: null },
@@ -442,9 +442,9 @@ function moveMiner(floorIdx) {
   const fu = floorUpgrades[floorIdx];
   const speedMult = getFloorSpeedMult();
 
-  if (f.miner.isMining && f.miner.x < 725) {
+  if (f.miner.isMining && f.miner.x < 800) {
     f.miner.x += 2.5 * speedMult;
-  } else if (f.miner.x >= 725 && !f.minerState.isWaiting) {
+  } else if (f.miner.x >= 800 && !f.minerState.isWaiting) {
     f.minerState.isWaiting = true;
     f.minerState.miningTimeout = setTimeout(() => {
       const amount = fu.miner.getMiningAmount();
@@ -466,10 +466,10 @@ function moveMiner(floorIdx) {
       f.miner.isMining = false;
       f.minerState.isWaiting = false;
     }, fu.miner.getMiningTime());
-  } else if (!f.miner.isMining && f.miner.x > 300) {
+  } else if (!f.miner.isMining && f.miner.x > 350) {
     f.miner.x -= 2.5 * speedMult;
-    if (f.miner.x <= 300) {
-      f.miner.x = 300;
+    if (f.miner.x <= 350) {
+      f.miner.x = 350;
     }
   }
 }
@@ -824,6 +824,7 @@ function updateFloorBar() {
     if (i === game.currentFloor) dot.classList.add("current");
     else if (unlockedFloors[i]) dot.classList.add("unlocked");
     else dot.classList.add("locked");
+    dot.setAttribute("data-tooltip", `${config.name} - ${config.material}`);
     dot.title = config.name + (unlockedFloors[i] ? "" : ` ($${formatNum(config.unlockCost)})`);
     dot.onclick = () => switchFloor(i);
     bar.appendChild(dot);
@@ -1348,6 +1349,9 @@ window.addEventListener("beforeunload", () => {
 // ============================================================
 // INIT
 // ============================================================
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.register('./sw.js').catch(() => {});
+}
 initAllFloors();
 initFloorUpgrades();
 showMainMenu();
