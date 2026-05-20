@@ -271,7 +271,6 @@ function initFloor(index) {
     elevator: { x: 100, y: 300, width: 45, height: 45, carrying: 0, isMoving: false, direction: 1, state: "idle", maxCapacity: 130 },
     storage: { x: 800, y: 300, width: 45, height: 45, carrying: 0, isCollecting: false, state: "idle", currentSprite: null, initialX: 800, maxCapacity: 100, collectionTime: 500 },
     minerBox: { x: 200, y: 560, width: 77, height: 77, material: 0 },
-    elevatorBox: { x: 90, y: 240, width: 1, height: 1, material: 0 },
     minerState: { isWaiting: false, miningTimeout: null, miningTime: 5000 },
     elevatorState: { isWaiting: false, elevatorTimeout: null },
     storageState: { isWaiting: false, storageTimeout: null },
@@ -371,7 +370,7 @@ const ACHIEVEMENTS = [
   { id: "prestige_1", name: "Renacimiento", desc: "Haz tu primer prestigio", icon: "⭐", check: () => game.prestigeCount >= 1, reward: "10 gemas" },
   { id: "prestige_5", name: "Veterano", desc: "Haz 5 prestigios", icon: "🌟", check: () => game.prestigeCount >= 5, reward: "50 gemas" },
   { id: "auto_miner", name: "Automatización", desc: "Compra un auto-minero", icon: "🤖", check: () => { for (let f of floorUpgrades) if (f.autoMiner.level > 0) return true; return false; }, reward: "5 gemas" },
-  { id: "storage_max", name: "Almacén Máximo", desc: "Maximiza el almacén", icon: "📦", check: () => { for (let f of floorUpgrades) if (f.storage.level >= f.storage.maxLevel) return true; return false; }, reward: "15 gemas" },
+  { id: "speed_max", name: "Velocidad Máxima", desc: "Maximiza la velocidad del elevador", icon: "⚡", check: () => { for (let f of floorUpgrades) if (f.elevator.level >= f.elevator.maxLevel) return true; return false; }, reward: "15 gemas" },
   { id: "ten_k_mined", name: "Toneladas", desc: "Mina 10,000 unidades", icon: "🏔️", check: () => game.totalMined >= 10000, reward: "3 gemas" },
   { id: "score_100k", name: "Puntuación Alta", desc: "Alcanza 100,000 puntos", icon: "🏆", check: () => game.score >= 100000, reward: "20 gemas" },
   { id: "combo_10", name: "Combo Master", desc: "Alcanza un combo de 10", icon: "🔥", check: () => combo.count >= 10, reward: "3 gemas" },
@@ -395,7 +394,6 @@ function saveGame() {
       elevator: { x: f.elevator.x, y: f.elevator.y, carrying: f.elevator.carrying, isMoving: false, direction: 1, state: "idle", maxCapacity: f.elevator.maxCapacity },
       storage: { x: f.storage.x, carrying: f.storage.carrying, isCollecting: false, state: "idle", currentSprite: null, initialX: 600, maxCapacity: f.storage.maxCapacity, collectionTime: f.storage.collectionTime },
       minerBox: f.minerBox,
-      elevatorBox: f.elevatorBox,
       gemsFound: f.gemsFound,
       minerState: { isWaiting: false, miningTimeout: null, miningTime: f.minerState.miningTime },
       elevatorState: { isWaiting: false, elevatorTimeout: null },
@@ -442,7 +440,6 @@ function loadGame() {
           Object.assign(floors[i].elevator, sf.elevator);
           Object.assign(floors[i].storage, sf.storage);
           Object.assign(floors[i].minerBox, sf.minerBox);
-          Object.assign(floors[i].elevatorBox, sf.elevatorBox);
           Object.assign(floors[i].minerState, sf.minerState);
           Object.assign(floors[i].elevatorState, sf.elevatorState);
           Object.assign(floors[i].storageState, sf.storageState);
@@ -497,8 +494,9 @@ function calculateOfflineEarnings(seconds) {
       const cycles = seconds / interval;
       const miningAmount = fu.miner.getMiningAmount();
       const sellMult = fu.sellMultiplier.getMultiplier();
+      const elevatorCap = fu.elevator.getCapacity();
       const storageCap = fu.storage.getCapacity();
-      const perCycle = Math.min(miningAmount, storageCap) * sellMult;
+      const perCycle = Math.min(miningAmount, elevatorCap, storageCap) * sellMult;
       total += cycles * perCycle * 0.5;
     }
   }
@@ -675,6 +673,39 @@ function moveMiner(floorIdx) {
   }
 }
 
+function moveElevator(floorIdx) {
+  const f = floors[floorIdx];
+  const fu = floorUpgrades[floorIdx];
+  const speedMult = getFloorSpeedMult();
+
+  if (f.elevator.isMoving) {
+    if (f.elevator.direction === 1) {
+      f.elevator.state = "down";
+      if (f.elevator.y < f.minerBox.y && !f.elevatorState.isWaiting) {
+        f.elevator.y += fu.elevator.getSpeed() * speedMult;
+      } else if (f.elevator.y >= f.minerBox.y && !f.elevatorState.isWaiting) {
+        const materialToTake = Math.min(f.minerBox.material, fu.elevator.getCapacity());
+        const waitTime = materialToTake * (1000 / fu.elevator.getCapacity());
+        f.elevatorState.isWaiting = true;
+        f.elevatorState.elevatorTimeout = setTimeout(() => {
+          f.elevator.carrying = materialToTake;
+          f.minerBox.material -= materialToTake;
+          f.elevator.direction = -1;
+          f.elevator.state = "up";
+          f.elevatorState.isWaiting = false;
+        }, waitTime);
+      }
+    } else {
+      f.elevator.y -= fu.elevator.getSpeed() * speedMult;
+      if (f.elevator.y <= 275) {
+        f.elevator.isMoving = false;
+        f.elevator.direction = 1;
+        f.elevator.state = "idle";
+      }
+    }
+  }
+}
+
 function moveStorage(floorIdx) {
   const f = floors[floorIdx];
   const fu = floorUpgrades[floorIdx];
@@ -689,13 +720,13 @@ function moveStorage(floorIdx) {
         f.storage.x -= 2.5 * speedMult;
         f.storage.currentSprite = Math.floor(Date.now() / 200) % 2 === 0 ? sprites.miner_tolva_1 : sprites.miner_tolva_2;
       } else if (!f.storageState.isWaiting) {
-        if (f.minerBox.material > 0) {
-          const materialToCollect = Math.min(f.minerBox.material, fu.storage.getCapacity());
+        if (f.elevator.carrying > 0) {
+          const materialToCollect = Math.min(f.elevator.carrying, fu.storage.getCapacity());
           const waitTime = materialToCollect * fu.storage.getCollectionTime() / fu.storage.getCapacity();
           f.storageState.isWaiting = true;
           f.storageState.storageTimeout = setTimeout(() => {
             f.storage.carrying = materialToCollect;
-            f.minerBox.material -= materialToCollect;
+            f.elevator.carrying -= materialToCollect;
             f.storage.state = "returning_full";
             f.storageState.isWaiting = false;
           }, waitTime);
@@ -930,6 +961,71 @@ function drawMiner(floorIdx) {
   }
 }
 
+function drawElevator(floorIdx) {
+  const f = floors[floorIdx];
+  const scale = 1.8;
+
+  ctx.strokeStyle = "#444";
+  ctx.lineWidth = 4;
+  ctx.beginPath();
+  ctx.moveTo(f.elevator.x + 40, 0);
+  ctx.lineTo(f.elevator.x + 40, f.elevator.y);
+  ctx.stroke();
+
+  ctx.strokeStyle = "#555";
+  ctx.lineWidth = 5;
+  ctx.beginPath();
+  ctx.moveTo(f.elevator.x - 5, 200);
+  ctx.lineTo(f.elevator.x - 5, f.elevator.y + f.elevator.height * scale + 10);
+  ctx.stroke();
+  ctx.beginPath();
+  ctx.moveTo(f.elevator.x + f.elevator.width * scale + 5, 200);
+  ctx.lineTo(f.elevator.x + f.elevator.width * scale + 5, f.elevator.y + f.elevator.height * scale + 10);
+  ctx.stroke();
+
+  ctx.fillStyle = "rgba(0,0,0,0.25)";
+  ctx.fillRect(f.elevator.x - 10, 200, f.elevator.width * scale + 20, f.elevator.y + f.elevator.height * scale - 200 + 20);
+
+  let spriteToDraw;
+  switch (f.elevator.state) {
+    case "down": spriteToDraw = sprites.miner_elevador_1; break;
+    case "up": spriteToDraw = sprites.miner_elevador_2; break;
+    default: spriteToDraw = sprites.miner_elevador_0;
+  }
+
+  if (spriteToDraw && spriteToDraw.complete) {
+    ctx.drawImage(spriteToDraw,
+      f.elevator.x - (f.elevator.width * (scale - 1)) / 2,
+      f.elevator.y - (f.elevator.height * (scale - 1)) / 2,
+      f.elevator.width * scale, f.elevator.height * scale);
+  } else {
+    ctx.fillStyle = "#2196F3";
+    ctx.fillRect(f.elevator.x, f.elevator.y, f.elevator.width * scale, f.elevator.height * scale);
+  }
+
+  // Carrying indicator
+  if (f.elevator.carrying > 0) {
+    ctx.fillStyle = "rgba(0,0,0,0.7)";
+    roundRect(ctx, f.elevator.x - 10, f.elevator.y - 28, 70, 22, 6);
+    ctx.fill();
+    ctx.fillStyle = "#FFD700";
+    ctx.font = "bold 12px 'VT323', monospace";
+    ctx.textAlign = "center";
+    ctx.shadowColor = "rgba(0,0,0,0.8)";
+    ctx.shadowBlur = 4;
+    ctx.fillText(`📦 ${f.elevator.carrying}`, f.elevator.x + 25, f.elevator.y - 13);
+    ctx.shadowBlur = 0;
+  }
+
+  if (!f.elevator.isMoving) {
+    ctx.strokeStyle = "rgba(96, 165, 250, 0.25)";
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.arc(f.elevator.x + f.elevator.width * scale / 2, f.elevator.y + f.elevator.height * scale / 2, 45 + Math.sin(Date.now() / 400) * 4, 0, Math.PI * 2);
+    ctx.stroke();
+  }
+}
+
 function drawStorage(floorIdx) {
   const f = floors[floorIdx];
   if (!f.storage.currentSprite) f.storage.currentSprite = sprites.miner_tolva_1;
@@ -1111,7 +1207,7 @@ function updateHUD() {
     const fu = floorUpgrades[i];
     if (fu.autoMiner.isActive()) {
       const cyclesPerSec = 1000 / fu.autoMiner.getInterval();
-      const amount = Math.min(fu.miner.getMiningAmount(), fu.storage.getCapacity());
+      const amount = Math.min(fu.miner.getMiningAmount(), fu.elevator.getCapacity(), fu.storage.getCapacity());
       perSec += cyclesPerSec * amount * fu.sellMultiplier.getMultiplier();
     }
   }
@@ -1185,6 +1281,16 @@ function handleCanvasClick(event) {
     }
   }
 
+  if (x >= f.elevator.x && x <= f.elevator.x + f.elevator.width * 1.8 &&
+      y >= f.elevator.y && y <= f.elevator.y + f.elevator.height * 1.8) {
+    if (!f.elevator.isMoving) {
+      f.elevator.isMoving = true;
+      game.totalClicks++;
+      addComboClick();
+      hasClickedBefore = true;
+    }
+  }
+
   if (x >= f.storage.x && x <= f.storage.x + f.storage.width * 1.8 &&
       y >= f.storage.y && y <= f.storage.y + f.storage.height * 1.8) {
     if (!f.storage.isCollecting) {
@@ -1230,6 +1336,18 @@ function renderShop() {
       <div class="level">Nivel ${fu.miner.level}/${fu.miner.maxLevel}</div>
     </div>
     <div class="shop-cost cost-gold">${fu.miner.level >= fu.miner.maxLevel ? 'MAX' : '$' + formatNum(minerCost)}</div>
+  </div>`;
+
+  const elevCost = fu.elevator.getCurrentCost();
+  const canElev = game.cash >= elevCost && fu.elevator.level < fu.elevator.maxLevel;
+  html += `<div class="shop-item ${!canElev ? (fu.elevator.level >= fu.elevator.maxLevel ? 'maxed' : 'cant-afford') : ''}" onclick="buyUpgrade('elevator')">
+    <div class="shop-icon" style="background:rgba(33,150,243,0.15);">🛗</div>
+    <div class="shop-info">
+      <div class="name">Elevador</div>
+      <div class="desc">+0.4 velocidad, +15 capacidad</div>
+      <div class="level">Nivel ${fu.elevator.level}/${fu.elevator.maxLevel}</div>
+    </div>
+    <div class="shop-cost cost-gold">${fu.elevator.level >= fu.elevator.maxLevel ? 'MAX' : '$' + formatNum(elevCost)}</div>
   </div>`;
 
   const storCost = fu.storage.getCurrentCost();
@@ -1563,6 +1681,7 @@ function gameLoop() {
     updateAmbientParticles();
 
     moveMiner(game.currentFloor);
+    moveElevator(game.currentFloor);
     moveStorage(game.currentFloor);
     updateAutoMiner(game.currentFloor);
     updateParticles();
@@ -1579,6 +1698,7 @@ function gameLoop() {
     drawAmbientParticles();
     drawBoxes(game.currentFloor);
     drawMiner(game.currentFloor);
+    drawElevator(game.currentFloor);
     drawStorage(game.currentFloor);
     drawParticles();
     drawFloatingTexts();
@@ -1609,7 +1729,7 @@ setInterval(() => {
           miner: f.miner,
           elevator: { x: f.elevator.x, y: f.elevator.y, carrying: f.elevator.carrying, isMoving: false, direction: 1, state: "idle", maxCapacity: f.elevator.maxCapacity },
           storage: { x: f.storage.x, carrying: f.storage.carrying, isCollecting: false, state: "idle", currentSprite: null, initialX: 600, maxCapacity: f.storage.maxCapacity, collectionTime: f.storage.collectionTime },
-          minerBox: f.minerBox, elevatorBox: f.elevatorBox,
+          minerBox: f.minerBox,
           gemsFound: f.gemsFound,
           minerState: { isWaiting: false, miningTimeout: null, miningTime: f.minerState.miningTime },
           elevatorState: { isWaiting: false, elevatorTimeout: null },
@@ -1636,7 +1756,7 @@ window.addEventListener("beforeunload", () => {
         miner: f.miner,
         elevator: { x: f.elevator.x, y: f.elevator.y, carrying: f.elevator.carrying, isMoving: false, direction: 1, state: "idle", maxCapacity: f.elevator.maxCapacity },
         storage: { x: f.storage.x, carrying: f.storage.carrying, isCollecting: false, state: "idle", currentSprite: null, initialX: 600, maxCapacity: f.storage.maxCapacity, collectionTime: f.storage.collectionTime },
-        minerBox: f.minerBox, elevatorBox: f.elevatorBox,
+        minerBox: f.minerBox,
         gemsFound: f.gemsFound,
         minerState: { isWaiting: false, miningTimeout: null, miningTime: f.minerState.miningTime },
         elevatorState: { isWaiting: false, elevatorTimeout: null },
