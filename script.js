@@ -1,13 +1,12 @@
 // ============================================================
-// IDLE MINER - Deep Earth Edition
-// Complete game engine with save system, multi-floor,
-// achievements, prestige, auto-miners, and ad integration
+// IDLE MINER - Deep Earth Edition v3
+// Enhanced with combo system, bonus events, ambient effects,
+// screen shake, and improved visual rendering
 // ============================================================
 
 const canvas = document.getElementById("gameCanvas");
 const ctx = canvas.getContext("2d");
 const W = 1000, H = 750;
-const S = 1.25; // scale factor from original 800x600
 
 // ============================================================
 // SPRITE LOADER
@@ -51,6 +50,194 @@ let game = {
 };
 
 // ============================================================
+// COMBO SYSTEM
+// ============================================================
+let combo = {
+  count: 0,
+  multiplier: 1,
+  lastClick: 0,
+  decayTime: 1500,
+  maxCombo: 50,
+  thresholds: [5, 10, 15, 25, 35, 50],
+  multValues: [1.2, 1.5, 1.8, 2.2, 2.8, 3.5]
+};
+
+function updateCombo() {
+  const now = Date.now();
+  if (now - combo.lastClick > combo.decayTime && combo.count > 0) {
+    combo.count = Math.max(0, combo.count - 1);
+    updateComboMultiplier();
+  }
+}
+
+function addComboClick() {
+  combo.count = Math.min(combo.count + 1, combo.maxCombo);
+  combo.lastClick = Date.now();
+  updateComboMultiplier();
+}
+
+function updateComboMultiplier() {
+  combo.multiplier = 1;
+  for (let i = combo.thresholds.length - 1; i >= 0; i--) {
+    if (combo.count >= combo.thresholds[i]) {
+      combo.multiplier = combo.multValues[i];
+      break;
+    }
+  }
+}
+
+function getComboColor() {
+  if (combo.count >= 50) return "#FF0066";
+  if (combo.count >= 35) return "#FF4500";
+  if (combo.count >= 25) return "#FFD700";
+  if (combo.count >= 15) return "#10b981";
+  if (combo.count >= 5) return "#60a5fa";
+  return null;
+}
+
+// ============================================================
+// BONUS EVENTS SYSTEM
+// ============================================================
+let bonusEvent = {
+  active: false,
+  type: null,
+  timer: 0,
+  duration: 8000,
+  x: 0,
+  y: 0,
+  nextEventTime: 30000 + Math.random() * 45000,
+  lastEventTime: 0
+};
+
+const BONUS_TYPES = [
+  { id: "gold_rush", name: "Fiebre del Oro!", icon: "💰", color: "#FFD700", mult: 3, desc: "x3 oro por 8s" },
+  { id: "gem_storm", name: "Tormenta de Gemas!", icon: "💎", color: "#a78bfa", mult: 5, desc: "x5 chance gemas" },
+  { id: "speed_demon", name: "Velocidad Extrema!", icon: "⚡", color: "#60a5fa", mult: 2, desc: "x2 velocidad" }
+];
+
+function updateBonusEvents(dt) {
+  const now = Date.now();
+
+  if (!bonusEvent.active && now - bonusEvent.lastEventTime > bonusEvent.nextEventTime) {
+    startBonusEvent();
+  }
+
+  if (bonusEvent.active) {
+    bonusEvent.timer -= dt;
+    if (bonusEvent.timer <= 0) {
+      bonusEvent.active = false;
+      showToast(`${bonusEvent.type.icon} Evento terminado`);
+    }
+  }
+}
+
+function startBonusEvent() {
+  const type = BONUS_TYPES[Math.floor(Math.random() * BONUS_TYPES.length)];
+  bonusEvent.active = true;
+  bonusEvent.type = type;
+  bonusEvent.timer = bonusEvent.duration;
+  bonusEvent.x = 200 + Math.random() * 600;
+  bonusEvent.y = 150 + Math.random() * 200;
+  bonusEvent.lastEventTime = Date.now();
+  bonusEvent.nextEventTime = 45000 + Math.random() * 60000;
+
+  showToast(`${type.icon} ${type.name} ${type.desc}`, true);
+  spawnParticles(bonusEvent.x, bonusEvent.y, type.color, 20);
+}
+
+function getBonusMultiplier() {
+  if (!bonusEvent.active) return 1;
+  if (bonusEvent.type.id === "gold_rush") return bonusEvent.type.mult;
+  return 1;
+}
+
+function getGemChanceBonus() {
+  if (!bonusEvent.active) return 1;
+  if (bonusEvent.type.id === "gem_storm") return bonusEvent.type.mult;
+  return 1;
+}
+
+function getSpeedBonus() {
+  if (!bonusEvent.active) return 1;
+  if (bonusEvent.type.id === "speed_demon") return bonusEvent.type.mult;
+  return 1;
+}
+
+// ============================================================
+// SCREEN EFFECTS
+// ============================================================
+let screenShake = { intensity: 0, duration: 0, elapsed: 0 };
+
+function triggerScreenShake(intensity, duration) {
+  screenShake.intensity = intensity;
+  screenShake.duration = duration;
+  screenShake.elapsed = 0;
+}
+
+function updateScreenShake(dt) {
+  if (screenShake.elapsed < screenShake.duration) {
+    screenShake.elapsed += dt;
+  } else {
+    screenShake.intensity = 0;
+  }
+}
+
+function getShakeOffset() {
+  if (screenShake.intensity === 0) return { x: 0, y: 0 };
+  const progress = screenShake.elapsed / screenShake.duration;
+  const decay = 1 - progress;
+  return {
+    x: (Math.random() - 0.5) * screenShake.intensity * decay * 2,
+    y: (Math.random() - 0.5) * screenShake.intensity * decay * 2
+  };
+}
+
+// ============================================================
+// AMBIENT PARTICLES
+// ============================================================
+let ambientParticles = [];
+
+function initAmbientParticles() {
+  ambientParticles = [];
+  for (let i = 0; i < 30; i++) {
+    ambientParticles.push({
+      x: Math.random() * W,
+      y: Math.random() * H,
+      size: 1 + Math.random() * 2,
+      speed: 0.2 + Math.random() * 0.5,
+      opacity: 0.1 + Math.random() * 0.3,
+      drift: (Math.random() - 0.5) * 0.3
+    });
+  }
+}
+
+function updateAmbientParticles() {
+  ambientParticles.forEach(p => {
+    p.y -= p.speed;
+    p.x += p.drift;
+    if (p.y < -10) {
+      p.y = H + 10;
+      p.x = Math.random() * W;
+    }
+    if (p.x < -10) p.x = W + 10;
+    if (p.x > W + 10) p.x = -10;
+  });
+}
+
+function drawAmbientParticles() {
+  const f = floors[game.currentFloor];
+  const config = f.config;
+  ambientParticles.forEach(p => {
+    ctx.globalAlpha = p.opacity;
+    ctx.fillStyle = config.oreColor;
+    ctx.beginPath();
+    ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+    ctx.fill();
+  });
+  ctx.globalAlpha = 1;
+}
+
+// ============================================================
 // FLOORS (10 unique floors with different themes and materials)
 // ============================================================
 const FLOOR_CONFIGS = [
@@ -66,7 +253,6 @@ const FLOOR_CONFIGS = [
   { name: "Centro de la Tierra", bg: "#000000", rockColor: "#050005", oreColor: "#FFFFFF", oreValue: 5000, oreChance: 0.04, unlockCost: 250000000, depth: 5000, material: "Diamante", materialIcon: "💎" }
 ];
 
-// Unlocked floors
 let unlockedFloors = [true, false, false, false, false, false, false, false, false, false];
 
 // ============================================================
@@ -98,6 +284,7 @@ function initAllFloors() {
   for (let i = 0; i < FLOOR_CONFIGS.length; i++) {
     floors.push(initFloor(i));
   }
+  initAmbientParticles();
 }
 
 // ============================================================
@@ -142,7 +329,6 @@ function createUpgrades() {
   };
 }
 
-// Per-floor upgrades
 let floorUpgrades = [];
 function initFloorUpgrades() {
   floorUpgrades = [];
@@ -152,7 +338,7 @@ function initFloorUpgrades() {
 }
 
 // ============================================================
-// GLOBAL UPGRADES (apply to all floors)
+// GLOBAL UPGRADES
 // ============================================================
 const globalUpgrades = {
   luck: {
@@ -185,15 +371,17 @@ const ACHIEVEMENTS = [
   { id: "auto_miner", name: "Automatización", desc: "Compra un auto-minero", icon: "🤖", check: () => { for (let f of floorUpgrades) if (f.autoMiner.level > 0) return true; return false; }, reward: "5 gemas" },
   { id: "speed_max", name: "Velocidad Máxima", desc: "Maximiza la velocidad del elevador", icon: "⚡", check: () => { for (let f of floorUpgrades) if (f.elevator.level >= f.elevator.maxLevel) return true; return false; }, reward: "15 gemas" },
   { id: "ten_k_mined", name: "Toneladas", desc: "Mina 10,000 unidades", icon: "🏔️", check: () => game.totalMined >= 10000, reward: "3 gemas" },
-  { id: "score_100k", name: "Puntuación Alta", desc: "Alcanza 100,000 puntos", icon: "🏆", check: () => game.score >= 100000, reward: "20 gemas" }
+  { id: "score_100k", name: "Puntuación Alta", desc: "Alcanza 100,000 puntos", icon: "🏆", check: () => game.score >= 100000, reward: "20 gemas" },
+  { id: "combo_10", name: "Combo Master", desc: "Alcanza un combo de 10", icon: "🔥", check: () => combo.count >= 10, reward: "3 gemas" },
+  { id: "combo_25", name: "Combo Legend", desc: "Alcanza un combo de 25", icon: "💥", check: () => combo.count >= 25, reward: "10 gemas" }
 ];
 
 let unlockedAchievements = new Set();
 
 // ============================================================
-// SAVE / LOAD SYSTEM (localStorage)
+// SAVE / LOAD SYSTEM
 // ============================================================
-const SAVE_KEY = "idleMiner_deepEarth_v2";
+const SAVE_KEY = "idleMiner_deepEarth_v3";
 
 function saveGame() {
   const saveData = {
@@ -240,12 +428,10 @@ function loadGame() {
 
     const save = JSON.parse(data);
 
-    // Restore game state
     Object.assign(game, save.game);
     unlockedFloors = save.unlockedFloors;
     unlockedAchievements = new Set(save.unlockedAchievements);
 
-    // Restore floors
     initAllFloors();
     if (save.floors) {
       save.floors.forEach((sf, i) => {
@@ -264,7 +450,6 @@ function loadGame() {
       });
     }
 
-    // Restore upgrades
     initFloorUpgrades();
     if (save.floorUpgrades) {
       save.floorUpgrades.forEach((sfu, i) => {
@@ -278,13 +463,11 @@ function loadGame() {
       });
     }
 
-    // Restore global upgrades
     if (save.globalUpgrades) {
       globalUpgrades.luck.level = save.globalUpgrades.luck.level || 0;
       globalUpgrades.speedBoost.level = save.globalUpgrades.speedBoost.level || 0;
     }
 
-    // Calculate offline earnings
     const offlineTime = (Date.now() - game.lastSave) / 1000;
     if (offlineTime > 30) {
       const offlineEarnings = calculateOfflineEarnings(offlineTime);
@@ -315,7 +498,7 @@ function calculateOfflineEarnings(seconds) {
       const elevatorCap = fu.elevator.getCapacity();
       const storageCap = fu.storage.getCapacity();
       const perCycle = Math.min(miningAmount, elevatorCap, storageCap) * sellMult;
-      total += cycles * perCycle * 0.5; // 50% efficiency offline
+      total += cycles * perCycle * 0.5;
     }
   }
   return Math.floor(total);
@@ -341,7 +524,6 @@ function doPrestige() {
   game.totalPrestigeGems += gems;
   game.gems += gems;
 
-  // Reset
   game.cash = 0;
   game.totalEarned = 0;
   game.totalMined = 0;
@@ -354,6 +536,9 @@ function doPrestige() {
 
   initAllFloors();
   initFloorUpgrades();
+  combo.count = 0;
+  combo.multiplier = 1;
+  bonusEvent.active = false;
 
   saveGame();
   showToast(`⭐ ¡Prestigio! +${gems} gemas`);
@@ -369,12 +554,14 @@ function spawnParticles(x, y, color, count) {
     f.particles.push({
       x: x + Math.random() * 40 - 20,
       y: y + Math.random() * 20 - 10,
-      vx: Math.random() * 3 - 1.5,
-      vy: -Math.random() * 4 - 1,
+      vx: Math.random() * 4 - 2,
+      vy: -Math.random() * 5 - 2,
       life: 1,
-      decay: 0.02 + Math.random() * 0.02,
-      size: 3 + Math.random() * 4,
-      color: color
+      decay: 0.015 + Math.random() * 0.02,
+      size: 2 + Math.random() * 5,
+      color: color,
+      rotation: Math.random() * Math.PI * 2,
+      rotSpeed: (Math.random() - 0.5) * 0.2
     });
   }
 }
@@ -384,8 +571,9 @@ function updateParticles() {
   f.particles = f.particles.filter(p => {
     p.x += p.vx;
     p.y += p.vy;
-    p.vy += 0.1;
+    p.vy += 0.12;
     p.life -= p.decay;
+    p.rotation += p.rotSpeed;
     return p.life > 0;
   });
 }
@@ -393,11 +581,15 @@ function updateParticles() {
 function drawParticles() {
   const f = floors[game.currentFloor];
   f.particles.forEach(p => {
+    ctx.save();
     ctx.globalAlpha = p.life;
     ctx.fillStyle = p.color;
+    ctx.translate(p.x, p.y);
+    ctx.rotate(p.rotation);
     ctx.beginPath();
-    ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+    ctx.arc(0, 0, p.size, 0, Math.PI * 2);
     ctx.fill();
+    ctx.restore();
   });
   ctx.globalAlpha = 1;
 }
@@ -407,25 +599,30 @@ function drawParticles() {
 // ============================================================
 let floatingTexts = [];
 
-function spawnFloatingText(x, y, text, color) {
-  floatingTexts.push({ x, y, text, color, life: 1, vy: -1.5 });
+function spawnFloatingText(x, y, text, color, size) {
+  floatingTexts.push({ x, y, text, color, life: 1, vy: -2, size: size || 16, scale: 1.3 });
 }
 
 function updateFloatingTexts() {
   floatingTexts = floatingTexts.filter(ft => {
     ft.y += ft.vy;
-    ft.life -= 0.015;
+    ft.life -= 0.012;
+    ft.scale = Math.max(1, ft.scale - 0.02);
     return ft.life > 0;
   });
 }
 
 function drawFloatingTexts() {
   floatingTexts.forEach(ft => {
+    ctx.save();
     ctx.globalAlpha = ft.life;
     ctx.fillStyle = ft.color;
-    ctx.font = "bold 16px Arial";
+    ctx.font = `bold ${Math.floor(ft.size * ft.scale)}px 'VT323', monospace`;
     ctx.textAlign = "center";
+    ctx.shadowColor = "rgba(0,0,0,0.8)";
+    ctx.shadowBlur = 4;
     ctx.fillText(ft.text, ft.x, ft.y);
+    ctx.restore();
   });
   ctx.globalAlpha = 1;
 }
@@ -434,7 +631,7 @@ function drawFloatingTexts() {
 // FLOOR MOVEMENT LOGIC
 // ============================================================
 function getFloorSpeedMult() {
-  return globalUpgrades.speedBoost.getSpeedMult();
+  return globalUpgrades.speedBoost.getSpeedMult() * getSpeedBonus();
 }
 
 function moveMiner(floorIdx) {
@@ -454,15 +651,15 @@ function moveMiner(floorIdx) {
       game.totalMined += amount;
       game.score += amount * FLOOR_CONFIGS[floorIdx].oreValue;
 
-      // Chance to find gems
-      if (Math.random() < globalUpgrades.luck.getGemChance()) {
+      if (Math.random() < globalUpgrades.luck.getGemChance() * getGemChanceBonus()) {
         f.gemsFound++;
         game.gems++;
-        spawnParticles(f.miner.x, f.miner.y, "#a78bfa", 8);
-        spawnFloatingText(f.miner.x, f.miner.y - 20, "+1 💎", "#a78bfa");
+        spawnParticles(f.miner.x, f.miner.y, "#a78bfa", 12);
+        spawnFloatingText(f.miner.x, f.miner.y - 30, "+1 💎", "#a78bfa", 20);
+        triggerScreenShake(3, 200);
       }
 
-      spawnParticles(f.miner.x, f.miner.y, FLOOR_CONFIGS[floorIdx].oreColor, 5);
+      spawnParticles(f.miner.x, f.miner.y, FLOOR_CONFIGS[floorIdx].oreColor, 8);
       f.miner.isMining = false;
       f.minerState.isWaiting = false;
     }, fu.miner.getMiningTime());
@@ -547,11 +744,14 @@ function moveStorage(floorIdx) {
     } else {
       if (f.storage.carrying > 0) {
         const sellMult = fu.sellMultiplier.getMultiplier();
-        const earned = f.storage.carrying * sellMult;
+        const bonusMult = getBonusMultiplier();
+        const earned = f.storage.carrying * sellMult * bonusMult;
         game.cash += earned;
         game.totalEarned += earned;
         game.score += earned;
-        spawnFloatingText(f.storage.x, f.storage.y - 30, `+$${formatNum(earned)}`, "#FFD700");
+
+        const text = bonusMult > 1 ? `+$${formatNum(earned)} 🔥` : `+$${formatNum(earned)}`;
+        spawnFloatingText(f.storage.x, f.storage.y - 40, text, bonusMult > 1 ? "#FF4500" : "#FFD700", bonusMult > 1 ? 20 : 16);
         f.storage.carrying = 0;
       }
       f.storage.state = "idle";
@@ -572,7 +772,6 @@ function moveStorage(floorIdx) {
   }
 }
 
-// Auto miner
 function updateAutoMiner(floorIdx) {
   const f = floors[floorIdx];
   const fu = floorUpgrades[floorIdx];
@@ -593,32 +792,48 @@ function drawBackground() {
   const f = floors[game.currentFloor];
   const config = f.config;
 
-  // Gradient background
   const grad = ctx.createLinearGradient(0, 0, 0, H);
   grad.addColorStop(0, config.bg);
   grad.addColorStop(1, config.rockColor);
   ctx.fillStyle = grad;
   ctx.fillRect(0, 0, W, H);
 
-  // Rock texture dots
-  ctx.fillStyle = "rgba(255,255,255,0.03)";
-  for (let i = 0; i < 50; i++) {
-    const rx = (i * 137 + config.depth) % W;
-    const ry = (i * 251 + config.depth * 2) % H;
+  // Animated rock texture
+  const time = Date.now() / 1000;
+  ctx.fillStyle = "rgba(255,255,255,0.025)";
+  for (let i = 0; i < 60; i++) {
+    const rx = (i * 137 + config.depth + Math.sin(time + i) * 5) % W;
+    const ry = (i * 251 + config.depth * 2 + Math.cos(time + i * 0.5) * 3) % H;
     ctx.beginPath();
-    ctx.arc(rx, ry, 2 + (i % 3), 0, Math.PI * 2);
+    ctx.arc(rx, ry, 1.5 + (i % 3), 0, Math.PI * 2);
     ctx.fill();
   }
 
-  // Depth indicator
-  ctx.fillStyle = "rgba(255,255,255,0.1)";
-  ctx.font = "12px Arial";
-  ctx.textAlign = "left";
-  ctx.fillText(`${config.depth}m`, 10, H - 10);
+  // Subtle ore veins
+  ctx.strokeStyle = config.oreColor;
+  ctx.globalAlpha = 0.04;
+  ctx.lineWidth = 2;
+  for (let i = 0; i < 5; i++) {
+    ctx.beginPath();
+    const startX = (i * 200 + config.depth) % W;
+    ctx.moveTo(startX, 0);
+    ctx.bezierCurveTo(
+      startX + 50, H * 0.3,
+      startX - 30, H * 0.6,
+      startX + 20, H
+    );
+    ctx.stroke();
+  }
+  ctx.globalAlpha = 1;
 
-  // Try to draw background image if available
+  // Depth indicator
+  ctx.fillStyle = "rgba(255,255,255,0.15)";
+  ctx.font = "14px 'VT323', monospace";
+  ctx.textAlign = "left";
+  ctx.fillText(`Profundidad: ${config.depth}m`, 12, H - 12);
+
   if (backgroundImage.complete && backgroundImage.naturalWidth > 0) {
-    ctx.globalAlpha = 0.3;
+    ctx.globalAlpha = 0.25;
     ctx.drawImage(backgroundImage, 0, 0, W, H);
     ctx.globalAlpha = 1;
   }
@@ -628,7 +843,6 @@ function drawBoxes(floorIdx) {
   const f = floors[floorIdx];
   const config = f.config;
 
-  // MinerBox
   let tolvaSprite;
   const oro = f.minerBox.material * config.oreValue;
   if (oro <= 900) tolvaSprite = sprites.tolva_miner_0;
@@ -636,7 +850,6 @@ function drawBoxes(floorIdx) {
   else if (oro <= 5000) tolvaSprite = sprites.tolva_miner_2;
   else tolvaSprite = sprites.tolva_miner_3;
 
-  // Draw tolva sprite
   if (tolvaSprite && tolvaSprite.complete) {
     ctx.drawImage(tolvaSprite, f.minerBox.x, f.minerBox.y, f.minerBox.width, f.minerBox.height);
   } else {
@@ -644,33 +857,55 @@ function drawBoxes(floorIdx) {
     ctx.fillRect(f.minerBox.x, f.minerBox.y, f.minerBox.width, f.minerBox.height);
   }
 
-  // MinerBox label
-  ctx.fillStyle = "rgba(0,0,0,0.6)";
-  roundRect(ctx, f.minerBox.x - 10, f.minerBox.y - 28, 100, 22, 6);
+  // MinerBox label with glow
+  ctx.fillStyle = "rgba(0,0,0,0.7)";
+  roundRect(ctx, f.minerBox.x - 10, f.minerBox.y - 32, 105, 26, 8);
   ctx.fill();
-  ctx.fillStyle = "#FFD700";
-  ctx.font = "bold 12px Arial";
+  ctx.strokeStyle = config.oreColor;
+  ctx.globalAlpha = 0.3;
+  ctx.lineWidth = 1;
+  roundRect(ctx, f.minerBox.x - 10, f.minerBox.y - 32, 105, 26, 8);
+  ctx.stroke();
+  ctx.globalAlpha = 1;
+
+  ctx.fillStyle = config.oreColor;
+  ctx.font = "bold 14px 'VT323', monospace";
   ctx.textAlign = "center";
-  ctx.fillText(`⛏ ${f.minerBox.material}`, f.minerBox.x + 40, f.minerBox.y - 13);
+  ctx.shadowColor = "rgba(0,0,0,0.8)";
+  ctx.shadowBlur = 4;
+  ctx.fillText(`⛏ ${f.minerBox.material}`, f.minerBox.x + 42, f.minerBox.y - 14);
+  ctx.shadowBlur = 0;
 
   // ElevatorBox label
-  ctx.fillStyle = "rgba(0,0,0,0.6)";
-  roundRect(ctx, f.elevatorBox.x - 10, f.elevatorBox.y - 28, 100, 22, 6);
+  ctx.fillStyle = "rgba(0,0,0,0.7)";
+  roundRect(ctx, f.elevatorBox.x - 10, f.elevatorBox.y - 32, 105, 26, 8);
   ctx.fill();
-  ctx.fillStyle = "#C0C0C0";
-  ctx.font = "bold 12px Arial";
-  ctx.textAlign = "center";
-  ctx.fillText(`📦 ${f.elevatorBox.material}`, f.elevatorBox.x + 40, f.elevatorBox.y - 13);
+  ctx.strokeStyle = "#60a5fa";
+  ctx.globalAlpha = 0.3;
+  ctx.lineWidth = 1;
+  roundRect(ctx, f.elevatorBox.x - 10, f.elevatorBox.y - 32, 105, 26, 8);
+  ctx.stroke();
+  ctx.globalAlpha = 1;
 
-  // Storage carrying indicator
+  ctx.fillStyle = "#60a5fa";
+  ctx.font = "bold 14px 'VT323', monospace";
+  ctx.textAlign = "center";
+  ctx.shadowColor = "rgba(0,0,0,0.8)";
+  ctx.shadowBlur = 4;
+  ctx.fillText(`📦 ${f.elevatorBox.material}`, f.elevatorBox.x + 42, f.elevatorBox.y - 14);
+  ctx.shadowBlur = 0;
+
   if (f.storage.carrying > 0) {
-    ctx.fillStyle = "rgba(0,0,0,0.6)";
-    roundRect(ctx, f.storage.x - 20, f.storage.y - 30, 80, 22, 6);
+    ctx.fillStyle = "rgba(0,0,0,0.7)";
+    roundRect(ctx, f.storage.x - 20, f.storage.y - 34, 85, 26, 8);
     ctx.fill();
     ctx.fillStyle = "#4ade80";
-    ctx.font = "bold 11px Arial";
+    ctx.font = "bold 13px 'VT323', monospace";
     ctx.textAlign = "center";
-    ctx.fillText(`💰 ${f.storage.carrying}`, f.storage.x + 20, f.storage.y - 15);
+    ctx.shadowColor = "rgba(0,0,0,0.8)";
+    ctx.shadowBlur = 4;
+    ctx.fillText(`💰 ${f.storage.carrying}`, f.storage.x + 22, f.storage.y - 16);
+    ctx.shadowBlur = 0;
   }
 }
 
@@ -687,14 +922,26 @@ function drawMiner(floorIdx) {
   }
 
   const scale = 1.8;
+  const drawX = f.miner.x - (f.miner.width * (scale - 1)) / 2;
+  const drawY = f.miner.y - (f.miner.height * (scale - 1)) / 2;
+
+  // Idle breathing animation
+  const breathe = Math.sin(Date.now() / 500) * 2;
+
   if (spriteToDraw && spriteToDraw.complete) {
-    ctx.drawImage(spriteToDraw,
-      f.miner.x - (f.miner.width * (scale - 1)) / 2,
-      f.miner.y - (f.miner.height * (scale - 1)) / 2,
-      f.miner.width * scale, f.miner.height * scale);
+    ctx.drawImage(spriteToDraw, drawX, drawY + breathe, f.miner.width * scale, f.miner.height * scale);
   } else {
     ctx.fillStyle = "#FFD700";
-    ctx.fillRect(f.miner.x, f.miner.y, f.miner.width * scale, f.miner.height * scale);
+    ctx.fillRect(drawX, drawY + breathe, f.miner.width * scale, f.miner.height * scale);
+  }
+
+  // Click hint glow
+  if (!f.miner.isMining && !f.minerState.isWaiting && f.miner.x <= 280) {
+    ctx.strokeStyle = "rgba(255, 215, 0, 0.3)";
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.arc(drawX + f.miner.width * scale / 2, drawY + f.miner.height * scale / 2, 50 + Math.sin(Date.now() / 300) * 5, 0, Math.PI * 2);
+    ctx.stroke();
   }
 }
 
@@ -702,18 +949,17 @@ function drawElevator(floorIdx) {
   const f = floors[floorIdx];
   const scale = 1.8;
 
-  // Draw elevator shaft (cable + rails)
-  ctx.strokeStyle = "#555";
-  ctx.lineWidth = 3;
-  // Cable from top
+  // Elevator shaft
+  ctx.strokeStyle = "#444";
+  ctx.lineWidth = 4;
   ctx.beginPath();
   ctx.moveTo(f.elevator.x + 40, 0);
   ctx.lineTo(f.elevator.x + 40, f.elevator.y);
   ctx.stroke();
 
-  // Rails on sides
-  ctx.strokeStyle = "#666";
-  ctx.lineWidth = 4;
+  // Rails
+  ctx.strokeStyle = "#555";
+  ctx.lineWidth = 5;
   ctx.beginPath();
   ctx.moveTo(f.elevator.x - 5, 200);
   ctx.lineTo(f.elevator.x - 5, f.elevator.y + f.elevator.height * scale + 10);
@@ -724,7 +970,7 @@ function drawElevator(floorIdx) {
   ctx.stroke();
 
   // Shaft background
-  ctx.fillStyle = "rgba(0,0,0,0.3)";
+  ctx.fillStyle = "rgba(0,0,0,0.25)";
   ctx.fillRect(f.elevator.x - 10, 200, f.elevator.width * scale + 20, f.elevator.y + f.elevator.height * scale - 200 + 20);
 
   let spriteToDraw;
@@ -743,12 +989,22 @@ function drawElevator(floorIdx) {
     ctx.fillStyle = "#2196F3";
     ctx.fillRect(f.elevator.x, f.elevator.y, f.elevator.width * scale, f.elevator.height * scale);
   }
+
+  // Click hint
+  if (!f.elevator.isMoving) {
+    ctx.strokeStyle = "rgba(96, 165, 250, 0.25)";
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.arc(f.elevator.x + f.elevator.width * scale / 2, f.elevator.y + f.elevator.height * scale / 2, 45 + Math.sin(Date.now() / 400) * 4, 0, Math.PI * 2);
+    ctx.stroke();
+  }
 }
 
 function drawStorage(floorIdx) {
   const f = floors[floorIdx];
   if (!f.storage.currentSprite) f.storage.currentSprite = sprites.miner_tolva_1;
   const scale = 1.8;
+
   if (f.storage.currentSprite && f.storage.currentSprite.complete) {
     ctx.drawImage(f.storage.currentSprite,
       f.storage.x - (f.storage.width * (scale - 1)) / 2,
@@ -758,21 +1014,108 @@ function drawStorage(floorIdx) {
     ctx.fillStyle = "#FF9800";
     ctx.fillRect(f.storage.x, f.storage.y, f.storage.width * scale, f.storage.height * scale);
   }
-}
 
-function drawClickHints() {
-  // No hints - removed for cleaner look
+  // Click hint
+  if (!f.storage.isCollecting) {
+    ctx.strokeStyle = "rgba(255, 152, 0, 0.25)";
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.arc(f.storage.x + f.storage.width * scale / 2, f.storage.y + f.storage.height * scale / 2, 45 + Math.sin(Date.now() / 350) * 4, 0, Math.PI * 2);
+    ctx.stroke();
+  }
 }
 
 function drawFloorIndicator() {
   const config = FLOOR_CONFIGS[game.currentFloor];
-  ctx.fillStyle = "rgba(0,0,0,0.5)";
-  roundRect(ctx, W / 2 - 130, H - 44, 260, 35, 10);
+  ctx.fillStyle = "rgba(0,0,0,0.6)";
+  roundRect(ctx, W / 2 - 140, H - 48, 280, 38, 12);
   ctx.fill();
+  ctx.strokeStyle = config.oreColor;
+  ctx.globalAlpha = 0.3;
+  ctx.lineWidth = 1;
+  roundRect(ctx, W / 2 - 140, H - 48, 280, 38, 12);
+  ctx.stroke();
+  ctx.globalAlpha = 1;
+
   ctx.fillStyle = config.oreColor;
-  ctx.font = "bold 15px Arial";
+  ctx.font = "bold 16px 'VT323', monospace";
   ctx.textAlign = "center";
-  ctx.fillText(`${config.name} | Valor: ${config.oreValue}x`, W / 2, H - 22);
+  ctx.shadowColor = "rgba(0,0,0,0.8)";
+  ctx.shadowBlur = 4;
+  ctx.fillText(`${config.name} | Valor: ${config.oreValue}x`, W / 2, H - 23);
+  ctx.shadowBlur = 0;
+}
+
+function drawComboIndicator() {
+  if (combo.count < 3) return;
+
+  const color = getComboColor() || "#60a5fa";
+  const x = W / 2;
+  const y = 60;
+
+  ctx.fillStyle = "rgba(0,0,0,0.6)";
+  roundRect(ctx, x - 80, y - 20, 160, 36, 10);
+  ctx.fill();
+  ctx.strokeStyle = color;
+  ctx.globalAlpha = 0.5;
+  ctx.lineWidth = 2;
+  roundRect(ctx, x - 80, y - 20, 160, 36, 10);
+  ctx.stroke();
+  ctx.globalAlpha = 1;
+
+  ctx.fillStyle = color;
+  ctx.font = "bold 20px 'VT323', monospace";
+  ctx.textAlign = "center";
+  ctx.shadowColor = color;
+  ctx.shadowBlur = 10;
+  ctx.fillText(`🔥 COMBO x${combo.count}`, x, y + 5);
+  ctx.shadowBlur = 0;
+
+  // Progress bar to next threshold
+  let nextThreshold = combo.thresholds.find(t => t > combo.count);
+  if (nextThreshold) {
+    const prevThreshold = combo.thresholds[combo.thresholds.indexOf(nextThreshold) - 1] || 0;
+    const progress = (combo.count - prevThreshold) / (nextThreshold - prevThreshold);
+    ctx.fillStyle = "rgba(255,255,255,0.1)";
+    roundRect(ctx, x - 70, y + 18, 140, 6, 3);
+    ctx.fill();
+    ctx.fillStyle = color;
+    roundRect(ctx, x - 70, y + 18, 140 * progress, 6, 3);
+    ctx.fill();
+  }
+}
+
+function drawBonusEventIndicator() {
+  if (!bonusEvent.active) return;
+
+  const type = bonusEvent.type;
+  const x = W / 2;
+  const y = 100;
+  const timeLeft = Math.ceil(bonusEvent.timer / 1000);
+
+  // Pulsing background
+  const pulse = Math.sin(Date.now() / 200) * 0.1 + 0.9;
+  ctx.fillStyle = `rgba(0,0,0,${0.7 * pulse})`;
+  roundRect(ctx, x - 120, y - 22, 240, 40, 12);
+  ctx.fill();
+  ctx.strokeStyle = type.color;
+  ctx.lineWidth = 2;
+  ctx.globalAlpha = 0.6;
+  roundRect(ctx, x - 120, y - 22, 240, 40, 12);
+  ctx.stroke();
+  ctx.globalAlpha = 1;
+
+  ctx.fillStyle = type.color;
+  ctx.font = "bold 22px 'VT323', monospace";
+  ctx.textAlign = "center";
+  ctx.shadowColor = type.color;
+  ctx.shadowBlur = 12;
+  ctx.fillText(`${type.icon} ${type.name}`, x, y + 6);
+  ctx.shadowBlur = 0;
+
+  ctx.fillStyle = "rgba(255,255,255,0.7)";
+  ctx.font = "14px 'VT323', monospace";
+  ctx.fillText(`${timeLeft}s`, x, y + 24);
 }
 
 function roundRect(ctx, x, y, w, h, r) {
@@ -798,7 +1141,6 @@ function updateHUD() {
   document.getElementById("hudFloor").textContent = `Piso ${game.currentFloor + 1}: ${FLOOR_CONFIGS[game.currentFloor].name}`;
   document.getElementById("hudScore").textContent = `Score: ${formatNum(game.score)}`;
 
-  // Calculate per second
   let perSec = 0;
   for (let i = 0; i < floors.length; i++) {
     if (!unlockedFloors[i]) continue;
@@ -811,7 +1153,6 @@ function updateHUD() {
   }
   document.getElementById("hudPerSec").textContent = `$${formatNum(Math.floor(perSec))}/s`;
 
-  // Time
   const elapsed = Math.floor((Date.now() - game.startTime) / 1000);
   const mins = Math.floor(elapsed / 60).toString().padStart(2, "0");
   const secs = (elapsed % 60).toString().padStart(2, "0");
@@ -845,6 +1186,7 @@ function switchFloor(index) {
       unlockedFloors[index] = true;
       game.currentFloor = index;
       showToast(`🔓 ¡Piso ${index + 1} desbloqueado!`);
+      triggerScreenShake(5, 300);
       checkAchievements();
       updateFloorBar();
     } else {
@@ -867,30 +1209,32 @@ function handleCanvasClick(event) {
 
   const f = floors[game.currentFloor];
 
-  // Click on miner
   if (x >= f.miner.x && x <= f.miner.x + f.miner.width * 1.8 &&
       y >= f.miner.y && y <= f.miner.y + f.miner.height * 1.8) {
     if (!f.miner.isMining && !f.minerState.isWaiting && f.miner.x <= 280) {
       f.miner.isMining = true;
       game.totalClicks++;
+      addComboClick();
+      triggerScreenShake(2, 100);
+      spawnParticles(f.miner.x + 40, f.miner.y + 20, FLOOR_CONFIGS[game.currentFloor].oreColor, 3);
     }
   }
 
-  // Click on elevator
   if (x >= f.elevator.x && x <= f.elevator.x + f.elevator.width * 1.8 &&
       y >= f.elevator.y && y <= f.elevator.y + f.elevator.height * 1.8) {
     if (!f.elevator.isMoving) {
       f.elevator.isMoving = true;
       game.totalClicks++;
+      addComboClick();
     }
   }
 
-  // Click on storage
   if (x >= f.storage.x && x <= f.storage.x + f.storage.width * 1.8 &&
       y >= f.storage.y && y <= f.storage.y + f.storage.height * 1.8) {
     if (!f.storage.isCollecting) {
       f.storage.isCollecting = true;
       game.totalClicks++;
+      addComboClick();
     }
   }
 }
@@ -917,9 +1261,8 @@ function renderShop() {
   const fu = floorUpgrades[game.currentFloor];
   const config = FLOOR_CONFIGS[game.currentFloor];
 
-  let html = `<div class="shop-section"><h3>⛏️ Piso ${game.currentFloor + 1}: ${config.name}</h3>`;
+  let html = `<div class="shop-section"><h3><i class="fas fa-mountain"></i> Piso ${game.currentFloor + 1}: ${config.name}</h3>`;
 
-  // Miner upgrade
   const minerCost = fu.miner.getCurrentCost();
   const canMiner = game.cash >= minerCost && fu.miner.level < fu.miner.maxLevel;
   html += `<div class="shop-item ${!canMiner ? (fu.miner.level >= fu.miner.maxLevel ? 'maxed' : 'cant-afford') : ''}" onclick="buyUpgrade('miner')">
@@ -932,7 +1275,6 @@ function renderShop() {
     <div class="shop-cost cost-gold">${fu.miner.level >= fu.miner.maxLevel ? 'MAX' : '$' + formatNum(minerCost)}</div>
   </div>`;
 
-  // Elevator upgrade
   const elevCost = fu.elevator.getCurrentCost();
   const canElev = game.cash >= elevCost && fu.elevator.level < fu.elevator.maxLevel;
   html += `<div class="shop-item ${!canElev ? (fu.elevator.level >= fu.elevator.maxLevel ? 'maxed' : 'cant-afford') : ''}" onclick="buyUpgrade('elevator')">
@@ -945,7 +1287,6 @@ function renderShop() {
     <div class="shop-cost cost-gold">${fu.elevator.level >= fu.elevator.maxLevel ? 'MAX' : '$' + formatNum(elevCost)}</div>
   </div>`;
 
-  // Storage upgrade
   const storCost = fu.storage.getCurrentCost();
   const canStor = game.cash >= storCost && fu.storage.level < fu.storage.maxLevel;
   html += `<div class="shop-item ${!canStor ? (fu.storage.level >= fu.storage.maxLevel ? 'maxed' : 'cant-afford') : ''}" onclick="buyUpgrade('storage')">
@@ -958,27 +1299,25 @@ function renderShop() {
     <div class="shop-cost cost-gold">${fu.storage.level >= fu.storage.maxLevel ? 'MAX' : '$' + formatNum(storCost)}</div>
   </div>`;
 
-  // Sell multiplier
   const sellCost = fu.sellMultiplier.getCurrentCost();
   const canSell = game.cash >= sellCost && fu.sellMultiplier.level < fu.sellMultiplier.maxLevel;
   html += `<div class="shop-item ${!canSell ? (fu.sellMultiplier.level >= fu.sellMultiplier.maxLevel ? 'maxed' : 'cant-afford') : ''}" onclick="buyUpgrade('sellMultiplier')">
     <div class="shop-icon" style="background:rgba(255,215,0,0.15);">💰</div>
     <div class="shop-info">
       <div class="name">Multiplicador Venta</div>
-      <div class="desc">+2x valor de venta (actual: ${fu.sellMultiplier.getMultiplier()}x)</div>
+      <div class="desc">+2x valor (actual: ${fu.sellMultiplier.getMultiplier()}x)</div>
       <div class="level">Nivel ${fu.sellMultiplier.level}/${fu.sellMultiplier.maxLevel}</div>
     </div>
     <div class="shop-cost cost-gold">${fu.sellMultiplier.level >= fu.sellMultiplier.maxLevel ? 'MAX' : '$' + formatNum(sellCost)}</div>
   </div>`;
 
-  // Auto Miner
   const autoCost = fu.autoMiner.getCurrentCost();
   const canAuto = game.cash >= autoCost && fu.autoMiner.level < fu.autoMiner.maxLevel;
   html += `<div class="shop-item ${!canAuto ? (fu.autoMiner.level >= fu.autoMiner.maxLevel ? 'maxed' : 'cant-afford') : ''}" onclick="buyUpgrade('autoMiner')">
     <div class="shop-icon" style="background:rgba(139,92,246,0.15);">🤖</div>
     <div class="shop-info">
       <div class="name">Auto-Minero</div>
-      <div class="desc">Mina automáticamente cada ${fu.autoMiner.isActive() ? (fu.autoMiner.getInterval()/1000).toFixed(1) + 's' : '5s'}</div>
+      <div class="desc">Auto mina cada ${fu.autoMiner.isActive() ? (fu.autoMiner.getInterval()/1000).toFixed(1) + 's' : '5s'}</div>
       <div class="level">Nivel ${fu.autoMiner.level}/${fu.autoMiner.maxLevel}</div>
     </div>
     <div class="shop-cost cost-gold">${fu.autoMiner.level >= fu.autoMiner.maxLevel ? 'MAX' : '$' + formatNum(autoCost)}</div>
@@ -986,30 +1325,27 @@ function renderShop() {
 
   html += `</div>`;
 
-  // Global upgrades
-  html += `<div class="shop-section"><h3>🌍 Mejoras Globales</h3>`;
+  html += `<div class="shop-section"><h3><i class="fas fa-globe"></i> Mejoras Globales</h3>`;
 
-  // Luck
   const luckCost = globalUpgrades.luck.getCurrentCost();
   const canLuck = game.gems >= luckCost && globalUpgrades.luck.level < globalUpgrades.luck.maxLevel;
   html += `<div class="shop-item ${!canLuck ? (globalUpgrades.luck.level >= globalUpgrades.luck.maxLevel ? 'maxed' : 'cant-afford') : ''}" onclick="buyGlobalUpgrade('luck')">
     <div class="shop-icon" style="background:rgba(167,139,250,0.15);">🍀</div>
     <div class="shop-info">
       <div class="name">Suerte</div>
-      <div class="desc">+0.5% chance de gemas (actual: ${(globalUpgrades.luck.getGemChance()*100).toFixed(1)}%)</div>
+      <div class="desc">+0.5% chance gemas (actual: ${(globalUpgrades.luck.getGemChance()*100).toFixed(1)}%)</div>
       <div class="level">Nivel ${globalUpgrades.luck.level}/${globalUpgrades.luck.maxLevel}</div>
     </div>
     <div class="shop-cost cost-gem">${globalUpgrades.luck.level >= globalUpgrades.luck.maxLevel ? 'MAX' : '💎 ' + luckCost}</div>
   </div>`;
 
-  // Speed Boost
   const speedCost = globalUpgrades.speedBoost.getCurrentCost();
   const canSpeed = game.gems >= speedCost && globalUpgrades.speedBoost.level < globalUpgrades.speedBoost.maxLevel;
   html += `<div class="shop-item ${!canSpeed ? (globalUpgrades.speedBoost.level >= globalUpgrades.speedBoost.maxLevel ? 'maxed' : 'cant-afford') : ''}" onclick="buyGlobalUpgrade('speedBoost')">
     <div class="shop-icon" style="background:rgba(236,72,153,0.15);">⚡</div>
     <div class="shop-info">
       <div class="name">Velocidad Global</div>
-      <div class="desc">+10% velocidad en todos los pisos (actual: ${globalUpgrades.speedBoost.getSpeedMult().toFixed(1)}x)</div>
+      <div class="desc">+10% velocidad (actual: ${globalUpgrades.speedBoost.getSpeedMult().toFixed(1)}x)</div>
       <div class="level">Nivel ${globalUpgrades.speedBoost.level}/${globalUpgrades.speedBoost.maxLevel}</div>
     </div>
     <div class="shop-cost cost-gem">${globalUpgrades.speedBoost.level >= globalUpgrades.speedBoost.maxLevel ? 'MAX' : '💎 ' + speedCost}</div>
@@ -1017,12 +1353,11 @@ function renderShop() {
 
   html += `</div>`;
 
-  // Unlock next floor
   const nextFloor = game.currentFloor + 1;
   if (nextFloor < FLOOR_CONFIGS.length && !unlockedFloors[nextFloor]) {
     const cost = FLOOR_CONFIGS[nextFloor].unlockCost;
     const canUnlock = game.cash >= cost;
-    html += `<div class="shop-section"><h3>🔓 Desbloquear Piso</h3>
+    html += `<div class="shop-section"><h3><i class="fas fa-unlock"></i> Desbloquear Piso</h3>
     <div class="shop-item ${!canUnlock ? 'cant-afford' : ''}" onclick="switchFloor(${nextFloor})">
       <div class="shop-icon" style="background:rgba(255,215,0,0.15);">🗺️</div>
       <div class="shop-info">
@@ -1047,6 +1382,7 @@ function buyUpgrade(type) {
     renderShop();
     checkAchievements();
     showToast(`⬆️ ${type} mejorado a nivel ${upgrade.level}`);
+    triggerScreenShake(3, 150);
   }
 }
 
@@ -1060,12 +1396,13 @@ function buyGlobalUpgrade(type) {
     renderShop();
     checkAchievements();
     showToast(`⬆️ ${type} mejorado a nivel ${upgrade.level}`);
+    triggerScreenShake(4, 200);
   }
 }
 
 function renderAchievements() {
   const body = document.getElementById("achievementsBody");
-  let html = `<div style="margin-bottom:12px;color:#64748b;font-size:13px;">${unlockedAchievements.size}/${ACHIEVEMENTS.length} desbloqueados</div>`;
+  let html = `<div style="margin-bottom:14px;color:var(--text-secondary);font-size:14px;font-family:'VT323',monospace;">${unlockedAchievements.size}/${ACHIEVEMENTS.length} desbloqueados</div>`;
 
   ACHIEVEMENTS.forEach(ach => {
     const unlocked = unlockedAchievements.has(ach.id);
@@ -1086,38 +1423,42 @@ function renderStats() {
   const body = document.getElementById("statsBody");
   const elapsed = Math.floor((Date.now() - game.startTime) / 1000);
   body.innerHTML = `
-    <div style="display:grid;gap:12px;">
-      <div style="padding:12px;background:rgba(255,215,0,0.08);border-radius:8px;">
-        <div style="font-size:12px;color:#64748b;">💰 Oro Total Ganado</div>
-        <div style="font-size:20px;font-weight:800;color:#FFD700;">$${formatNum(game.totalEarned)}</div>
+    <div class="stat-grid">
+      <div class="stat-card">
+        <div class="stat-label">💰 Oro Total Ganado</div>
+        <div class="stat-value" style="color:var(--gold);">$${formatNum(game.totalEarned)}</div>
       </div>
-      <div style="padding:12px;background:rgba(167,139,250,0.08);border-radius:8px;">
-        <div style="font-size:12px;color:#64748b;">💎 Gemas</div>
-        <div style="font-size:20px;font-weight:800;color:#a78bfa;">${game.gems}</div>
+      <div class="stat-card">
+        <div class="stat-label">💎 Gemas</div>
+        <div class="stat-value" style="color:var(--purple);">${game.gems}</div>
       </div>
-      <div style="padding:12px;background:rgba(16,185,129,0.08);border-radius:8px;">
-        <div style="font-size:12px;color:#64748b;">⛏️ Total Minado</div>
-        <div style="font-size:20px;font-weight:800;color:#10b981;">${formatNum(game.totalMined)}</div>
+      <div class="stat-card">
+        <div class="stat-label">⛏️ Total Minado</div>
+        <div class="stat-value" style="color:var(--emerald);">${formatNum(game.totalMined)}</div>
       </div>
-      <div style="padding:12px;background:rgba(236,72,153,0.08);border-radius:8px;">
-        <div style="font-size:12px;color:#64748b;">👆 Clics Totales</div>
-        <div style="font-size:20px;font-weight:800;color:#ec4899;">${formatNum(game.totalClicks)}</div>
+      <div class="stat-card">
+        <div class="stat-label">👆 Clics Totales</div>
+        <div class="stat-value" style="color:#ec4899;">${formatNum(game.totalClicks)}</div>
       </div>
-      <div style="padding:12px;background:rgba(245,158,11,0.08);border-radius:8px;">
-        <div style="font-size:12px;color:#64748b;">⭐ Prestigios</div>
-        <div style="font-size:20px;font-weight:800;color:#f59e0b;">${game.prestigeCount}</div>
+      <div class="stat-card">
+        <div class="stat-label">⭐ Prestigios</div>
+        <div class="stat-value" style="color:#f59e0b;">${game.prestigeCount}</div>
       </div>
-      <div style="padding:12px;background:rgba(99,102,241,0.08);border-radius:8px;">
-        <div style="font-size:12px;color:#64748b;">🏆 Puntuación</div>
-        <div style="font-size:20px;font-weight:800;color:#6366f1;">${formatNum(game.score)}</div>
+      <div class="stat-card">
+        <div class="stat-label">🏆 Puntuación</div>
+        <div class="stat-value" style="color:#6366f1;">${formatNum(game.score)}</div>
       </div>
-      <div style="padding:12px;background:rgba(255,255,255,0.03);border-radius:8px;">
-        <div style="font-size:12px;color:#64748b;">⏱️ Tiempo Jugado</div>
-        <div style="font-size:20px;font-weight:800;color:#fff;">${formatTime(elapsed)}</div>
+      <div class="stat-card">
+        <div class="stat-label">⏱️ Tiempo Jugado</div>
+        <div class="stat-value">${formatTime(elapsed)}</div>
       </div>
-      <div style="padding:12px;background:rgba(255,255,255,0.03);border-radius:8px;">
-        <div style="font-size:12px;color:#64748b;">🗺️ Pisos Desbloqueados</div>
-        <div style="font-size:20px;font-weight:800;color:#fff;">${unlockedFloors.filter(Boolean).length}/${FLOOR_CONFIGS.length}</div>
+      <div class="stat-card">
+        <div class="stat-label">🗺️ Pisos Desbloqueados</div>
+        <div class="stat-value">${unlockedFloors.filter(Boolean).length}/${FLOOR_CONFIGS.length}</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">🔥 Combo Máximo</div>
+        <div class="stat-value" style="color:#FF4500;">${combo.maxCombo}</div>
       </div>
     </div>
   `;
@@ -1132,9 +1473,9 @@ function renderPrestige() {
       <p>Al hacer prestigio, pierdes todo tu oro y mejoras de piso, pero ganas <strong>gemas</strong> que dan bonificaciones permanentes.</p>
       <p>Las gemas se usan para mejoras globales que afectan TODOS los pisos.</p>
       <div class="prestige-gems">+${gems} 💎</div>
-      <p style="font-size:12px;color:#64748b;">Gemas actuales: ${game.gems} | Total prestigio: ${game.totalPrestigeGems}</p>
-      <p style="font-size:12px;color:#64748b;">Prestigios realizados: ${game.prestigeCount}</p>
-      ${gems < 1 ? '<p style="color:#ef4444;margin-top:12px;">Necesitas minar más para obtener gemas de prestigio.</p>' : ''}
+      <p style="font-size:13px;color:var(--text-secondary);">Gemas actuales: ${game.gems} | Total prestigio: ${game.totalPrestigeGems}</p>
+      <p style="font-size:13px;color:var(--text-secondary);">Prestigios realizados: ${game.prestigeCount}</p>
+      ${gems < 1 ? '<p style="color:#ef4444;margin-top:14px;">Necesitas minar más para obtener gemas de prestigio.</p>' : ''}
       <div class="prestige-btns">
         <button class="btn-cancel" onclick="closePanel('prestige')">Cancelar</button>
         ${gems >= 1 ? `<button class="btn-confirm-prestige" onclick="doPrestige()">⭐ Confirmar Prestigio</button>` : ''}
@@ -1151,8 +1492,8 @@ function checkAchievements() {
     if (!unlockedAchievements.has(ach.id) && ach.check()) {
       unlockedAchievements.add(ach.id);
       showToast(`🏆 Logro: ${ach.name}`, true);
+      triggerScreenShake(5, 300);
 
-      // Grant rewards
       if (ach.reward.includes("gema")) {
         const gems = parseInt(ach.reward) || 1;
         game.gems += gems;
@@ -1213,6 +1554,9 @@ function startNewGame() {
   initFloorUpgrades();
   globalUpgrades.luck.level = 0;
   globalUpgrades.speedBoost.level = 0;
+  combo.count = 0;
+  combo.multiplier = 1;
+  bonusEvent.active = false;
 
   document.getElementById("startMenu").classList.add("hidden");
   document.getElementById("hud").classList.add("active");
@@ -1260,9 +1604,19 @@ function showMainMenu() {
 // ============================================================
 // MAIN GAME LOOP
 // ============================================================
+let lastTime = Date.now();
+
 function gameLoop() {
+  const now = Date.now();
+  const dt = now - lastTime;
+  lastTime = now;
+
   if (game.started && !game.paused) {
-    // Update current floor
+    updateCombo();
+    updateBonusEvents(dt);
+    updateScreenShake(dt);
+    updateAmbientParticles();
+
     moveMiner(game.currentFloor);
     moveElevator(game.currentFloor);
     moveStorage(game.currentFloor);
@@ -1271,17 +1625,26 @@ function gameLoop() {
     updateFloatingTexts();
     checkAchievements();
 
-    // Draw
-    ctx.clearRect(0, 0, W, H);
+    // Apply screen shake
+    const shake = getShakeOffset();
+    ctx.save();
+    ctx.translate(shake.x, shake.y);
+
+    ctx.clearRect(-10, -10, W + 20, H + 20);
     drawBackground();
+    drawAmbientParticles();
     drawBoxes(game.currentFloor);
     drawMiner(game.currentFloor);
     drawElevator(game.currentFloor);
     drawStorage(game.currentFloor);
     drawParticles();
     drawFloatingTexts();
-    drawClickHints();
     drawFloorIndicator();
+    drawComboIndicator();
+    drawBonusEventIndicator();
+
+    ctx.restore();
+
     updateHUD();
   }
 
@@ -1293,7 +1656,6 @@ function gameLoop() {
 // ============================================================
 canvas.addEventListener("click", handleCanvasClick);
 
-// Auto-save every 30 seconds
 setInterval(() => {
   if (game.started) {
     game.lastSave = Date.now();
@@ -1322,7 +1684,6 @@ setInterval(() => {
   }
 }, 30000);
 
-// Save on page close
 window.addEventListener("beforeunload", () => {
   if (game.started) {
     game.lastSave = Date.now();

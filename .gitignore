@@ -1,0 +1,11 @@
+# Skills
+.agents/
+.claude/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Editor
+.vscode/
+.idea/
