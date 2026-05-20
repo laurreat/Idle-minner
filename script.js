@@ -929,8 +929,8 @@ function drawMiner(floorIdx) {
     ctx.fillRect(drawX, drawY + breathe, f.miner.width * scale, f.miner.height * scale);
   }
 
-  // Progress bar while mining
-  if (f.miner.isMining || f.minerState.isWaiting) {
+  // Progress bar only while mining (quieto), not while walking
+  if (f.minerState.isWaiting) {
     const barWidth = 80;
     const barHeight = 6;
     const barX = drawX + (f.miner.width * scale) / 2 - barWidth / 2;
@@ -940,9 +940,8 @@ function drawMiner(floorIdx) {
     roundRect(ctx, barX - 2, barY - 2, barWidth + 4, barHeight + 4, 4);
     ctx.fill();
 
-    const progress = f.minerState.isWaiting ? 1 : Math.min(1, (f.miner.x - 282) / (720 - 282));
     ctx.fillStyle = "#10b981";
-    roundRect(ctx, barX, barY, barWidth * progress, barHeight, 3);
+    roundRect(ctx, barX, barY, barWidth, barHeight, 3);
     ctx.fill();
 
     ctx.fillStyle = "#fff";
@@ -1017,6 +1016,27 @@ function drawElevator(floorIdx) {
     ctx.shadowBlur = 0;
   }
 
+  // Progress bar only while loading (quieto), not while moving
+  if (f.elevatorState.isWaiting && f.elevator.state === "down") {
+    const barWidth = 80;
+    const barHeight = 6;
+    const barX = f.elevator.x + (f.elevator.width * scale) / 2 - barWidth / 2;
+    const barY = f.elevator.y - 16;
+
+    ctx.fillStyle = "rgba(0,0,0,0.6)";
+    roundRect(ctx, barX - 2, barY - 2, barWidth + 4, barHeight + 4, 4);
+    ctx.fill();
+
+    ctx.fillStyle = "#60a5fa";
+    roundRect(ctx, barX, barY, barWidth, barHeight, 3);
+    ctx.fill();
+
+    ctx.fillStyle = "#fff";
+    ctx.font = "10px 'VT323', monospace";
+    ctx.textAlign = "center";
+    ctx.fillText("Cargando...", f.elevator.x + (f.elevator.width * scale) / 2, barY - 6);
+  }
+
   if (!f.elevator.isMoving) {
     ctx.strokeStyle = "rgba(96, 165, 250, 0.25)";
     ctx.lineWidth = 2;
@@ -1041,8 +1061,8 @@ function drawStorage(floorIdx) {
     ctx.fillRect(f.storage.x, f.storage.y, f.storage.width * scale, f.storage.height * scale);
   }
 
-  // Progress bar while collecting/returning
-  if (f.storage.isCollecting || f.storage.state === "returning_full" || f.storage.state === "returning_empty") {
+  // Progress bar only while collecting/dropping (quieto), not while walking
+  if (f.storageState.isWaiting) {
     const barWidth = 80;
     const barHeight = 6;
     const barX = f.storage.x + (f.storage.width * scale) / 2 - barWidth / 2;
@@ -1052,27 +1072,14 @@ function drawStorage(floorIdx) {
     roundRect(ctx, barX - 2, barY - 2, barWidth + 4, barHeight + 4, 4);
     ctx.fill();
 
-    let progress = 0;
-    let label = "";
-    if (f.storage.state === "moving") {
-      progress = Math.max(0, Math.min(1, 1 - (f.storage.x - 212) / (f.storage.initialX - 212)));
-      label = "Recogiendo...";
-    } else if (f.storage.state === "returning_full") {
-      progress = Math.max(0, Math.min(1, (f.storage.x - 212) / (f.storage.initialX - 212)));
-      label = "Llevando oro...";
-    } else if (f.storage.state === "returning_empty") {
-      progress = Math.max(0, Math.min(1, (f.storage.x - 212) / (f.storage.initialX - 212)));
-      label = "Regresando...";
-    }
-
     ctx.fillStyle = f.storage.state === "returning_full" ? "#FFD700" : "#60a5fa";
-    roundRect(ctx, barX, barY, barWidth * progress, barHeight, 3);
+    roundRect(ctx, barX, barY, barWidth, barHeight, 3);
     ctx.fill();
 
     ctx.fillStyle = "#fff";
     ctx.font = "10px 'VT323', monospace";
     ctx.textAlign = "center";
-    ctx.fillText(label, f.storage.x + (f.storage.width * scale) / 2, barY - 6);
+    ctx.fillText(f.storage.carrying > 0 ? "Recogiendo..." : "Dejando...", f.storage.x + (f.storage.width * scale) / 2, barY - 6);
   }
 
   // Click hint - only on first click
