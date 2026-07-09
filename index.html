@@ -59,32 +59,16 @@ body::before {
 
 #gameArea {
   position: relative;
-  display: flex; align-items: center; justify-content: center;
-  width: 100%; height: 100%;
+  display: block;
+  width: 100vw; height: 100vh;
+  overflow: hidden;
 }
 
 #gameCanvas {
   display: block;
-  max-width: 100%;
-  max-height: 100%;
-  width: auto;
-  height: auto;
-  aspect-ratio: 4 / 3;
+  width: 100vw;
+  height: 100vh;
   image-rendering: auto;
-  border-radius: var(--radius);
-  border: 2px solid var(--border-subtle);
-  box-shadow: 
-    0 0 60px rgba(16, 185, 129, 0.15),
-    0 8px 32px rgba(0, 0, 0, 0.6),
-    inset 0 0 40px rgba(0, 0, 0, 0.3);
-  transition: box-shadow 0.3s ease;
-}
-
-#gameCanvas:hover {
-  box-shadow: 
-    0 0 80px rgba(16, 185, 129, 0.25),
-    0 12px 40px rgba(0, 0, 0, 0.7),
-    inset 0 0 40px rgba(0, 0, 0, 0.3);
 }
 
 #hud {
@@ -844,7 +828,7 @@ body, #startMenu, .menu-card, .panel, #gameCanvas, #hud, #sideButtons, #floorBar
 [data-theme="light"] .panel-close { color: var(--text-secondary); border-color: rgba(15, 23, 42, 0.12); }
 [data-theme="light"] .load-skip { background: rgba(15, 23, 42, 0.04); color: var(--text-secondary); border-color: rgba(15, 23, 42, 0.12); }
 [data-theme="light"] .load-skip:hover { color: var(--gold); border-color: var(--border-active); }
-[data-theme="light"] #gameCanvas { border-color: rgba(15, 23, 42, 0.15); box-shadow: 0 0 60px rgba(5, 150, 105, 0.12), 0 8px 32px rgba(15, 23, 42, 0.18); }
+[data-theme="light"] #gameCanvas { box-shadow: none; }
 [data-theme="light"] .menu-theme-toggle { background: rgba(255,255,255,0.85); color: var(--text-primary); border-color: rgba(15,23,42,0.12); }
 [data-theme="light"] .menu-theme-toggle:hover { color: var(--gold); border-color: var(--border-active); }
 [data-theme="light"] .btn-continue, [data-theme="light"] .btn-prestige, [data-theme="light"] .btn-info, [data-theme="light"] .btn-save {
@@ -1037,8 +1021,7 @@ body, #startMenu, .menu-card, .panel, #gameCanvas, #hud, #sideButtons, #floorBar
 #startMenu { overflow-y: auto; padding: 24px 0; }
 
 @media (max-width: 900px) {
-  #gameArea { width: 100vw; height: 100%; }
-  #gameCanvas { border-radius: 14px; }
+  #sideButtons { right: 2%; }
 }
 
 @media (max-width: 600px) {
@@ -1057,10 +1040,6 @@ body, #startMenu, .menu-card, .panel, #gameCanvas, #hud, #sideButtons, #floorBar
   .menu-btn { padding: 13px 16px; font-size: 13px; }
   .menu-row { flex-direction: column; }
   .hud-cash { font-size: clamp(11px, 3.4vw, 16px); }
-}
-
-@media (min-width: 1600px) {
-  #gameCanvas { max-height: 92vh; }
 }
 
 @media (max-height: 520px) and (orientation: landscape) {

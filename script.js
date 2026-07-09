@@ -8,7 +8,7 @@ const canvas = document.getElementById("gameCanvas");
 const ctx = canvas.getContext("2d");
 const W = 1000, H = 750;
 const CHAR_SCALE = 2.8;
-let renderScale = 1;
+let viewScale = 1, viewOffX = 0, viewOffY = 0;
 
 function resizeCanvas() {
   const dpr = window.devicePixelRatio || 1;
@@ -17,7 +17,9 @@ function resizeCanvas() {
   if (cssW < 10 || cssH < 10) { cssW = W; cssH = H; }
   canvas.width = Math.max(1, Math.round(cssW * dpr));
   canvas.height = Math.max(1, Math.round(cssH * dpr));
-  renderScale = canvas.width / W;
+  viewScale = Math.min(canvas.width / W, canvas.height / H);
+  viewOffX = (canvas.width - W * viewScale) / 2;
+  viewOffY = (canvas.height - H * viewScale) / 2;
   ctx.imageSmoothingEnabled = true;
 }
 
@@ -910,37 +912,22 @@ function updateAutoMiner(floorIdx) {
 // ============================================================
 // DRAWING
 // ============================================================
-function drawBackgroundImageCover() {
-  const iw = backgroundImage.naturalWidth;
-  const ih = backgroundImage.naturalHeight;
-  const scale = Math.max(W / iw, H / ih);
-  const dw = iw * scale;
-  const dh = ih * scale;
-  const dx = (W - dw) / 2;
-  const dy = (H - dh) / 2;
-  ctx.drawImage(backgroundImage, dx, dy, dw, dh);
-}
-
-function drawBackground() {
-  const f = floors[game.currentFloor];
-  const config = f.config;
-
-  // Imagen de fondo a opacidad total (sin tinte) como fondo principal
+// Fondo a pantalla completa (cubre todo el lienzo fisico, sin letterbox)
+function drawFullScreenBackground() {
+  const config = floors[game.currentFloor].config;
   if (backgroundImage.complete && backgroundImage.naturalWidth > 0) {
-    drawBackgroundImageCover();
+    const iw = backgroundImage.naturalWidth;
+    const ih = backgroundImage.naturalHeight;
+    const scale = Math.max(canvas.width / iw, canvas.height / ih);
+    const dw = iw * scale;
+    const dh = ih * scale;
+    const dx = (canvas.width - dw) / 2;
+    const dy = (canvas.height - dh) / 2;
+    ctx.drawImage(backgroundImage, dx, dy, dw, dh);
   } else {
     ctx.fillStyle = config.bg;
-    ctx.fillRect(0, 0, W, H);
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
   }
-
-  // Depth indicator
-  ctx.fillStyle = "rgba(255,255,255,0.75)";
-  ctx.font = "bold 16px 'VT323', monospace";
-  ctx.textAlign = "left";
-  ctx.shadowColor = "rgba(0,0,0,0.85)";
-  ctx.shadowBlur = 4;
-  ctx.fillText(`Profundidad: ${config.depth}m`, 14, H - 14);
-  ctx.shadowBlur = 0;
 }
 
 function drawBoxes(floorIdx) {
@@ -1396,10 +1383,11 @@ function handleCanvasClick(event) {
   if (game.paused || !game.started) return;
 
   const rect = canvas.getBoundingClientRect();
-  const scaleX = W / rect.width;
-  const scaleY = H / rect.height;
-  const x = (event.clientX - rect.left) * scaleX;
-  const y = (event.clientY - rect.top) * scaleY;
+  const dpr = window.devicePixelRatio || 1;
+  const px = (event.clientX - rect.left) * dpr;
+  const py = (event.clientY - rect.top) * dpr;
+  const x = (px - viewOffX) / viewScale;
+  const y = (py - viewOffY) / viewScale;
 
   const f = floors[game.currentFloor];
   const s = CHAR_SCALE;
@@ -1915,7 +1903,7 @@ function gameLoop() {
   const dt = now - lastTime;
   lastTime = now;
 
-  ctx.setTransform(renderScale, 0, 0, renderScale, 0, 0);
+  ctx.setTransform(1, 0, 0, 1, 0, 0);
 
   if (game.started && !game.paused) {
     updateCombo();
@@ -1931,13 +1919,13 @@ function gameLoop() {
     updateFloatingTexts();
     checkAchievements();
 
-    // Apply screen shake
-    const shake = getShakeOffset();
-    ctx.save();
-    ctx.translate(shake.x, shake.y);
+    // Fondo a pantalla completa (espacio fisico)
+    drawFullScreenBackground();
 
-    ctx.clearRect(-10, -10, W + 20, H + 20);
-    drawBackground();
+    // Mundo en coordenadas logicas 1000x750 centrado (letterbox)
+    const shake = getShakeOffset();
+    ctx.setTransform(viewScale, 0, 0, viewScale, viewOffX + shake.x * viewScale, viewOffY + shake.y * viewScale);
+
     drawAmbientParticles();
     drawBoxes(game.currentFloor);
     drawMiner(game.currentFloor);
@@ -1948,13 +1936,26 @@ function gameLoop() {
     drawFloorIndicator();
     drawComboIndicator();
     drawBonusEventIndicator();
-
-    ctx.restore();
+    drawDepthIndicator();
 
     updateHUD();
+  } else {
+    // Tambien dibuja el fondo a pantalla completa fuera de partida
+    drawFullScreenBackground();
   }
 
   requestAnimationFrame(gameLoop);
+}
+
+function drawDepthIndicator() {
+  const config = floors[game.currentFloor].config;
+  ctx.fillStyle = "rgba(255,255,255,0.75)";
+  ctx.font = "bold 16px 'VT323', monospace";
+  ctx.textAlign = "left";
+  ctx.shadowColor = "rgba(0,0,0,0.85)";
+  ctx.shadowBlur = 4;
+  ctx.fillText(`Profundidad: ${config.depth}m`, 14, H - 14);
+  ctx.shadowBlur = 0;
 }
 
 // ============================================================
