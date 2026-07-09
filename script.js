@@ -380,12 +380,51 @@ const ACHIEVEMENTS = [
 let unlockedAchievements = new Set();
 
 // ============================================================
-// SAVE / LOAD SYSTEM
+// SAVE / LOAD SYSTEM  (ofuscado + verificacion de integridad)
 // ============================================================
 const SAVE_KEY = "idleMiner_deepEarth_v3";
+const SAVE_SALT = "IDLEMINER_v3::";
+const SAVE_XOR = "caveMinerSecureKey2024";
 
-function saveGame() {
-  const saveData = {
+function simpleHash(s) {
+  let h = 5381;
+  for (let i = 0; i < s.length; i++) h = ((h << 5) + h + s.charCodeAt(i)) | 0;
+  return (h >>> 0).toString(36);
+}
+
+function xorString(str, key) {
+  let out = "";
+  for (let i = 0; i < str.length; i++) {
+    out += String.fromCharCode(str.charCodeAt(i) ^ key.charCodeAt(i % key.length));
+  }
+  return out;
+}
+
+// Convierte el objeto de guardado en una cadena ilegible (ofuscada)
+function obfuscateSave(obj) {
+  const json = JSON.stringify(obj);
+  const checksum = simpleHash(json);
+  const payload = SAVE_SALT + checksum + "|" + json;
+  const xored = xorString(payload, SAVE_XOR);
+  return btoa(unescape(encodeURIComponent(xored)));
+}
+
+// Revierte la ofuscacion y valida la integridad (detecta modificaciones)
+function deobfuscateSave(str) {
+  const xored = decodeURIComponent(escape(atob(str.trim())));
+  const payload = xorString(xored, SAVE_XOR);
+  if (!payload.startsWith(SAVE_SALT)) throw new Error("Formato de guardado invalido");
+  const rest = payload.slice(SAVE_SALT.length);
+  const sep = rest.indexOf("|");
+  if (sep < 0) throw new Error("Guardado corrupto");
+  const checksum = rest.slice(0, sep);
+  const json = rest.slice(sep + 1);
+  if (simpleHash(json) !== checksum) throw new Error("Guardado modificado o corrupto");
+  return JSON.parse(json);
+}
+
+function buildSaveData() {
+  return {
     game: game,
     unlockedFloors: unlockedFloors,
     unlockedAchievements: [...unlockedAchievements],
@@ -412,10 +451,67 @@ function saveGame() {
       speedBoost: { level: globalUpgrades.speedBoost.level }
     }
   };
+}
 
+function applySaveData(save) {
+  Object.assign(game, save.game);
+  unlockedFloors = save.unlockedFloors;
+  unlockedAchievements = new Set(save.unlockedAchievements);
+
+  initAllFloors();
+  if (save.floors) {
+    save.floors.forEach((sf, i) => {
+      if (floors[i]) {
+        Object.assign(floors[i].miner, sf.miner);
+        Object.assign(floors[i].elevator, sf.elevator);
+        Object.assign(floors[i].storage, sf.storage);
+        Object.assign(floors[i].minerBox, sf.minerBox);
+        Object.assign(floors[i].minerState, sf.minerState);
+        Object.assign(floors[i].elevatorState, sf.elevatorState);
+        Object.assign(floors[i].storageState, sf.storageState);
+        Object.assign(floors[i].autoMiner, sf.autoMiner);
+        floors[i].gemsFound = sf.gemsFound || 0;
+      }
+    });
+  }
+
+  initFloorUpgrades();
+  if (save.floorUpgrades) {
+    save.floorUpgrades.forEach((sfu, i) => {
+      if (floorUpgrades[i]) {
+        floorUpgrades[i].miner.level = sfu.miner.level;
+        floorUpgrades[i].elevator.level = sfu.elevator.level;
+        floorUpgrades[i].storage.level = sfu.storage.level;
+        floorUpgrades[i].autoMiner.level = sfu.autoMiner.level;
+        floorUpgrades[i].sellMultiplier.level = sfu.sellMultiplier.level;
+      }
+    });
+  }
+
+  if (save.globalUpgrades) {
+    globalUpgrades.luck.level = save.globalUpgrades.luck.level || 0;
+    globalUpgrades.speedBoost.level = save.globalUpgrades.speedBoost.level || 0;
+  }
+
+  const offlineTime = (Date.now() - game.lastSave) / 1000;
+  if (offlineTime > 30) {
+    const offlineEarnings = calculateOfflineEarnings(offlineTime);
+    if (offlineEarnings > 0) {
+      game.cash += offlineEarnings;
+      game.totalEarned += offlineEarnings;
+      setTimeout(() => showToast(`💤 Ganaste $${formatNum(offlineEarnings)} mientras no estabas (${formatTime(offlineTime)})`), 1000);
+    }
+  }
+}
+
+// Guardado automatico en localStorage (ofuscado y con integridad)
+function saveGame(silent) {
+  const saveData = buildSaveData();
+  game.lastSave = Date.now();
+  saveData.game.lastSave = game.lastSave;
   try {
-    localStorage.setItem(SAVE_KEY, JSON.stringify(saveData));
-    showToast("💾 Partida guardada");
+    localStorage.setItem(SAVE_KEY, obfuscateSave(saveData));
+    if (!silent) showToast("💾 Partida guardada");
   } catch (e) {
     console.error("Save failed:", e);
   }
@@ -425,63 +521,68 @@ function loadGame() {
   try {
     const data = localStorage.getItem(SAVE_KEY);
     if (!data) return false;
-
-    const save = JSON.parse(data);
-
-    Object.assign(game, save.game);
-    unlockedFloors = save.unlockedFloors;
-    unlockedAchievements = new Set(save.unlockedAchievements);
-
-    initAllFloors();
-    if (save.floors) {
-      save.floors.forEach((sf, i) => {
-        if (floors[i]) {
-          Object.assign(floors[i].miner, sf.miner);
-          Object.assign(floors[i].elevator, sf.elevator);
-          Object.assign(floors[i].storage, sf.storage);
-          Object.assign(floors[i].minerBox, sf.minerBox);
-          Object.assign(floors[i].minerState, sf.minerState);
-          Object.assign(floors[i].elevatorState, sf.elevatorState);
-          Object.assign(floors[i].storageState, sf.storageState);
-          Object.assign(floors[i].autoMiner, sf.autoMiner);
-          floors[i].gemsFound = sf.gemsFound || 0;
-        }
-      });
-    }
-
-    initFloorUpgrades();
-    if (save.floorUpgrades) {
-      save.floorUpgrades.forEach((sfu, i) => {
-        if (floorUpgrades[i]) {
-          floorUpgrades[i].miner.level = sfu.miner.level;
-          floorUpgrades[i].elevator.level = sfu.elevator.level;
-          floorUpgrades[i].storage.level = sfu.storage.level;
-          floorUpgrades[i].autoMiner.level = sfu.autoMiner.level;
-          floorUpgrades[i].sellMultiplier.level = sfu.sellMultiplier.level;
-        }
-      });
-    }
-
-    if (save.globalUpgrades) {
-      globalUpgrades.luck.level = save.globalUpgrades.luck.level || 0;
-      globalUpgrades.speedBoost.level = save.globalUpgrades.speedBoost.level || 0;
-    }
-
-    const offlineTime = (Date.now() - game.lastSave) / 1000;
-    if (offlineTime > 30) {
-      const offlineEarnings = calculateOfflineEarnings(offlineTime);
-      if (offlineEarnings > 0) {
-        game.cash += offlineEarnings;
-        game.totalEarned += offlineEarnings;
-        setTimeout(() => showToast(`💤 Ganaste $${formatNum(offlineEarnings)} mientras no estabas (${formatTime(offlineTime)})`), 1000);
-      }
-    }
-
+    const save = deobfuscateSave(data);
+    applySaveData(save);
     return true;
   } catch (e) {
     console.error("Load failed:", e);
+    showToast("⚠️ Guardado local corrupto");
     return false;
   }
+}
+
+function hasSave() {
+  const data = localStorage.getItem(SAVE_KEY);
+  if (!data) return false;
+  try { deobfuscateSave(data); return true; }
+  catch (e) { return false; }
+}
+
+// Exportar partida a un archivo .idlesave (ilegible) o .json (legible)
+function downloadSave() {
+  if (!game.started) { showToast("Inicia una partida primero"); return; }
+  saveGame(true);
+  const saveData = buildSaveData();
+  const ts = new Date().toISOString().slice(0, 19).replace(/[:T]/g, "-");
+  const blob = new Blob([obfuscateSave(saveData)], { type: "application/octet-stream" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = `idlesave-${ts}.idlesave`;
+  a.click();
+  URL.revokeObjectURL(url);
+  showToast("📥 Partida guardada en archivo");
+}
+
+// Importar partida desde archivo (.idlesave o .json)
+function importSave(event) {
+  const file = event.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = () => {
+    try {
+      let save;
+      if (file.name.endsWith(".json")) {
+        save = JSON.parse(reader.result);
+      } else {
+        save = deobfuscateSave(reader.result);
+      }
+      applySaveData(save);
+      game.started = true;
+      game.paused = false;
+      document.getElementById("startMenu").classList.add("hidden");
+      document.getElementById("hud").classList.add("active");
+      document.getElementById("sideButtons").classList.add("active");
+      document.getElementById("floorBar").classList.add("active");
+      updateFloorBar();
+      showToast("📂 Partida cargada desde archivo");
+    } catch (e) {
+      console.error(e);
+      showToast("⚠️ Archivo invalido o modificado");
+    }
+  };
+  reader.readAsText(file);
+  event.target.value = "";
 }
 
 function calculateOfflineEarnings(seconds) {
@@ -1659,7 +1760,7 @@ function showMainMenu() {
 
   if (hasSaveData) {
     try {
-      const data = JSON.parse(localStorage.getItem(SAVE_KEY));
+      const data = deobfuscateSave(localStorage.getItem(SAVE_KEY));
       const stats = data.game;
       document.getElementById("menuStats").innerHTML =
         `Última partida: $${formatNum(stats.totalEarned || 0)} | Piso ${stats.currentFloor + 1} | ${formatTime(Math.floor((Date.now() - stats.startTime) / 1000))}`;
@@ -1669,6 +1770,86 @@ function showMainMenu() {
   } else {
     document.getElementById("menuStats").innerHTML = "";
   }
+}
+
+// ============================================================
+// THEME SYSTEM (claro / oscuro)
+// ============================================================
+const THEME_KEY = "idleMiner_theme";
+const THEME_TIPS = [
+  "Toca al minero para extraer material ⛏️",
+  "Usa combos tocando rapido para ganar mas 🔥",
+  "El auto-minero trabaja solo por ti 🤖",
+  "Desbloquea pisos mas profundos para mas oro 🗺️",
+  "Las gemas desbloquean mejoras globales 💎",
+  "Haz prestigio para ganar bonificaciones ⭐"
+];
+
+function applyTheme(theme) {
+  if (theme === "light") {
+    document.documentElement.setAttribute("data-theme", "light");
+    document.getElementById("loadingScreen").classList.add("light");
+    const mt = document.getElementById("menuThemeToggle");
+    if (mt) mt.innerHTML = '<i class="fas fa-sun"></i>';
+  } else {
+    document.documentElement.removeAttribute("data-theme");
+    document.getElementById("loadingScreen").classList.remove("light");
+    const mt = document.getElementById("menuThemeToggle");
+    if (mt) mt.innerHTML = '<i class="fas fa-moon"></i>';
+  }
+}
+
+function toggleTheme() {
+  const isLight = document.documentElement.getAttribute("data-theme") === "light";
+  const newTheme = isLight ? "dark" : "light";
+  applyTheme(newTheme);
+  try { localStorage.setItem(THEME_KEY, newTheme); } catch (e) {}
+  showToast(newTheme === "light" ? "☀️ Tema claro" : "🌙 Tema oscuro");
+}
+
+function initTheme() {
+  let theme = "dark";
+  try { theme = localStorage.getItem(THEME_KEY) || "dark"; } catch (e) {}
+  applyTheme(theme);
+}
+
+// ============================================================
+// LOADING SCREEN
+// ============================================================
+let loadingDone = false;
+
+function finishLoading() {
+  if (loadingDone) return;
+  loadingDone = true;
+  document.getElementById("loadingScreen").classList.add("hidden");
+}
+
+function runLoadingScreen() {
+  const bar = document.getElementById("loadBar");
+  const pct = document.getElementById("loadPct");
+  const tip = document.getElementById("loadTip");
+  let progress = 0;
+
+  tip.textContent = THEME_TIPS[0];
+  let tipIdx = 0;
+
+  const interval = setInterval(() => {
+    progress += Math.random() * 12 + 6;
+    if (progress >= 100) progress = 100;
+    bar.style.width = progress + "%";
+    pct.textContent = Math.floor(progress) + "%";
+
+    if (progress > (tipIdx + 1) * (100 / THEME_TIPS.length) && tipIdx < THEME_TIPS.length - 1) {
+      tipIdx++;
+      tip.style.opacity = 0;
+      setTimeout(() => { tip.textContent = THEME_TIPS[tipIdx]; tip.style.opacity = 1; }, 400);
+    }
+
+    if (progress >= 100) {
+      clearInterval(interval);
+      setTimeout(finishLoading, 500);
+    }
+  }, 280);
 }
 
 // ============================================================
@@ -1727,67 +1908,12 @@ function gameLoop() {
 canvas.addEventListener("click", handleCanvasClick);
 
 setInterval(() => {
-  if (game.started) {
-    game.lastSave = Date.now();
-    try {
-      localStorage.setItem(SAVE_KEY, JSON.stringify({
-        game, unlockedFloors, unlockedAchievements: [...unlockedAchievements],
-        floors: floors.map(f => ({
-          miner: f.miner,
-          elevator: { x: f.elevator.x, y: f.elevator.y, carrying: f.elevator.carrying, isMoving: false, direction: 1, state: "idle", maxCapacity: f.elevator.maxCapacity },
-          storage: { x: f.storage.x, carrying: f.storage.carrying, isCollecting: false, state: "idle", currentSprite: null, initialX: 600, maxCapacity: f.storage.maxCapacity, collectionTime: f.storage.collectionTime },
-          minerBox: f.minerBox,
-          gemsFound: f.gemsFound,
-          minerState: { isWaiting: false, miningTimeout: null, miningTime: f.minerState.miningTime },
-          elevatorState: { isWaiting: false, elevatorTimeout: null },
-          storageState: { isWaiting: false, storageTimeout: null },
-          autoMiner: f.autoMiner
-        })),
-        floorUpgrades: floorUpgrades.map(fu => ({
-          miner: { level: fu.miner.level }, elevator: { level: fu.elevator.level },
-          storage: { level: fu.storage.level }, autoMiner: { level: fu.autoMiner.level },
-          sellMultiplier: { level: fu.sellMultiplier.level }
-        })),
-        globalUpgrades: { luck: { level: globalUpgrades.luck.level }, speedBoost: { level: globalUpgrades.speedBoost.level } }
-      }));
-    } catch (e) {}
-  }
+  if (game.started) saveGame(true);
 }, 30000);
 
 window.addEventListener("beforeunload", () => {
-  if (game.started) {
-    game.lastSave = Date.now();
-    try { localStorage.setItem(SAVE_KEY, JSON.stringify({
-      game, unlockedFloors, unlockedAchievements: [...unlockedAchievements],
-      floors: floors.map(f => ({
-        miner: f.miner,
-        elevator: { x: f.elevator.x, y: f.elevator.y, carrying: f.elevator.carrying, isMoving: false, direction: 1, state: "idle", maxCapacity: f.elevator.maxCapacity },
-        storage: { x: f.storage.x, carrying: f.storage.carrying, isCollecting: false, state: "idle", currentSprite: null, initialX: 600, maxCapacity: f.storage.maxCapacity, collectionTime: f.storage.collectionTime },
-        minerBox: f.minerBox,
-        gemsFound: f.gemsFound,
-        minerState: { isWaiting: false, miningTimeout: null, miningTime: f.minerState.miningTime },
-        elevatorState: { isWaiting: false, elevatorTimeout: null },
-        storageState: { isWaiting: false, storageTimeout: null },
-        autoMiner: f.autoMiner
-      })),
-      floorUpgrades: floorUpgrades.map(fu => ({
-        miner: { level: fu.miner.level }, elevator: { level: fu.elevator.level },
-        storage: { level: fu.storage.level }, autoMiner: { level: fu.autoMiner.level },
-        sellMultiplier: { level: fu.sellMultiplier.level }
-      })),
-      globalUpgrades: { luck: { level: globalUpgrades.luck.level }, speedBoost: { level: globalUpgrades.speedBoost.level } }
-    })); } catch (e) {}
-  }
+  if (game.started) saveGame(true);
 });
-
-// ============================================================
-// WATCH REWARD AD
-// ============================================================
-function watchRewardAd() {
-  game.cash += 500;
-  game.totalEarned += 500;
-  showToast('📺 +500 oro por ver anuncio');
-}
 
 // ============================================================
 // INIT
@@ -1795,7 +1921,9 @@ function watchRewardAd() {
 if ('serviceWorker' in navigator) {
   navigator.serviceWorker.register('./sw.js').catch(() => {});
 }
+initTheme();
 initAllFloors();
 initFloorUpgrades();
 showMainMenu();
+runLoadingScreen();
 gameLoop();
