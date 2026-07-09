@@ -8,6 +8,18 @@ const canvas = document.getElementById("gameCanvas");
 const ctx = canvas.getContext("2d");
 const W = 1000, H = 750;
 const CHAR_SCALE = 2.8;
+let renderScale = 1;
+
+function resizeCanvas() {
+  const dpr = window.devicePixelRatio || 1;
+  const rect = canvas.getBoundingClientRect();
+  let cssW = rect.width, cssH = rect.height;
+  if (cssW < 10 || cssH < 10) { cssW = W; cssH = H; }
+  canvas.width = Math.max(1, Math.round(cssW * dpr));
+  canvas.height = Math.max(1, Math.round(cssH * dpr));
+  renderScale = canvas.width / W;
+  ctx.imageSmoothingEnabled = true;
+}
 
 // ============================================================
 // SPRITE LOADER
@@ -896,19 +908,41 @@ function updateAutoMiner(floorIdx) {
 // ============================================================
 // DRAWING
 // ============================================================
+function drawBackgroundImageCover() {
+  const iw = backgroundImage.naturalWidth;
+  const ih = backgroundImage.naturalHeight;
+  const scale = Math.max(W / iw, H / ih);
+  const dw = iw * scale;
+  const dh = ih * scale;
+  const dx = (W - dw) / 2;
+  const dy = (H - dh) / 2;
+  ctx.drawImage(backgroundImage, dx, dy, dw, dh);
+}
+
 function drawBackground() {
   const f = floors[game.currentFloor];
   const config = f.config;
 
+  // Imagen de fondo como capa base (cover, sin distorsion)
+  if (backgroundImage.complete && backgroundImage.naturalWidth > 0) {
+    drawBackgroundImageCover();
+  } else {
+    ctx.fillStyle = config.bg;
+    ctx.fillRect(0, 0, W, H);
+  }
+
+  // Tinte por piso para mantener la identidad del suelo sobre la imagen
   const grad = ctx.createLinearGradient(0, 0, 0, H);
   grad.addColorStop(0, config.bg);
   grad.addColorStop(1, config.rockColor);
+  ctx.globalAlpha = 0.5;
   ctx.fillStyle = grad;
   ctx.fillRect(0, 0, W, H);
+  ctx.globalAlpha = 1;
 
-  // Animated rock texture
+  // Animated rock texture (sutil, sobre la imagen)
   const time = Date.now() / 1000;
-  ctx.fillStyle = "rgba(255,255,255,0.025)";
+  ctx.fillStyle = "rgba(255,255,255,0.03)";
   for (let i = 0; i < 60; i++) {
     const rx = (i * 137 + config.depth + Math.sin(time + i) * 5) % W;
     const ry = (i * 251 + config.depth * 2 + Math.cos(time + i * 0.5) * 3) % H;
@@ -919,7 +953,7 @@ function drawBackground() {
 
   // Subtle ore veins
   ctx.strokeStyle = config.oreColor;
-  ctx.globalAlpha = 0.04;
+  ctx.globalAlpha = 0.05;
   ctx.lineWidth = 2;
   for (let i = 0; i < 5; i++) {
     ctx.beginPath();
@@ -935,16 +969,13 @@ function drawBackground() {
   ctx.globalAlpha = 1;
 
   // Depth indicator
-  ctx.fillStyle = "rgba(255,255,255,0.15)";
-  ctx.font = "14px 'VT323', monospace";
+  ctx.fillStyle = "rgba(255,255,255,0.6)";
+  ctx.font = "bold 16px 'VT323', monospace";
   ctx.textAlign = "left";
-  ctx.fillText(`Profundidad: ${config.depth}m`, 12, H - 12);
-
-  if (backgroundImage.complete && backgroundImage.naturalWidth > 0) {
-    ctx.globalAlpha = 0.25;
-    ctx.drawImage(backgroundImage, 0, 0, W, H);
-    ctx.globalAlpha = 1;
-  }
+  ctx.shadowColor = "rgba(0,0,0,0.8)";
+  ctx.shadowBlur = 4;
+  ctx.fillText(`Profundidad: ${config.depth}m`, 14, H - 14);
+  ctx.shadowBlur = 0;
 }
 
 function drawBoxes(floorIdx) {
@@ -1896,6 +1927,8 @@ function gameLoop() {
   const dt = now - lastTime;
   lastTime = now;
 
+  ctx.setTransform(renderScale, 0, 0, renderScale, 0, 0);
+
   if (game.started && !game.paused) {
     updateCombo();
     updateBonusEvents(dt);
@@ -1955,6 +1988,10 @@ window.addEventListener("beforeunload", () => {
 initTheme();
 initAllFloors();
 initFloorUpgrades();
+resizeCanvas();
 showMainMenu();
 runLoadingScreen();
 gameLoop();
+
+window.addEventListener("resize", resizeCanvas);
+window.addEventListener("orientationchange", resizeCanvas);
