@@ -7,6 +7,7 @@
 const canvas = document.getElementById("gameCanvas");
 const ctx = canvas.getContext("2d");
 const W = 1000, H = 750;
+const CHAR_SCALE = 2.8;
 
 // ============================================================
 // SPRITE LOADER
@@ -1023,7 +1024,7 @@ function drawMiner(floorIdx) {
     spriteToDraw = sprites.miner_idle;
   }
 
-  const scale = 1.8;
+  const scale = CHAR_SCALE;
   const drawX = f.miner.x - (f.miner.width * (scale - 1)) / 2;
   const drawY = f.miner.y - (f.miner.height * (scale - 1)) / 2;
 
@@ -1062,14 +1063,14 @@ function drawMiner(floorIdx) {
     ctx.strokeStyle = "rgba(255, 215, 0, 0.4)";
     ctx.lineWidth = 2;
     ctx.beginPath();
-    ctx.arc(drawX + f.miner.width * scale / 2, drawY + f.miner.height * scale / 2, 50 + Math.sin(Date.now() / 300) * 5, 0, Math.PI * 2);
+    ctx.arc(drawX + f.miner.width * scale / 2, drawY + f.miner.height * scale / 2, 70 + Math.sin(Date.now() / 300) * 6, 0, Math.PI * 2);
     ctx.stroke();
   }
 }
 
 function drawElevator(floorIdx) {
   const f = floors[floorIdx];
-  const scale = 1.8;
+  const scale = CHAR_SCALE;
 
   ctx.strokeStyle = "#444";
   ctx.lineWidth = 4;
@@ -1148,7 +1149,7 @@ function drawElevator(floorIdx) {
     ctx.strokeStyle = "rgba(96, 165, 250, 0.25)";
     ctx.lineWidth = 2;
     ctx.beginPath();
-    ctx.arc(f.elevator.x + f.elevator.width * scale / 2, f.elevator.y + f.elevator.height * scale / 2, 45 + Math.sin(Date.now() / 400) * 4, 0, Math.PI * 2);
+    ctx.arc(f.elevator.x + f.elevator.width * scale / 2, f.elevator.y + f.elevator.height * scale / 2, 65 + Math.sin(Date.now() / 400) * 5, 0, Math.PI * 2);
     ctx.stroke();
   }
 }
@@ -1156,7 +1157,7 @@ function drawElevator(floorIdx) {
 function drawStorage(floorIdx) {
   const f = floors[floorIdx];
   if (!f.storage.currentSprite) f.storage.currentSprite = sprites.miner_tolva_1;
-  const scale = 1.8;
+  const scale = CHAR_SCALE;
 
   if (f.storage.currentSprite && f.storage.currentSprite.complete) {
     ctx.drawImage(f.storage.currentSprite,
@@ -1194,7 +1195,7 @@ function drawStorage(floorIdx) {
     ctx.strokeStyle = "rgba(255, 152, 0, 0.4)";
     ctx.lineWidth = 2;
     ctx.beginPath();
-    ctx.arc(f.storage.x + f.storage.width * scale / 2, f.storage.y + f.storage.height * scale / 2, 45 + Math.sin(Date.now() / 350) * 4, 0, Math.PI * 2);
+    ctx.arc(f.storage.x + f.storage.width * scale / 2, f.storage.y + f.storage.height * scale / 2, 65 + Math.sin(Date.now() / 350) * 5, 0, Math.PI * 2);
     ctx.stroke();
   }
 }
@@ -1382,9 +1383,12 @@ function handleCanvasClick(event) {
   const y = (event.clientY - rect.top) * scaleY;
 
   const f = floors[game.currentFloor];
+  const s = CHAR_SCALE;
 
-  if (x >= f.miner.x && x <= f.miner.x + f.miner.width * 1.8 &&
-      y >= f.miner.y && y <= f.miner.y + f.miner.height * 1.8) {
+  const mw = f.miner.width * s, mh = f.miner.height * s;
+  const mx = f.miner.x - f.miner.width * (s - 1) / 2;
+  const my = f.miner.y - f.miner.height * (s - 1) / 2;
+  if (x >= mx && x <= mx + mw && y >= my && y <= my + mh) {
     if (!f.miner.isMining && !f.minerState.isWaiting && f.miner.x <= 282) {
       f.miner.isMining = true;
       game.totalClicks++;
@@ -1395,8 +1399,10 @@ function handleCanvasClick(event) {
     }
   }
 
-  if (x >= f.elevator.x && x <= f.elevator.x + f.elevator.width * 1.8 &&
-      y >= f.elevator.y && y <= f.elevator.y + f.elevator.height * 1.8) {
+  const ew = f.elevator.width * s, eh = f.elevator.height * s;
+  const ex = f.elevator.x - f.elevator.width * (s - 1) / 2;
+  const ey = f.elevator.y - f.elevator.height * (s - 1) / 2;
+  if (x >= ex && x <= ex + ew && y >= ey && y <= ey + eh) {
     if (!f.elevator.isMoving) {
       f.elevator.isMoving = true;
       game.totalClicks++;
@@ -1405,8 +1411,10 @@ function handleCanvasClick(event) {
     }
   }
 
-  if (x >= f.storage.x && x <= f.storage.x + f.storage.width * 1.8 &&
-      y >= f.storage.y && y <= f.storage.y + f.storage.height * 1.8) {
+  const sw = f.storage.width * s, sh = f.storage.height * s;
+  const sx = f.storage.x - f.storage.width * (s - 1) / 2;
+  const sy = f.storage.y - f.storage.height * (s - 1) / 2;
+  if (x >= sx && x <= sx + sw && y >= sy && y <= sy + sh) {
     if (!f.storage.isCollecting) {
       f.storage.isCollecting = true;
       game.totalClicks++;
@@ -1817,6 +1825,27 @@ function initTheme() {
   let theme = "dark";
   try { theme = localStorage.getItem(THEME_KEY) || "dark"; } catch (e) {}
   applyTheme(theme);
+}
+
+// ============================================================
+// RETURN TO MENU
+// ============================================================
+function closeAllPanels() {
+  ["shop", "achievements", "stats", "prestige", "howto"].forEach(p => {
+    document.getElementById(`panel-${p}`).classList.remove("active");
+  });
+  game.paused = false;
+}
+
+function returnToMenu() {
+  if (!game.started) return;
+  saveGame(true);
+  game.paused = true;
+  closeAllPanels();
+  document.getElementById("hud").classList.remove("active");
+  document.getElementById("sideButtons").classList.remove("active");
+  document.getElementById("floorBar").classList.remove("active");
+  showMainMenu();
 }
 
 // ============================================================

@@ -25,9 +25,9 @@
   --emerald-glow: rgba(16, 185, 129, 0.4);
   --purple: #a78bfa;
   --purple-glow: rgba(167, 139, 250, 0.3);
-  --text-primary: #e2e8f0;
-  --text-secondary: #64748b;
-  --text-dim: #334155;
+  --text-primary: #f1f5f9;
+  --text-secondary: #aeb9c9;
+  --text-dim: #64748b;
   --radius: 12px;
   --radius-sm: 8px;
 }
@@ -1101,6 +1101,7 @@ body, #startMenu, .menu-card, .panel, #gameCanvas, #hud, #sideButtons, #floorBar
     </div>
 
     <div id="sideButtons">
+      <button class="side-btn" onclick="returnToMenu()" title="Volver al menu"><i class="fas fa-house"></i></button>
       <button class="side-btn" onclick="openPanel('shop')" title="Tienda"><i class="fas fa-store"></i></button>
       <button class="side-btn" onclick="openPanel('achievements')" title="Logros"><i class="fas fa-trophy"></i></button>
       <button class="side-btn" onclick="openPanel('stats')" title="Estadisticas"><i class="fas fa-chart-bar"></i></button>
