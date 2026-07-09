@@ -423,8 +423,9 @@ body::before {
   position: absolute; inset: 0;
   background: rgba(0, 0, 0, 0.8);
   backdrop-filter: blur(10px);
-  z-index: 50; display: none;
+  z-index: 200; display: none;
   justify-content: center; align-items: center;
+  padding: 24px;
   animation: panelFadeIn 0.3s ease;
 }
 
@@ -436,7 +437,7 @@ body::before {
 .panel-overlay.active { display: flex; }
 
 .panel {
-  width: min(420px, 94vw); max-height: 88vh;
+  width: min(560px, 94vw); max-height: 88vh;
   background: var(--bg-secondary);
   border: 1px solid var(--border-subtle);
   border-radius: var(--radius);
@@ -780,9 +781,9 @@ body, #startMenu, .menu-card, .panel, #gameCanvas, #hud, #sideButtons, #floorBar
   --emerald-glow: rgba(5, 150, 105, 0.35);
   --purple: #7c3aed;
   --purple-glow: rgba(124, 58, 237, 0.3);
-  --text-primary: #1e293b;
-  --text-secondary: #64748b;
-  --text-dim: #94a3b8;
+  --text-primary: #0f172a;
+  --text-secondary: #475569;
+  --text-dim: #64748b;
   --radius: 12px;
   --radius-sm: 8px;
 }
@@ -1025,6 +1026,11 @@ body, #startMenu, .menu-card, .panel, #gameCanvas, #hud, #sideButtons, #floorBar
 .howto-text b { color: var(--text-primary); }
 .howto-icon { font-size: 22px; }
 
+@media (min-width: 820px) {
+  .howto-list { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+  .panel { width: min(720px, 92vw); }
+}
+
 /* ==================== SAVE/LOAD CONTROLS ==================== */
 .file-input { display: none; }
 
@@ -1123,9 +1129,6 @@ body, #startMenu, .menu-card, .panel, #gameCanvas, #hud, #sideButtons, #floorBar
         <div class="menu-actions">
           <button class="menu-btn btn-play" onclick="startNewGame()">
             <i class="fas fa-play"></i> Nueva Partida
-          </button>
-          <button class="menu-btn btn-continue" id="btnContinue" style="display:none;" onclick="continueGame()">
-            <i class="fas fa-folder-open"></i> Continuar Partida
           </button>
           <button class="menu-btn btn-prestige" id="btnPrestigeMenu" style="display:none;" onclick="openPanel('prestige')">
             <i class="fas fa-star"></i> Prestigio

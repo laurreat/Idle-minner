@@ -1770,7 +1770,6 @@ function showMainMenu() {
   document.getElementById("floorBar").classList.remove("active");
 
   const hasSaveData = hasSave();
-  document.getElementById("btnContinue").style.display = hasSaveData ? "flex" : "none";
 
   if (hasSaveData) {
     try {
