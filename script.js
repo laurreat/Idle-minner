@@ -411,16 +411,22 @@ function obfuscateSave(obj) {
 
 // Revierte la ofuscacion y valida la integridad (detecta modificaciones)
 function deobfuscateSave(str) {
-  const xored = decodeURIComponent(escape(atob(str.trim())));
-  const payload = xorString(xored, SAVE_XOR);
-  if (!payload.startsWith(SAVE_SALT)) throw new Error("Formato de guardado invalido");
-  const rest = payload.slice(SAVE_SALT.length);
-  const sep = rest.indexOf("|");
-  if (sep < 0) throw new Error("Guardado corrupto");
-  const checksum = rest.slice(0, sep);
-  const json = rest.slice(sep + 1);
-  if (simpleHash(json) !== checksum) throw new Error("Guardado modificado o corrupto");
-  return JSON.parse(json);
+  str = (str || "").trim();
+  try {
+    const xored = decodeURIComponent(escape(atob(str)));
+    const payload = xorString(xored, SAVE_XOR);
+    if (!payload.startsWith(SAVE_SALT)) throw new Error("no-obfuscated");
+    const rest = payload.slice(SAVE_SALT.length);
+    const sep = rest.indexOf("|");
+    if (sep < 0) throw new Error("corrupt");
+    const checksum = rest.slice(0, sep);
+    const json = rest.slice(sep + 1);
+    if (simpleHash(json) !== checksum) throw new Error("tampered");
+    return JSON.parse(json);
+  } catch (e) {
+    // Formato legacy (JSON plano de versiones anteriores)
+    return JSON.parse(str);
+  }
 }
 
 function buildSaveData() {
@@ -1918,9 +1924,6 @@ window.addEventListener("beforeunload", () => {
 // ============================================================
 // INIT
 // ============================================================
-if ('serviceWorker' in navigator) {
-  navigator.serviceWorker.register('./sw.js').catch(() => {});
-}
 initTheme();
 initAllFloors();
 initFloorUpgrades();
