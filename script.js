@@ -118,6 +118,7 @@ let bonusEvent = {
   duration: 8000,
   x: 0,
   y: 0,
+  totalTriggered: 0,
   nextEventTime: 30000 + Math.random() * 45000,
   lastEventTime: 0
 };
@@ -149,6 +150,7 @@ function startBonusEvent() {
   bonusEvent.active = true;
   bonusEvent.type = type;
   bonusEvent.timer = bonusEvent.duration;
+  bonusEvent.totalTriggered++;
   bonusEvent.x = 200 + Math.random() * 600;
   bonusEvent.y = 150 + Math.random() * 200;
   bonusEvent.lastEventTime = Date.now();
@@ -923,7 +925,7 @@ function drawBackground() {
   const f = floors[game.currentFloor];
   const config = f.config;
 
-  // Imagen de fondo como capa base (cover, sin distorsion)
+  // Imagen de fondo a opacidad total (sin tinte) como fondo principal
   if (backgroundImage.complete && backgroundImage.naturalWidth > 0) {
     drawBackgroundImageCover();
   } else {
@@ -931,48 +933,11 @@ function drawBackground() {
     ctx.fillRect(0, 0, W, H);
   }
 
-  // Tinte por piso para mantener la identidad del suelo sobre la imagen
-  const grad = ctx.createLinearGradient(0, 0, 0, H);
-  grad.addColorStop(0, config.bg);
-  grad.addColorStop(1, config.rockColor);
-  ctx.globalAlpha = 0.5;
-  ctx.fillStyle = grad;
-  ctx.fillRect(0, 0, W, H);
-  ctx.globalAlpha = 1;
-
-  // Animated rock texture (sutil, sobre la imagen)
-  const time = Date.now() / 1000;
-  ctx.fillStyle = "rgba(255,255,255,0.03)";
-  for (let i = 0; i < 60; i++) {
-    const rx = (i * 137 + config.depth + Math.sin(time + i) * 5) % W;
-    const ry = (i * 251 + config.depth * 2 + Math.cos(time + i * 0.5) * 3) % H;
-    ctx.beginPath();
-    ctx.arc(rx, ry, 1.5 + (i % 3), 0, Math.PI * 2);
-    ctx.fill();
-  }
-
-  // Subtle ore veins
-  ctx.strokeStyle = config.oreColor;
-  ctx.globalAlpha = 0.05;
-  ctx.lineWidth = 2;
-  for (let i = 0; i < 5; i++) {
-    ctx.beginPath();
-    const startX = (i * 200 + config.depth) % W;
-    ctx.moveTo(startX, 0);
-    ctx.bezierCurveTo(
-      startX + 50, H * 0.3,
-      startX - 30, H * 0.6,
-      startX + 20, H
-    );
-    ctx.stroke();
-  }
-  ctx.globalAlpha = 1;
-
   // Depth indicator
-  ctx.fillStyle = "rgba(255,255,255,0.6)";
+  ctx.fillStyle = "rgba(255,255,255,0.75)";
   ctx.font = "bold 16px 'VT323', monospace";
   ctx.textAlign = "left";
-  ctx.shadowColor = "rgba(0,0,0,0.8)";
+  ctx.shadowColor = "rgba(0,0,0,0.85)";
   ctx.shadowBlur = 4;
   ctx.fillText(`Profundidad: ${config.depth}m`, 14, H - 14);
   ctx.shadowBlur = 0;
@@ -1296,32 +1261,55 @@ function drawBonusEventIndicator() {
 
   const type = bonusEvent.type;
   const x = W / 2;
-  const y = 100;
+  const y = 96;
   const timeLeft = Math.ceil(bonusEvent.timer / 1000);
+  const progress = Math.max(0, Math.min(1, bonusEvent.timer / bonusEvent.duration));
+
+  const boxW = 280, boxH = 78;
+  const bx = x - boxW / 2, by = y - 38;
 
   // Pulsing background
   const pulse = Math.sin(Date.now() / 200) * 0.1 + 0.9;
-  ctx.fillStyle = `rgba(0,0,0,${0.7 * pulse})`;
-  roundRect(ctx, x - 120, y - 22, 240, 40, 12);
+  ctx.fillStyle = `rgba(0,0,0,${0.72 * pulse})`;
+  roundRect(ctx, bx, by, boxW, boxH, 14);
   ctx.fill();
   ctx.strokeStyle = type.color;
   ctx.lineWidth = 2;
-  ctx.globalAlpha = 0.6;
-  roundRect(ctx, x - 120, y - 22, 240, 40, 12);
+  ctx.globalAlpha = 0.7;
+  roundRect(ctx, bx, by, boxW, boxH, 14);
   ctx.stroke();
   ctx.globalAlpha = 1;
 
+  // Name + icon
   ctx.fillStyle = type.color;
   ctx.font = "bold 22px 'VT323', monospace";
   ctx.textAlign = "center";
   ctx.shadowColor = type.color;
   ctx.shadowBlur = 12;
-  ctx.fillText(`${type.icon} ${type.name}`, x, y + 6);
+  ctx.fillText(`${type.icon} ${type.name}`, x, y - 6);
   ctx.shadowBlur = 0;
 
-  ctx.fillStyle = "rgba(255,255,255,0.7)";
-  ctx.font = "14px 'VT323', monospace";
-  ctx.fillText(`${timeLeft}s`, x, y + 24);
+  // Effect description
+  ctx.fillStyle = "rgba(255,255,255,0.85)";
+  ctx.font = "13px 'VT323', monospace";
+  ctx.fillText(type.desc, x, y + 14);
+
+  // Duration progress bar
+  const barW = boxW - 40, barH = 7, barX = bx + 20, barY = y + 24;
+  ctx.fillStyle = "rgba(255,255,255,0.15)";
+  roundRect(ctx, barX, barY, barW, barH, 4);
+  ctx.fill();
+  ctx.fillStyle = type.color;
+  roundRect(ctx, barX, barY, barW * progress, barH, 4);
+  ctx.fill();
+
+  // Time left + total events counter
+  ctx.fillStyle = "rgba(255,255,255,0.8)";
+  ctx.font = "12px 'VT323', monospace";
+  ctx.textAlign = "left";
+  ctx.fillText(`${timeLeft}s`, barX, barY - 4);
+  ctx.textAlign = "right";
+  ctx.fillText(`Eventos: ${bonusEvent.totalTriggered}`, barX + barW, barY - 4);
 }
 
 function roundRect(ctx, x, y, w, h, r) {
@@ -1977,6 +1965,12 @@ canvas.addEventListener("click", handleCanvasClick);
 setInterval(() => {
   if (game.started) saveGame(true);
 }, 30000);
+
+// Estadisticas en tiempo real: refresca el panel mientras esta abierto
+setInterval(() => {
+  const panel = document.getElementById("panel-stats");
+  if (panel && panel.classList.contains("active")) renderStats();
+}, 500);
 
 window.addEventListener("beforeunload", () => {
   if (game.started) saveGame(true);
