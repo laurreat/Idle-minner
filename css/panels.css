@@ -374,8 +374,8 @@
   position: absolute;
   bottom: 14px;
   right: 58px;  /* Deja espacio al lado de los botones laterales */
-  width: 220px;
-  max-height: 220px;
+  width: 195px;
+  max-height: 175px;
   z-index: 90;
   display: none;
   flex-direction: column;
@@ -397,9 +397,9 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 7px 10px 6px;
+  padding: 6px 9px 5px;
   font-family: 'Silkscreen', cursive;
-  font-size: clamp(11px, 1.29vw, 18px);
+  font-size: clamp(10px, 1.1vw, 14px);
   color: var(--gold);
   border-bottom: 1px solid rgba(255,255,255,0.06);
   letter-spacing: 1px;
@@ -436,8 +436,8 @@
   display: flex;
   align-items: flex-start;
   gap: 7px;
-  padding: 5px 10px;
-  font-size: clamp(11.5px, 1.35vw, 19px);
+  padding: 4px 9px;
+  font-size: clamp(9.5px, 1.05vw, 13px);
   font-family: 'Silkscreen', cursive;
   color: var(--text-secondary);
   border-bottom: 1px solid rgba(255,255,255,0.03);
@@ -459,7 +459,7 @@
 .event-log-entry.type-warn   { color: #f59e0b; }
 
 .event-log-time {
-  font-size: clamp(9.5px, 1.12vw, 16px);
+  font-size: clamp(8px, 0.95vw, 12px);
   color: rgba(255,255,255,0.2);
   flex-shrink: 0;
   margin-top: 1px;
@@ -496,7 +496,7 @@
 }
 
 .bonus-bar-icon {
-  font-size: clamp(20px, 2.35vw, 33px);
+  font-size: clamp(16px, 1.8vw, 26px);
   flex-shrink: 0;
   filter: drop-shadow(0 0 6px currentColor);
 }
@@ -508,7 +508,7 @@
 
 .bonus-bar-name {
   font-family: 'Silkscreen', cursive;
-  font-size: clamp(12px, 1.41vw, 20px);
+  font-size: clamp(11px, 1.1vw, 15px);
   font-weight: 700;
   color: var(--text-primary);
   white-space: nowrap;
@@ -517,10 +517,13 @@
 }
 
 .bonus-bar-desc {
-  font-size: clamp(10.5px, 1.24vw, 17px);
+  font-size: clamp(9.5px, 1vw, 13px);
   color: var(--text-secondary);
   margin-top: 1px;
   font-family: 'Silkscreen', cursive;
+  line-height: 1.3;
+  word-break: break-word;
+  white-space: normal;
 }
 
 .bonus-bar-timer {
@@ -548,18 +551,18 @@
 
 .bonus-bar-time {
   font-family: 'Silkscreen', cursive;
-  font-size: clamp(10px, 1.18vw, 17px);
+  font-size: clamp(9px, 1vw, 13px);
   color: rgba(255,255,255,0.5);
 }
 
 /* ==================== RESPONSIVE ==================== */
 @media (max-width: 540px) {
   .event-log-panel {
-    width: 170px;
+    width: 165px;
     right: 50px;
   }
   .active-bonus-bar {
     min-width: 200px;
-    font-size: clamp(10px, 1.18vw, 17px);
+    max-width: 320px;
   }
 }
