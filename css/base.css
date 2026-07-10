@@ -62,20 +62,35 @@ body::before {
 
 #hud {
   position: absolute; top: 0; left: 0; right: 0; bottom: 0;
-  padding: 1.5% 2%; display: none;
+  padding: 2.2% 2.5%; display: none;
   pointer-events: none; z-index: 10;
 }
 #hud.active { display: flex; justify-content: space-between; align-items: flex-start; }
-.hud-left, .hud-right, .hud-center { pointer-events: auto; }
-.hud-center { text-align: center; }
-.hud-right { text-align: right; }
+
+.hud-left, .hud-center, .hud-right {
+  pointer-events: auto;
+  display: flex; flex-direction: column; gap: 10px;
+}
+.hud-left { align-items: flex-start; }
+.hud-center { align-items: center; text-align: center; }
+.hud-right { align-items: flex-end; text-align: right; }
+
+.hud-cash, .hud-gems, .hud-floor, .hud-score, .hud-persec, .hud-time {
+  font-family: 'Silkscreen', cursive;
+  display: inline-flex; align-items: center; gap: 7px;
+  padding: 9px 16px; border-radius: 999px;
+  background: rgba(6, 9, 18, 0.78);
+  border: 1.5px solid rgba(255, 255, 255, 0.14);
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.55), inset 0 0 0 1px rgba(255, 255, 255, 0.05);
+  backdrop-filter: blur(10px);
+  letter-spacing: 0.5px; white-space: nowrap;
+}
 
 .hud-cash {
-  font-family: 'Silkscreen', cursive;
-  font-size: clamp(12px, 2vw, 18px);
+  font-size: clamp(18px, 2.8vw, 28px);
   color: var(--gold);
-  text-shadow: 0 0 15px rgba(255, 215, 0, 0.5), 2px 2px 0 rgba(0, 0, 0, 0.8);
-  letter-spacing: 1px;
+  border-color: rgba(255, 215, 0, 0.4);
+  text-shadow: 0 0 14px rgba(255, 215, 0, 0.55);
   animation: cashPulse 3s ease-in-out infinite;
 }
 
@@ -85,30 +100,32 @@ body::before {
 }
 
 .hud-gems {
-  font-family: 'Silkscreen', cursive;
-  font-size: clamp(9px, 1.3vw, 13px);
+  font-size: clamp(13px, 1.9vw, 19px);
   color: var(--purple);
-  text-shadow: 0 0 10px var(--purple-glow), 2px 2px 0 rgba(0, 0, 0, 0.8);
-  margin-top: 4px;
+  border-color: rgba(167, 139, 250, 0.4);
+  text-shadow: 0 0 10px var(--purple-glow);
 }
 
 .hud-floor {
-  font-family: 'Silkscreen', cursive;
-  font-size: clamp(9px, 1.5vw, 13px);
-  color: var(--text-secondary);
-  text-shadow: 2px 2px 0 rgba(0, 0, 0, 0.8);
-  background: rgba(0, 0, 0, 0.4);
-  padding: 4px 12px;
-  border-radius: 6px;
-  backdrop-filter: blur(4px);
-  border: 1px solid var(--border-subtle);
+  font-size: clamp(13px, 1.9vw, 19px);
+  color: var(--text-primary);
 }
 
 .hud-score {
-  font-size: clamp(9px, 1.3vw, 12px);
+  font-size: clamp(12px, 1.6vw, 16px);
   color: var(--text-secondary);
-  text-shadow: 1px 1px 0 rgba(0, 0, 0, 0.8);
-  margin-top: 4px;
+}
+
+.hud-persec {
+  font-size: clamp(13px, 1.9vw, 19px);
+  color: var(--emerald);
+  border-color: rgba(16, 185, 129, 0.4);
+  text-shadow: 0 0 10px var(--emerald-glow);
+}
+
+.hud-time {
+  font-size: clamp(12px, 1.6vw, 16px);
+  color: var(--text-secondary);
 }
 
 #sideButtons {

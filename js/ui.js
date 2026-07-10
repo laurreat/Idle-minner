@@ -2,7 +2,7 @@
   document.getElementById("hudCash").textContent = `$${formatNum(game.cash)}`;
   document.getElementById("hudGems").textContent = `­ƒÆÄ ${game.gems}`;
   document.getElementById("hudFloor").textContent = `Piso ${game.currentFloor + 1}: ${FLOOR_CONFIGS[game.currentFloor].name}`;
-  document.getElementById("hudScore").textContent = `Score: ${formatNum(game.score)}`;
+  document.getElementById("hudScore").textContent = `Puntos: ${formatNum(game.score)}`;
 
   let perSec = 0;
   for (let i = 0; i < floors.length; i++) {

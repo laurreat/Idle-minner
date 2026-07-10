@@ -390,8 +390,8 @@ const ACHIEVEMENTS = [
   { id: "speed_max", name: "Velocidad M├íxima", desc: "Maximiza la velocidad del elevador", icon: "ÔÜí", check: () => { for (let f of floorUpgrades) if (f.elevator.level >= f.elevator.maxLevel) return true; return false; }, reward: "15 gemas" },
   { id: "ten_k_mined", name: "Toneladas", desc: "Mina 10,000 unidades", icon: "­ƒÅö´©Å", check: () => game.totalMined >= 10000, reward: "3 gemas" },
   { id: "score_100k", name: "Puntuaci├│n Alta", desc: "Alcanza 100,000 puntos", icon: "­ƒÅå", check: () => game.score >= 100000, reward: "20 gemas" },
-  { id: "combo_10", name: "Combo Master", desc: "Alcanza un combo de 10", icon: "­ƒöÑ", check: () => combo.count >= 10, reward: "3 gemas" },
-  { id: "combo_25", name: "Combo Legend", desc: "Alcanza un combo de 25", icon: "­ƒÆÑ", check: () => combo.count >= 25, reward: "10 gemas" }
+  { id: "combo_10", name: "Maestro del Combo", desc: "Alcanza un combo de 10", icon: "­ƒöÑ", check: () => combo.count >= 10, reward: "3 gemas" },
+  { id: "combo_25", name: "Leyenda del Combo", desc: "Alcanza un combo de 25", icon: "­ƒÆÑ", check: () => combo.count >= 25, reward: "10 gemas" }
 ];
 
 let unlockedAchievements = new Set();

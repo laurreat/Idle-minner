@@ -360,7 +360,7 @@
 }
 .howto-text { font-size: 15px; line-height: 1.7; color: var(--text-secondary); }
 .howto-text b { color: var(--text-primary); }
-.howto-icon { font-size: 22px; }
+.howto-icon { font-size: 24px; color: var(--gold); margin-right: 2px; flex-shrink: 0; }
 
 @media (min-width: 820px) {
   .howto-list { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
