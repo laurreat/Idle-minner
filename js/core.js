@@ -275,8 +275,6 @@ const FLOOR_CONFIGS = [
 
 let unlockedFloors = [true, false, false, false, false, false, false, false, false, false];
 
-let hasClickedBefore = false;
-
 // ============================================================
 // SISTEMA DE MINERÍA POR PISO
 // ============================================================

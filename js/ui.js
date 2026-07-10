@@ -94,7 +94,6 @@ function handleCanvasClick(event) {
       f.miner.isMining = true;
       game.totalClicks++;
       addComboClick();
-      hasClickedBefore = true;
       triggerScreenShake(2, 100);
       spawnParticles(f.miner.x + 40, f.miner.y + 20, FLOOR_CONFIGS[game.currentFloor].oreColor, 3);
     }
@@ -108,7 +107,6 @@ function handleCanvasClick(event) {
       f.elevator.isMoving = true;
       game.totalClicks++;
       addComboClick();
-      hasClickedBefore = true;
     }
   }
 
@@ -120,7 +118,6 @@ function handleCanvasClick(event) {
       f.storage.isCollecting = true;
       game.totalClicks++;
       addComboClick();
-      hasClickedBefore = true;
     }
   }
 }
