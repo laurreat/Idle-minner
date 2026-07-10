@@ -125,41 +125,11 @@ function drawMiner(floorIdx) {
     ctx.textAlign = "center";
     ctx.fillText("Minando...", drawX + (f.miner.width * scale) / 2, barY - 6); // ya en español
   }
-
-  // Brillo de ayuda al clic - solo en el primer clic
-  if (!hasClickedBefore && !f.miner.isMining && !f.minerState.isWaiting && f.miner.x <= 282) {
-    ctx.strokeStyle = "rgba(255, 215, 0, 0.4)";
-    ctx.lineWidth = 2;
-    ctx.beginPath();
-    ctx.arc(drawX + f.miner.width * scale / 2, drawY + f.miner.height * scale / 2, 70 + Math.sin(Date.now() / 300) * 6, 0, Math.PI * 2);
-    ctx.stroke();
-  }
 }
 
 function drawElevator(floorIdx) {
   const f = floors[floorIdx];
   const scale = CHAR_SCALE;
-
-  ctx.strokeStyle = "#444";
-  ctx.lineWidth = 4;
-  ctx.beginPath();
-  ctx.moveTo(f.elevator.x + 40, 0);
-  ctx.lineTo(f.elevator.x + 40, f.elevator.y);
-  ctx.stroke();
-
-  ctx.strokeStyle = "#555";
-  ctx.lineWidth = 5;
-  ctx.beginPath();
-  ctx.moveTo(f.elevator.x - 5, 200);
-  ctx.lineTo(f.elevator.x - 5, f.elevator.y + f.elevator.height * scale + 10);
-  ctx.stroke();
-  ctx.beginPath();
-  ctx.moveTo(f.elevator.x + f.elevator.width * scale + 5, 200);
-  ctx.lineTo(f.elevator.x + f.elevator.width * scale + 5, f.elevator.y + f.elevator.height * scale + 10);
-  ctx.stroke();
-
-  ctx.fillStyle = "rgba(0,0,0,0.25)";
-  ctx.fillRect(f.elevator.x - 10, 200, f.elevator.width * scale + 20, f.elevator.y + f.elevator.height * scale - 200 + 20);
 
   let spriteToDraw;
   switch (f.elevator.state) {
@@ -212,14 +182,6 @@ function drawElevator(floorIdx) {
     ctx.textAlign = "center";
     ctx.fillText("Cargando...", f.elevator.x + (f.elevator.width * scale) / 2, barY - 6); // ya en español
   }
-
-  if (!f.elevator.isMoving) {
-    ctx.strokeStyle = "rgba(96, 165, 250, 0.25)";
-    ctx.lineWidth = 2;
-    ctx.beginPath();
-    ctx.arc(f.elevator.x + f.elevator.width * scale / 2, f.elevator.y + f.elevator.height * scale / 2, 65 + Math.sin(Date.now() / 400) * 5, 0, Math.PI * 2);
-    ctx.stroke();
-  }
 }
 
 function drawStorage(floorIdx) {
@@ -256,15 +218,6 @@ function drawStorage(floorIdx) {
     ctx.font = "12px 'VT323', monospace";
     ctx.textAlign = "center";
     ctx.fillText(f.storage.carrying > 0 ? "Recogiendo..." : "Dejando...", f.storage.x + (f.storage.width * scale) / 2, barY - 6);
-  }
-
-  // Ayuda al clic - solo en el primer clic
-  if (!hasClickedBefore && !f.storage.isCollecting) {
-    ctx.strokeStyle = "rgba(255, 152, 0, 0.4)";
-    ctx.lineWidth = 2;
-    ctx.beginPath();
-    ctx.arc(f.storage.x + f.storage.width * scale / 2, f.storage.y + f.storage.height * scale / 2, 65 + Math.sin(Date.now() / 350) * 5, 0, Math.PI * 2);
-    ctx.stroke();
   }
 }
 
