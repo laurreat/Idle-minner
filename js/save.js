@@ -1,13 +1,19 @@
+// Clave usada en localStorage para persistir la partida ofuscada.
 const SAVE_KEY = "idleMiner_deepEarth_v3";
+// Prefijo (sal) que identifica el formato de guardado y ayuda a validar integridad.
 const SAVE_SALT = "IDLEMINER_v3::";
+// Llave para el cifrado XOR ligero (ofuscación, no seguridad real).
 const SAVE_XOR = "caveMinerSecureKey2024";
 
+// Hash djb2 simplificado: genera una suma de comprobación (checksum) en base 36
+// usada para detectar si el guardado fue alterado.
 function simpleHash(s) {
   let h = 5381;
   for (let i = 0; i < s.length; i++) h = ((h << 5) + h + s.charCodeAt(i)) | 0;
   return (h >>> 0).toString(36);
 }
 
+// Aplica cifrado/descifrado XOR carácter a carácter usando una llave repetida.
 function xorString(str, key) {
   let out = "";
   for (let i = 0; i < str.length; i++) {
@@ -17,6 +23,7 @@ function xorString(str, key) {
 }
 
 // Convierte el objeto de guardado en una cadena ilegible (ofuscada)
+// Pasos: JSON -> [SAL + checksum + "|" + json] -> XOR -> base64 (UTF-8 seguro).
 function obfuscateSave(obj) {
   const json = JSON.stringify(obj);
   const checksum = simpleHash(json);
@@ -26,6 +33,9 @@ function obfuscateSave(obj) {
 }
 
 // Revierte la ofuscación y valida la integridad (detecta modificaciones)
+// Base64 -> XOR -> separa SAL/checksum/JSON -> compara checksum para detectar
+// guardados corruptos o manipulados. Si falla, intenta parsear como JSON plano
+// (formato heredado de versiones anteriores).
 function deobfuscateSave(str) {
   str = (str || "").trim();
   try {
@@ -37,6 +47,7 @@ function deobfuscateSave(str) {
     if (sep < 0) throw new Error("corrupt");
     const checksum = rest.slice(0, sep);
     const json = rest.slice(sep + 1);
+    // Verifica que el contenido no fue alterado comparando el checksum.
     if (simpleHash(json) !== checksum) throw new Error("tampered");
     return JSON.parse(json);
   } catch (e) {
@@ -45,6 +56,10 @@ function deobfuscateSave(str) {
   }
 }
 
+// Reúne todo el estado serializable de la partida: progreso global (game),
+// pisos desbloqueados, logros, estado de cada piso (minero, elevador, tolva,
+// caja, auto-minero y mejoras) y mejoras globales. Los estados de animación
+// transitivos (isMoving, isCollecting, etc.) se reinician a valores idle.
 function buildSaveData() {
   return {
     game: game,
@@ -75,6 +90,9 @@ function buildSaveData() {
   };
 }
 
+// Aplica un objeto de guardado al estado del juego: restaura game, pisos/logros
+// desbloqueados, reinicia las estructuras de pisos/mejoras y copia los valores
+// guardados. Luego calcula ganancias offline si pasó más de 30 s desde lastSave.
 function applySaveData(save) {
   Object.assign(game, save.game);
   unlockedFloors = save.unlockedFloors;
@@ -115,7 +133,9 @@ function applySaveData(save) {
     globalUpgrades.speedBoost.level = save.globalUpgrades.speedBoost.level || 0;
   }
 
+  // Calcula cuánto tiempo estuvo ausente el jugador (en segundos).
   const offlineTime = (Date.now() - game.lastSave) / 1000;
+  // Solo concede ganancias offline si pasaron más de 30 s.
   if (offlineTime > 30) {
     const offlineEarnings = calculateOfflineEarnings(offlineTime);
     if (offlineEarnings > 0) {
@@ -126,7 +146,9 @@ function applySaveData(save) {
   }
 }
 
-// Guardado automático en localStorage (ofuscado y con integridad)
+// Guardado automático en localStorage (ofuscado y con integridad).
+// Marca el momento (lastSave) y escribe la cadena ofuscada; muestra un aviso
+// salvo que se pase silent = true (usado por export/auto-save interno).
 function saveGame(silent) {
   const saveData = buildSaveData();
   game.lastSave = Date.now();
@@ -139,6 +161,8 @@ function saveGame(silent) {
   }
 }
 
+// Carga la partida desde localStorage. Si no hay datos o el guardado está
+// corrupto, reporta el error y muestra aviso de guardado corrupto.
 function loadGame() {
   try {
     const data = localStorage.getItem(SAVE_KEY);
@@ -153,6 +177,7 @@ function loadGame() {
   }
 }
 
+// Indica si existe un guardado válido (y legible) en localStorage.
 function hasSave() {
   const data = localStorage.getItem(SAVE_KEY);
   if (!data) return false;
@@ -160,7 +185,7 @@ function hasSave() {
   catch (e) { return false; }
 }
 
-// Exportar partida a un archivo .idlesave (ilegible) o .json (legible)
+// Exportar partida a un archivo .idlesave (ilegible, ofuscado) mediante Blob/URL.
 function downloadSave() {
   if (!game.started) { showToast("Inicia una partida primero"); return; }
   saveGame(true);
@@ -176,7 +201,8 @@ function downloadSave() {
   showToast("💾 Partida guardada en archivo");
 }
 
-// Importar partida desde archivo (.idlesave o .json)
+// Importar partida desde archivo: .json se parsea directo; .idlesave se
+// desofusca. Aplica los datos, reactiva la interfaz y avisa si es inválido.
 function importSave(event) {
   const file = event.target.files[0];
   if (!file) return;
@@ -208,6 +234,10 @@ function importSave(event) {
   event.target.value = "";
 }
 
+// Estima las ganancias acumuladas mientras el jugador estuvo ausente. Por cada
+// piso con auto-minero: ciclos = segundos / intervalo; por ciclo se vende el
+// mínimo entre material minado y las capacidades de elevador/tolva, multiplicado
+// por el multiplicador de venta, y se descuenta al 50% (0.5) como bonus offline.
 function calculateOfflineEarnings(seconds) {
   let total = 0;
   for (let i = 0; i < floors.length; i++) {
@@ -220,13 +250,17 @@ function calculateOfflineEarnings(seconds) {
       const sellMult = fu.sellMultiplier.getMultiplier();
       const elevatorCap = fu.elevator.getCapacity();
       const storageCap = fu.storage.getCapacity();
+      // Por ciclo: limitado por las capacidades de elevador y tolva, a precio de venta.
       const perCycle = Math.min(miningAmount, elevatorCap, storageCap) * sellMult;
+      // Bonus offline del 50% sobre lo que habría generado en línea.
       total += cycles * perCycle * 0.5;
     }
   }
   return Math.floor(total);
 }
 
+// (Definición duplicada) Comprueba solo la existencia de la clave en localStorage,
+// sin validar legibilidad/integridad, a diferencia de la versión anterior.
 function hasSave() {
   return localStorage.getItem(SAVE_KEY) !== null;
 }

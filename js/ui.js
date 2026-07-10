@@ -1,3 +1,7 @@
+// Actualiza el HUD (dinero, gemas, piso, puntos, ingresos/s y tiempo).
+// Calcula las ganancias por segundo sumando, por cada piso desbloqueado con auto-minero activo,
+// los ciclos por segundo (1000ms / intervalo) multiplicados por la cantidad minada por ciclo
+// (limitada por la capacidad del elevador y del almacén) y el multiplicador de venta.
 function updateHUD() {
   document.getElementById("hudCash").textContent = `$${formatNum(game.cash)}`;
   document.getElementById("hudGems").textContent = `💎 ${game.gems}`;
@@ -22,6 +26,8 @@ function updateHUD() {
   document.getElementById("hudTime").textContent = `${mins}:${secs}`;
 }
 
+// Renderiza la barra de pisos: un punto por piso marcado como actual, desbloqueado o bloqueado,
+// cada uno con su tooltip, coste de desbloqueo y evento de clic para cambiar de piso.
 function updateFloorBar() {
   const bar = document.getElementById("floorBar");
   bar.innerHTML = "";
@@ -39,6 +45,8 @@ function updateFloorBar() {
 }
 
 // ============================================================
+// Nombres en español de cada tipo de mejora, usados para mostrar mensajes legibles
+// al comprar mejoras (buyUpgrade / buyGlobalUpgrade) en lugar de la clave interna.
 const TYPE_NAMES = {
   miner: "Minero",
   elevator: "Elevador",
@@ -52,6 +60,8 @@ const TYPE_NAMES = {
 // ============================================================
 // GAME ACTIONS
 // ============================================================
+// Cambia al piso indicado. Si el piso aún está bloqueado, intenta desbloquearlo
+// gastando su coste de desbloqueo; si no hay suficiente oro, muestra un aviso.
 function switchFloor(index) {
   if (!unlockedFloors[index]) {
     const cost = FLOOR_CONFIGS[index].unlockCost;
@@ -73,6 +83,10 @@ function switchFloor(index) {
   updateFloorBar();
 }
 
+// Maneja el clic en el canvas: convierte las coordenadas del ratón (en píxeles de pantalla,
+// ajustadas por devicePixelRatio) a coordenadas del mundo dividiendo por la escala de vista
+// (viewScale) y restando el desplazamiento (viewOffX/Y). Luego hace "hit-testing" contra las
+// cajas de colisión del minero, elevador y almacén para detectar qué objeto fue tocado.
 function handleCanvasClick(event) {
   if (game.paused || !game.started) return;
 
@@ -86,10 +100,12 @@ function handleCanvasClick(event) {
   const f = floors[game.currentFloor];
   const s = CHAR_SCALE;
 
+  // Caja de colisión del minero: al escalar (s>1) el área crece centrándose en el punto original.
   const mw = f.miner.width * s, mh = f.miner.height * s;
   const mx = f.miner.x - f.miner.width * (s - 1) / 2;
   const my = f.miner.y - f.miner.height * (s - 1) / 2;
   if (x >= mx && x <= mx + mw && y >= my && y <= my + mh) {
+    // Sólo inicia a minar si no está minando, no está esperando y está en posición (x <= 282).
     if (!f.miner.isMining && !f.minerState.isWaiting && f.miner.x <= 282) {
       f.miner.isMining = true;
       game.totalClicks++;
@@ -99,6 +115,7 @@ function handleCanvasClick(event) {
     }
   }
 
+  // Caja de colisión del elevador (mismo cálculo de centrado que el minero).
   const ew = f.elevator.width * s, eh = f.elevator.height * s;
   const ex = f.elevator.x - f.elevator.width * (s - 1) / 2;
   const ey = f.elevator.y - f.elevator.height * (s - 1) / 2;
@@ -110,6 +127,7 @@ function handleCanvasClick(event) {
     }
   }
 
+  // Caja de colisión del almacén (mismo cálculo de centrado que los anteriores).
   const sw = f.storage.width * s, sh = f.storage.height * s;
   const sx = f.storage.x - f.storage.width * (s - 1) / 2;
   const sy = f.storage.y - f.storage.height * (s - 1) / 2;
@@ -125,6 +143,8 @@ function handleCanvasClick(event) {
 // ============================================================
 // SHOP / PANELS
 // ============================================================
+// Abre el panel indicado (shop, achievements, stats o prestige): lo muestra, pausa el juego
+// y renderiza su contenido según el tipo.
 function openPanel(type) {
   document.getElementById(`panel-${type}`).classList.add("active");
   game.paused = true;
@@ -134,11 +154,16 @@ function openPanel(type) {
   else if (type === "prestige") renderPrestige();
 }
 
+// Cierra el panel indicado y reanuda el juego (quita la pausa).
 function closePanel(type) {
   document.getElementById(`panel-${type}`).classList.remove("active");
   game.paused = false;
 }
 
+// Renderiza el contenido de la tienda del piso actual: mejoras del piso (minero, elevador,
+// almacén, multiplicador de venta, auto-minero) y mejoras globales (suerte, velocidad),
+// más la opción de desbloquear el siguiente piso. Cada item recibe una clase según su estado
+// de compra: 'cant-afford' (no alcanza el oro/gemas) o 'maxed' (nivel máximo alcanzado).
 function renderShop() {
   const body = document.getElementById("shopBody");
   const fu = floorUpgrades[game.currentFloor];
@@ -146,6 +171,7 @@ function renderShop() {
 
   let html = `<div class="shop-section"><h3><i class="fas fa-mountain"></i> Piso ${game.currentFloor + 1}: ${config.name}</h3>`;
 
+  // Clase de estado: si no se puede comprar, 'maxed' si llegó al nivel máximo o 'cant-afford' si falta oro.
   const minerCost = fu.miner.getCurrentCost();
   const canMiner = game.cash >= minerCost && fu.miner.level < fu.miner.maxLevel;
   html += `<div class="shop-item ${!canMiner ? (fu.miner.level >= fu.miner.maxLevel ? 'maxed' : 'cant-afford') : ''}" onclick="buyUpgrade('miner')">
@@ -200,7 +226,7 @@ function renderShop() {
     <div class="shop-icon" style="background:rgba(139,92,246,0.15);">🤖</div>
     <div class="shop-info">
       <div class="name">Auto-Minero</div>
-      <div class="desc">Auto mina cada ${fu.autoMiner.isActive() ? (fu.autoMiner.getInterval()/1000).toFixed(1) + 's' : '5s'}</div>
+      <div class="desc">Auto mina cada ${fu.autoMiner.isActive() ? (fu.autoMiner.getInterval() / 1000).toFixed(1) + 's' : '5s'}</div>
       <div class="level">Nivel ${fu.autoMiner.level}/${fu.autoMiner.maxLevel}</div>
     </div>
     <div class="shop-cost cost-gold">${fu.autoMiner.level >= fu.autoMiner.maxLevel ? 'MAX' : '$' + formatNum(autoCost)}</div>
@@ -216,7 +242,7 @@ function renderShop() {
     <div class="shop-icon" style="background:rgba(167,139,250,0.15);">🍀</div>
     <div class="shop-info">
       <div class="name">Suerte</div>
-      <div class="desc">+0.5% chance gemas (actual: ${(globalUpgrades.luck.getGemChance()*100).toFixed(1)}%)</div>
+      <div class="desc">+0.5% chance gemas (actual: ${(globalUpgrades.luck.getGemChance() * 100).toFixed(1)}%)</div>
       <div class="level">Nivel ${globalUpgrades.luck.level}/${globalUpgrades.luck.maxLevel}</div>
     </div>
     <div class="shop-cost cost-gem">${globalUpgrades.luck.level >= globalUpgrades.luck.maxLevel ? 'MAX' : '💎 ' + luckCost}</div>
@@ -254,6 +280,8 @@ function renderShop() {
   body.innerHTML = html;
 }
 
+// Compra una mejora del piso actual: resta el coste del oro, sube un nivel, re-renderiza la
+// tienda, verifica logros y muestra notificación + sacudida de pantalla.
 function buyUpgrade(type) {
   const fu = floorUpgrades[game.currentFloor];
   const upgrade = fu[type];
@@ -270,6 +298,8 @@ function buyUpgrade(type) {
   }
 }
 
+// Compra una mejora global (suerte o velocidad): resta el coste de las gemas, sube un nivel,
+// re-renderiza la tienda, verifica logros y muestra notificación usando gemas.
 function buyGlobalUpgrade(type) {
   const upgrade = globalUpgrades[type];
   const cost = upgrade.getCurrentCost();
@@ -285,6 +315,8 @@ function buyGlobalUpgrade(type) {
   }
 }
 
+// Renderiza la lista de logros: muestra el contador de desbloqueados y cada logro con su
+// icono, nombre (oculto como '???' si no está desbloqueado), descripción y recompensa.
 function renderAchievements() {
   const body = document.getElementById("achievementsBody");
   let html = `<div style="margin-bottom:14px;color:var(--text-secondary);font-size:14px;font-family:'VT323',monospace;">${unlockedAchievements.size}/${ACHIEVEMENTS.length} desbloqueados</div>`;
@@ -304,6 +336,8 @@ function renderAchievements() {
   body.innerHTML = html;
 }
 
+// Renderiza el panel de estadísticas con una cuadrícula de tarjetas (oro total, gemas,
+// material minado, clics, prestigios, puntuación, tiempo jugado, pisos y combo máximo).
 function renderStats() {
   const body = document.getElementById("statsBody");
   const elapsed = Math.floor((Date.now() - game.startTime) / 1000);
@@ -349,6 +383,8 @@ function renderStats() {
   `;
 }
 
+// Renderiza el panel de prestigio: explica el reinicio, muestra las gemas a ganar
+// (calculatePrestigeGems) y los botones para cancelar o confirmar el prestigio.
 function renderPrestige() {
   const body = document.getElementById("prestigeBody");
   const gems = calculatePrestigeGems();
@@ -372,6 +408,8 @@ function renderPrestige() {
 // ============================================================
 // ACHIEVEMENTS CHECK
 // ============================================================
+// Revisa todos los logros: si alguno no está desbloqueado y su condición se cumple (ach.check()),
+// lo añade al set, notifica, verifica logros y otorga su recompensa (gemas u oro según el texto).
 function checkAchievements() {
   ACHIEVEMENTS.forEach(ach => {
     if (!unlockedAchievements.has(ach.id) && ach.check()) {
@@ -397,6 +435,8 @@ function checkAchievements() {
 // ============================================================
 
 // Añade una entrada al log de eventos del panel lateral
+// Añade una entrada al log de eventos del panel lateral: la inserta al principio con la hora
+// local (es-MX) y limita el historial a 50 entradas eliminando las más antiguas.
 function addEventLog(message, type = 'info') {
   const body = document.getElementById('eventLogBody');
   if (!body) return;
@@ -422,6 +462,8 @@ function clearEventLog() {
 }
 
 // Muestra la barra de evento activo en la parte inferior del juego
+// Muestra la barra de evento activo en la parte inferior del juego, rellenándola al 100%
+// con el color del evento y mostrando su icono, nombre y descripción.
 function showBonusBar(type) {
   const bar = document.getElementById('activeBonusBar');
   if (!bar) return;
@@ -434,11 +476,13 @@ function showBonusBar(type) {
   bar.style.display = 'flex';
 }
 
+// Oculta la barra de evento activo (la deja con display none).
 function hideBonusBar() {
   const bar = document.getElementById('activeBonusBar');
   if (bar) bar.style.display = 'none';
 }
 
+// Actualiza el relleno y el tiempo restante de la barra de evento activo según el progreso del temporizador.
 function updateActiveBonusBar() {
   if (!bonusEvent.active) return;
   const progress = Math.max(0, bonusEvent.timer / bonusEvent.duration);
@@ -448,6 +492,8 @@ function updateActiveBonusBar() {
   if (time) time.textContent = Math.ceil(bonusEvent.timer / 1000) + 's';
 }
 
+// Muestra una notificación tipo "toast" temporal (3s) y la duplica en el log de eventos
+// como 'logro' si es un logro o 'info' en caso contrario.
 function showToast(message, isAchievement = false) {
   const container = document.getElementById("toastContainer");
   const toast = document.createElement("div");
@@ -464,6 +510,7 @@ function showToast(message, isAchievement = false) {
 // ============================================================
 // FORMAT HELPERS
 // ============================================================
+// Formatea un número grande usando sufijos K (miles), M (millones), B (mil millones) y T (billones).
 function formatNum(n) {
   if (n >= 1e12) return (n / 1e12).toFixed(1) + "T";
   if (n >= 1e9) return (n / 1e9).toFixed(1) + "B";
@@ -472,6 +519,7 @@ function formatNum(n) {
   return Math.floor(n).toLocaleString();
 }
 
+// Convierte una cantidad de segundos en texto legible (h/m/s) omitiendo las unidades en cero.
 function formatTime(seconds) {
   const h = Math.floor(seconds / 3600);
   const m = Math.floor((seconds % 3600) / 60);
@@ -484,6 +532,8 @@ function formatTime(seconds) {
 // ============================================================
 // GAME START / CONTINUE
 // ============================================================
+// Inicia una partida nueva desde cero: reinicia el estado del juego, pisos, mejoras, combo y
+// eventos, y muestra la interfaz del juego ocultando el menú principal.
 function startNewGame() {
   game = {
     cash: 0, gems: 0, totalEarned: 0, totalMined: 0, totalClicks: 0,
@@ -512,6 +562,7 @@ function startNewGame() {
   updateFloorBar();
 }
 
+// Continúa una partida guardada: carga los datos, marca el juego como iniciado y muestra la interfaz.
 function continueGame() {
   if (loadGame()) {
     game.started = true;
@@ -526,6 +577,8 @@ function continueGame() {
   }
 }
 
+// Muestra el menú principal y, si existe una partida guardada, intenta leer sus estadísticas
+// para mostrarlas como resumen (manejando errores de guardado corrupto).
 function showMainMenu() {
   document.getElementById("startMenu").classList.remove("hidden");
   document.getElementById("hud").classList.remove("active");
@@ -561,6 +614,7 @@ const THEME_TIPS = [
   "Haz prestigio para ganar bonificaciones ⭐"
 ];
 
+// Aplica el tema indicado (light/dark) al documento y a la pantalla de carga, y actualiza el icono del botón.
 function applyTheme(theme) {
   if (theme === "light") {
     document.documentElement.setAttribute("data-theme", "light");
@@ -575,23 +629,26 @@ function applyTheme(theme) {
   }
 }
 
+// Alterna entre tema claro y oscuro, lo aplica, lo guarda en localStorage y muestra un aviso.
 function toggleTheme() {
   const isLight = document.documentElement.getAttribute("data-theme") === "light";
   const newTheme = isLight ? "dark" : "light";
   applyTheme(newTheme);
-  try { localStorage.setItem(THEME_KEY, newTheme); } catch (e) {}
+  try { localStorage.setItem(THEME_KEY, newTheme); } catch (e) { }
   showToast(newTheme === "light" ? "☀️ Tema claro" : "🌙 Tema oscuro");
 }
 
+// Inicializa el tema leyendo la preferencia guardada en localStorage (por defecto 'dark').
 function initTheme() {
   let theme = "dark";
-  try { theme = localStorage.getItem(THEME_KEY) || "dark"; } catch (e) {}
+  try { theme = localStorage.getItem(THEME_KEY) || "dark"; } catch (e) { }
   applyTheme(theme);
 }
 
 // ============================================================
 // RETURN TO MENU
 // ============================================================
+// Cierra todos los paneles abiertos (tienda, logros, stats, prestigio, howto) y quita la pausa.
 function closeAllPanels() {
   ["shop", "achievements", "stats", "prestige", "howto"].forEach(p => {
     document.getElementById(`panel-${p}`).classList.remove("active");
@@ -599,6 +656,7 @@ function closeAllPanels() {
   game.paused = false;
 }
 
+// Guarda y vuelve al menú principal: pausa el juego, cierra paneles, oculta la interfaz y muestra el menú.
 function returnToMenu() {
   if (!game.started) return;
   saveGame(true);
@@ -617,12 +675,15 @@ function returnToMenu() {
 // ============================================================
 let loadingDone = false;
 
+// Finaliza la pantalla de carga ocultándola (sólo una vez, gracias al flag loadingDone).
 function finishLoading() {
   if (loadingDone) return;
   loadingDone = true;
   document.getElementById("loadingScreen").classList.add("hidden");
 }
 
+// Ejecuta la animación de la pantalla de carga: avanza una barra de progreso aleatorio,
+// actualiza el porcentaje y rota los consejos (THEME_TIPS) hasta llegar al 100% y luego finaliza.
 function runLoadingScreen() {
   const bar = document.getElementById("loadBar");
   const pct = document.getElementById("loadPct");

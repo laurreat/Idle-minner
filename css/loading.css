@@ -1,8 +1,13 @@
 /* ==================== LOADING SCREEN ==================== */
+/* Pantalla de carga a pantalla completa, por encima de todo (z-index 1000) */
 #loadingScreen {
-  position: fixed; inset: 0; z-index: 1000;
-  display: flex; flex-direction: column;
-  align-items: center; justify-content: center;
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
   background:
     radial-gradient(ellipse at 50% 30%, rgba(16, 185, 129, 0.12) 0%, transparent 55%),
     radial-gradient(ellipse at 50% 80%, rgba(167, 139, 250, 0.10) 0%, transparent 55%),
@@ -11,6 +16,7 @@
   overflow: hidden;
 }
 
+/* Variante clara de la pantalla de carga */
 #loadingScreen.light {
   background:
     radial-gradient(ellipse at 50% 30%, rgba(5, 150, 105, 0.12) 0%, transparent 55%),
@@ -18,21 +24,35 @@
     linear-gradient(180deg, #eef2fb 0%, #ffffff 50%, #eef2fb 100%);
 }
 
-#loadingScreen.hidden { opacity: 0; visibility: hidden; pointer-events: none; }
-
-#loadingScreen::before {
-  content: ''; position: absolute; inset: 0;
-  background: repeating-linear-gradient(0deg, transparent, transparent 3px, rgba(255,255,255,0.012) 3px, rgba(255,255,255,0.012) 6px);
+/* Estado oculto de la pantalla de carga (desvanecido al terminar) */
+#loadingScreen.hidden {
+  opacity: 0;
+  visibility: hidden;
   pointer-events: none;
 }
 
+/* Capa de scanlines decorativa de la pantalla de carga */
+#loadingScreen::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: repeating-linear-gradient(0deg, transparent, transparent 3px, rgba(255, 255, 255, 0.012) 3px, rgba(255, 255, 255, 0.012) 6px);
+  pointer-events: none;
+}
+
+/* Contenedor del icono de minero (martillo) con su animacion de balanceo */
 .load-miner {
-  position: relative; z-index: 2;
-  width: clamp(90px, 18vw, 150px); height: clamp(90px, 18vw, 150px);
-  display: flex; align-items: center; justify-content: center;
+  position: relative;
+  z-index: 2;
+  width: clamp(90px, 18vw, 150px);
+  height: clamp(90px, 18vw, 150px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
   margin-bottom: 28px;
 }
 
+/* El martillo/pico que gira de lado a lado */
 .load-miner .pick {
   font-size: clamp(60px, 12vw, 110px);
   color: var(--gold);
@@ -42,53 +62,88 @@
 }
 
 @keyframes pickSwing {
-  0%, 100% { transform: rotate(-22deg); }
-  50% { transform: rotate(22deg); }
+
+  0%,
+  100% {
+    transform: rotate(-22deg);
+  }
+
+  50% {
+    transform: rotate(22deg);
+  }
 }
 
+/* Halo circular animado alrededor del minero */
 .load-miner .halo {
-  position: absolute; inset: -10px;
+  position: absolute;
+  inset: -10px;
   border-radius: 50%;
   border: 2px solid var(--gold-dim);
   animation: haloPulse 2s ease-in-out infinite;
 }
 
 @keyframes haloPulse {
-  0%, 100% { transform: scale(0.9); opacity: 0.4; }
-  50% { transform: scale(1.15); opacity: 0.9; }
+
+  0%,
+  100% {
+    transform: scale(0.9);
+    opacity: 0.4;
+  }
+
+  50% {
+    transform: scale(1.15);
+    opacity: 0.9;
+  }
 }
 
+/* Titulo principal "IDLE MINER" de la pantalla de carga */
 .load-title {
-  position: relative; z-index: 2;
+  position: relative;
+  z-index: 2;
   font-family: 'Silkscreen', cursive;
   font-size: clamp(24px, 5vw, 40px);
   color: var(--gold);
   text-shadow: 3px 3px 0 rgba(0, 0, 0, 0.8), 0 0 30px rgba(255, 215, 0, 0.4);
-  letter-spacing: 4px; margin-bottom: 6px;
+  letter-spacing: 4px;
+  margin-bottom: 6px;
 }
 
-#loadingScreen.light .load-title { text-shadow: 2px 2px 0 rgba(255,255,255,0.6), 0 0 30px rgba(217,119,6,0.25); }
+#loadingScreen.light .load-title {
+  text-shadow: 2px 2px 0 rgba(255, 255, 255, 0.6), 0 0 30px rgba(217, 119, 6, 0.25);
+}
 
+/* Subtitulo "Edición Profunda" */
 .load-sub {
-  position: relative; z-index: 2;
+  position: relative;
+  z-index: 2;
   font-family: 'VT323', monospace;
   font-size: clamp(13px, 2.2vw, 17px);
   color: var(--text-secondary);
-  letter-spacing: 5px; text-transform: uppercase; margin-bottom: 34px;
+  letter-spacing: 5px;
+  text-transform: uppercase;
+  margin-bottom: 34px;
 }
 
+/* Contenedor (pista) de la barra de progreso de carga */
 .load-bar-wrap {
-  position: relative; z-index: 2;
-  width: min(360px, 80vw); height: 10px;
+  position: relative;
+  z-index: 2;
+  width: min(360px, 80vw);
+  height: 10px;
   background: rgba(255, 255, 255, 0.06);
-  border-radius: 6px; overflow: hidden;
+  border-radius: 6px;
+  overflow: hidden;
   border: 1px solid var(--border-subtle);
 }
 
-[data-theme="light"] .load-bar-wrap { background: rgba(15, 23, 42, 0.06); }
+[data-theme="light"] .load-bar-wrap {
+  background: rgba(15, 23, 42, 0.06);
+}
 
+/* Relleno animado de la barra de carga (ancho controlado por JS) */
 .load-bar {
-  height: 100%; width: 0%;
+  height: 100%;
+  width: 0%;
   background: linear-gradient(90deg, #10b981, #FFD700, #a78bfa);
   background-size: 200% 100%;
   border-radius: 6px;
@@ -96,29 +151,60 @@
   animation: barShimmer 2s linear infinite;
 }
 
-@keyframes barShimmer { 0% { background-position: 0% 0; } 100% { background-position: 200% 0; } }
+@keyframes barShimmer {
+  0% {
+    background-position: 0% 0;
+  }
 
-.load-pct {
-  position: relative; z-index: 2;
-  margin-top: 12px; font-family: 'Silkscreen', cursive;
-  font-size: 14px; color: var(--text-secondary); letter-spacing: 1px;
+  100% {
+    background-position: 200% 0;
+  }
 }
 
+/* Texto del porcentaje de carga */
+.load-pct {
+  position: relative;
+  z-index: 2;
+  margin-top: 12px;
+  font-family: 'Silkscreen', cursive;
+  font-size: 14px;
+  color: var(--text-secondary);
+  letter-spacing: 1px;
+}
+
+/* Consejo mostrado durante la carga */
 .load-tip {
-  position: relative; z-index: 2;
-  margin-top: 22px; max-width: min(420px, 86vw);
-  text-align: center; font-family: 'VT323', monospace;
-  font-size: 15px; color: var(--text-dim); min-height: 20px;
+  position: relative;
+  z-index: 2;
+  margin-top: 22px;
+  max-width: min(420px, 86vw);
+  text-align: center;
+  font-family: 'VT323', monospace;
+  font-size: 15px;
+  color: var(--text-dim);
+  min-height: 20px;
   transition: opacity 0.4s ease;
 }
 
+/* Boton para saltar la pantalla de carga */
 .load-skip {
-  position: relative; z-index: 2;
-  margin-top: 26px; padding: 10px 22px;
-  border: 1px solid var(--border-subtle); border-radius: 8px;
-  background: rgba(255,255,255,0.04); color: var(--text-secondary);
-  font-family: 'Silkscreen', cursive; font-size: 12px; cursor: pointer;
-  letter-spacing: 1px; transition: all 0.25s ease;
+  position: relative;
+  z-index: 2;
+  margin-top: 26px;
+  padding: 10px 22px;
+  border: 1px solid var(--border-subtle);
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.04);
+  color: var(--text-secondary);
+  font-family: 'Silkscreen', cursive;
+  font-size: 12px;
+  cursor: pointer;
+  letter-spacing: 1px;
+  transition: all 0.25s ease;
 }
-.load-skip:hover { color: var(--gold); border-color: var(--border-active); transform: translateY(-2px); }
 
+.load-skip:hover {
+  color: var(--gold);
+  border-color: var(--border-active);
+  transform: translateY(-2px);
+}

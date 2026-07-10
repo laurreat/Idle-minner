@@ -1,7 +1,15 @@
+/* Fuentes pixel/retro usadas en todo el juego: VT323 para texto y Silkscreen para titulos */
 @import url('https://fonts.googleapis.com/css2?family=VT323&family=Silkscreen:wght@400;700&display=swap');
 
-* { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+/* Reset global: elimina margenes/paddings, usa border-box y quita el resaltado al tocar en moviles */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  -webkit-tap-highlight-color: transparent;
+}
 
+/* Variables globales de tema (colores, radios, etc.). El tema claro las sobreescribe en theme.css */
 :root {
   --bg-primary: #0a0a12;
   --bg-secondary: #12121f;
@@ -21,38 +29,54 @@
   --radius-sm: 8px;
 }
 
+/* Cuerpo: centra el layout, ocupa toda la pantalla, fondo oscuro y sin seleccion de texto */
 body {
-  display: flex; justify-content: center; align-items: center;
-  width: 100vw; height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 100vw;
+  height: 100vh;
   background: var(--bg-primary);
   font-family: 'VT323', monospace;
-  overflow: hidden; user-select: none;
+  overflow: hidden;
+  user-select: none;
 }
 
+/* Capa decorativa de fondo: gradientes radiales y lineas de escaneo (scanlines), sin interaccion */
 body::before {
   content: '';
-  position: fixed; inset: 0;
-  background: 
+  position: fixed;
+  inset: 0;
+  background:
     radial-gradient(ellipse at 20% 50%, rgba(16, 185, 129, 0.05) 0%, transparent 50%),
     radial-gradient(ellipse at 80% 50%, rgba(167, 139, 250, 0.04) 0%, transparent 50%),
-    repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(255,255,255,0.008) 2px, rgba(255,255,255,0.008) 4px);
+    repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(255, 255, 255, 0.008) 2px, rgba(255, 255, 255, 0.008) 4px);
   pointer-events: none;
   z-index: 0;
 }
 
+/* Layout principal que envuelve el area de juego */
 #mainLayout {
-  position: relative; z-index: 1;
-  display: flex; align-items: center; justify-content: center;
-  width: 100%; height: 100%; gap: 12px;
+  position: relative;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+  gap: 12px;
 }
 
+/* Area de juego: contenedor relativo donde se superponen canvas, HUD, menus y paneles */
 #gameArea {
   position: relative;
   display: block;
-  width: 100vw; height: 100vh;
+  width: 100vw;
+  height: 100vh;
   overflow: hidden;
 }
 
+/* Lienzo del juego a pantalla completa */
 #gameCanvas {
   display: block;
   width: 100vw;
@@ -60,33 +84,72 @@ body::before {
   image-rendering: auto;
 }
 
-
+/* HUD: superpuesto sobre el canvas. Oculto por defecto; se muestra con la clase .active */
 #hud {
-  position: absolute; top: 0; left: 0; right: 0; bottom: 0;
-  padding: 2.2% 2.5%; display: none;
-  pointer-events: none; z-index: 10;
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  padding: 2.2% 2.5%;
+  display: none;
+  pointer-events: none;
+  z-index: 10;
 }
-#hud.active { display: flex; justify-content: space-between; align-items: flex-start; }
 
-.hud-left, .hud-center, .hud-right {
+/* Estado activo del HUD: distribuye las tres columnas a los extremos */
+#hud.active {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+}
+
+/* Columnas del HUD; permiten interaccion aunque el HUD general sea no-clickable */
+.hud-left,
+.hud-center,
+.hud-right {
   pointer-events: auto;
-  display: flex; flex-direction: column; gap: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
 }
-.hud-left { align-items: flex-start; }
-.hud-center { align-items: center; text-align: center; }
-.hud-right { align-items: flex-end; text-align: right; }
 
-.hud-cash, .hud-gems, .hud-floor, .hud-score, .hud-persec, .hud-time {
+.hud-left {
+  align-items: flex-start;
+}
+
+.hud-center {
+  align-items: center;
+  text-align: center;
+}
+
+.hud-right {
+  align-items: flex-end;
+  text-align: right;
+}
+
+/* Estilo base de las "pastillas" del HUD (oro, gemas, piso, puntos, etc.) */
+.hud-cash,
+.hud-gems,
+.hud-floor,
+.hud-score,
+.hud-persec,
+.hud-time {
   font-family: 'Silkscreen', cursive;
-  display: inline-flex; align-items: center; gap: 7px;
-  padding: 9px 16px; border-radius: 999px;
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 9px 16px;
+  border-radius: 999px;
   background: rgba(6, 9, 18, 0.95);
   border: 1.5px solid rgba(255, 255, 255, 0.14);
   box-shadow: 0 6px 18px rgba(0, 0, 0, 0.55), inset 0 0 0 1px rgba(255, 255, 255, 0.05);
   backdrop-filter: blur(12px);
-  letter-spacing: 0.5px; white-space: nowrap;
+  letter-spacing: 0.5px;
+  white-space: nowrap;
 }
 
+/* Pastilla de oro: dorada con brillo y pulso animado */
 .hud-cash {
   font-size: clamp(18px, 2.8vw, 28px);
   color: var(--gold);
@@ -95,11 +158,20 @@ body::before {
   animation: cashPulse 3s ease-in-out infinite;
 }
 
+/* Pulso suave de brillo del contador de oro */
 @keyframes cashPulse {
-  0%, 100% { filter: brightness(1); }
-  50% { filter: brightness(1.15); }
+
+  0%,
+  100% {
+    filter: brightness(1);
+  }
+
+  50% {
+    filter: brightness(1.15);
+  }
 }
 
+/* Pastilla de gemas: color morado */
 .hud-gems {
   font-size: clamp(13px, 1.9vw, 19px);
   color: var(--purple);
@@ -107,16 +179,19 @@ body::before {
   text-shadow: 0 0 10px var(--purple-glow);
 }
 
+/* Pastilla del piso actual */
 .hud-floor {
   font-size: clamp(13px, 1.9vw, 19px);
   color: var(--text-primary);
 }
 
+/* Pastilla de puntos */
 .hud-score {
   font-size: clamp(12px, 1.6vw, 16px);
   color: var(--text-secondary);
 }
 
+/* Pastilla de oro por segundo: color esmeralda */
 .hud-persec {
   font-size: clamp(13px, 1.9vw, 19px);
   color: var(--emerald);
@@ -124,18 +199,33 @@ body::before {
   text-shadow: 0 0 10px var(--emerald-glow);
 }
 
+/* Pastilla de tiempo de partida */
 .hud-time {
   font-size: clamp(12px, 1.6vw, 16px);
   color: var(--text-secondary);
 }
 
+/* Botones laterales de acceso rapido; ocultos hasta que el juego esta activo (.active) */
 #sideButtons {
-  position: absolute; right: 1%; top: 50%; transform: translateY(-50%);
-  display: none; flex-direction: column; gap: 0.8vh; z-index: 20;
+  position: absolute;
+  right: 1%;
+  top: 50%;
+  transform: translateY(-50%);
+  display: none;
+  flex-direction: column;
+  gap: 0.8vh;
+  z-index: 20;
 }
-#sideButtons.active { display: flex; }
+
+/* Muestra la barra de botones laterales cuando el juego esta activo */
+#sideButtons.active {
+  display: flex;
+}
+
+/* Boton individual de la barra lateral: cuadrado redondeado con efecto glass */
 .side-btn {
-  width: clamp(36px, 5.5vw, 48px); height: clamp(36px, 5.5vw, 48px);
+  width: clamp(36px, 5.5vw, 48px);
+  height: clamp(36px, 5.5vw, 48px);
   border-radius: var(--radius-sm);
   border: 2px solid var(--border-subtle);
   background: rgba(0, 0, 0, 0.75);
@@ -143,20 +233,25 @@ body::before {
   color: var(--text-secondary);
   font-size: clamp(14px, 2.2vw, 18px);
   cursor: pointer;
-  display: flex; align-items: center; justify-content: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
   position: relative;
   overflow: hidden;
 }
 
+/* Brillo diagonal que aparece al pasar el cursor (.side-btn:hover::before) */
 .side-btn::before {
   content: '';
-  position: absolute; inset: 0;
-  background: linear-gradient(135deg, rgba(255,255,255,0.1), transparent);
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.1), transparent);
   opacity: 0;
   transition: opacity 0.25s ease;
 }
 
+/* Efecto hover de los botones laterales: resalta en dorado y escala */
 .side-btn:hover {
   background: rgba(255, 255, 255, 0.12);
   color: var(--gold);
@@ -165,22 +260,41 @@ body::before {
   box-shadow: 0 0 20px rgba(255, 215, 0, 0.2);
 }
 
-.side-btn:hover::before { opacity: 1; }
-.side-btn:active { transform: scale(0.92); }
+.side-btn:hover::before {
+  opacity: 1;
+}
 
+/* Efecto al presionar: encoge el boton */
+.side-btn:active {
+  transform: scale(0.92);
+}
+
+/* Barra de seleccion de pisos (izquierda); oculta hasta que el juego esta activo */
 #floorBar {
-  position: absolute; left: 1%; top: 50%; transform: translateY(-50%);
-  display: none; flex-direction: column; gap: 0.8vh; z-index: 15;
+  position: absolute;
+  left: 1%;
+  top: 50%;
+  transform: translateY(-50%);
+  display: none;
+  flex-direction: column;
+  gap: 0.8vh;
+  z-index: 15;
   background: rgba(0, 0, 0, 0.6);
   padding: 1.2vh 0.8vw;
   border-radius: var(--radius-sm);
   border: 1px solid var(--border-subtle);
   backdrop-filter: blur(8px);
 }
-#floorBar.active { display: flex; }
 
+/* Muestra la barra de pisos cuando el juego esta activo */
+#floorBar.active {
+  display: flex;
+}
+
+/* Punto individual de un piso en la barra de seleccion */
 .floor-dot {
-  width: clamp(12px, 1.6vw, 16px); height: clamp(12px, 1.6vw, 16px);
+  width: clamp(12px, 1.6vw, 16px);
+  height: clamp(12px, 1.6vw, 16px);
   border-radius: 4px;
   border: 2px solid rgba(255, 255, 255, 0.2);
   background: transparent;
@@ -189,6 +303,7 @@ body::before {
   position: relative;
 }
 
+/* Piso actualmente seleccionado: resaltado esmeralda con pulso */
 .floor-dot.current {
   background: var(--emerald);
   border-color: var(--emerald);
@@ -197,25 +312,40 @@ body::before {
 }
 
 @keyframes dotPulse {
-  0%, 100% { box-shadow: 0 0 8px var(--emerald-glow); }
-  50% { box-shadow: 0 0 18px var(--emerald-glow); }
+
+  0%,
+  100% {
+    box-shadow: 0 0 8px var(--emerald-glow);
+  }
+
+  50% {
+    box-shadow: 0 0 18px var(--emerald-glow);
+  }
 }
 
+/* Piso desbloqueado pero no seleccionado */
 .floor-dot.unlocked {
   background: rgba(255, 255, 255, 0.3);
   border-color: rgba(255, 255, 255, 0.5);
 }
 
-.floor-dot.locked { opacity: 0.3; }
+/* Piso bloqueado: semitransparente */
+.floor-dot.locked {
+  opacity: 0.3;
+}
 
 .floor-dot:hover {
   transform: scale(1.3);
   border-color: var(--gold);
 }
 
+/* Tooltip flotante con el nombre del piso al pasar el cursor (lee data-tooltip) */
 .floor-dot:hover::after {
   content: attr(data-tooltip);
-  position: absolute; left: 150%; top: 50%; transform: translateY(-50%);
+  position: absolute;
+  left: 150%;
+  top: 50%;
+  transform: translateY(-50%);
   background: rgba(0, 0, 0, 0.95);
   color: var(--text-primary);
   padding: 6px 10px;
@@ -227,4 +357,3 @@ body::before {
   border: 1px solid var(--border-subtle);
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
 }
-

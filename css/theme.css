@@ -1,8 +1,17 @@
 /* ==================== THEME SYSTEM ==================== */
-body, #startMenu, .menu-card, .panel, #gameCanvas, #hud, #sideButtons, #floorBar {
+/* Transicion suave al cambiar de tema en los componentes principales */
+body,
+#startMenu,
+.menu-card,
+.panel,
+#gameCanvas,
+#hud,
+#sideButtons,
+#floorBar {
   transition: background 0.5s ease, color 0.5s ease, border-color 0.5s ease, box-shadow 0.5s ease;
 }
 
+/* Tema claro: redefine las variables globales con colores claros */
 [data-theme="light"] {
   --bg-primary: #f4f6fb;
   --bg-secondary: #ffffff;
@@ -22,13 +31,15 @@ body, #startMenu, .menu-card, .panel, #gameCanvas, #hud, #sideButtons, #floorBar
   --radius-sm: 8px;
 }
 
+/* Scanlines y gradientes del fondo en tema claro */
 [data-theme="light"] body::before {
   background:
     radial-gradient(ellipse at 20% 50%, rgba(5, 150, 105, 0.07) 0%, transparent 50%),
     radial-gradient(ellipse at 80% 50%, rgba(124, 58, 237, 0.06) 0%, transparent 50%),
-    repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0,0,0,0.015) 2px, rgba(0,0,0,0.015) 4px);
+    repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0, 0, 0, 0.015) 2px, rgba(0, 0, 0, 0.015) 4px);
 }
 
+/* Fondo del menu de inicio en tema claro */
 [data-theme="light"] #startMenu {
   background:
     radial-gradient(ellipse at 30% 20%, rgba(5, 150, 105, 0.10) 0%, transparent 50%),
@@ -36,110 +47,268 @@ body, #startMenu, .menu-card, .panel, #gameCanvas, #hud, #sideButtons, #floorBar
     linear-gradient(180deg, #f4f6fb 0%, #e8edf7 50%, #f4f6fb 100%);
 }
 
+/* Scanlines del menu en tema claro */
 [data-theme="light"] #startMenu::before {
-  background: repeating-linear-gradient(0deg, transparent, transparent 3px, rgba(0,0,0,0.02) 3px, rgba(0,0,0,0.02) 6px);
+  background: repeating-linear-gradient(0deg, transparent, transparent 3px, rgba(0, 0, 0, 0.02) 3px, rgba(0, 0, 0, 0.02) 6px);
 }
 
-[data-theme="light"] .panel-overlay { background: rgba(255, 255, 255, 0.7); }
-[data-theme="light"] .panel { box-shadow: 0 24px 80px rgba(15, 23, 42, 0.18); }
-[data-theme="light"] .menu-card { box-shadow: 0 20px 60px rgba(15, 23, 42, 0.15); }
-[data-theme="light"] .panel-header { background: rgba(15, 23, 42, 0.02); }
+/* Ajustes generales de paneles, tarjetas y header en tema claro */
+[data-theme="light"] .panel-overlay {
+  background: rgba(255, 255, 255, 0.7);
+}
+
+[data-theme="light"] .panel {
+  box-shadow: 0 24px 80px rgba(15, 23, 42, 0.18);
+}
+
+[data-theme="light"] .menu-card {
+  box-shadow: 0 20px 60px rgba(15, 23, 42, 0.15);
+}
+
+[data-theme="light"] .panel-header {
+  background: rgba(15, 23, 42, 0.02);
+}
+
 [data-theme="light"] .stat-card,
-[data-theme="light"] .achievement { background: rgba(15, 23, 42, 0.025); }
-[data-theme="light"] .shop-item { 
-  background: #ffffff; 
+[data-theme="light"] .achievement {
+  background: rgba(15, 23, 42, 0.025);
+}
+
+/* Articulos de la tienda en tema claro */
+[data-theme="light"] .shop-item {
+  background: #ffffff;
   border-color: rgba(15, 23, 42, 0.08);
   box-shadow: 0 2px 8px rgba(15, 23, 42, 0.04);
 }
+
 [data-theme="light"] .shop-item:hover {
   background: #ffffff;
   border-color: var(--border-active);
   box-shadow: 0 4px 12px rgba(217, 119, 6, 0.15);
 }
-/* Mejorar la visibilidad de items no comprables en tema claro (0.4 es muy bajo) */
-[data-theme="light"] .shop-item.cant-afford { opacity: 0.7; filter: grayscale(50%); background: #f8fafc; }
 
-[data-theme="light"] .toast { background: rgba(255, 255, 255, 0.92); color: var(--text-primary); }
-[data-theme="light"] .panel-close:hover { background: rgba(15, 23, 42, 0.06); }
+/* Mejorar la visibilidad de items no comprables en tema claro (0.4 es muy bajo) */
+[data-theme="light"] .shop-item.cant-afford {
+  opacity: 0.7;
+  filter: grayscale(50%);
+  background: #f8fafc;
+}
+
+/* Toast y cierre de panel en tema claro */
+[data-theme="light"] .toast {
+  background: rgba(255, 255, 255, 0.92);
+  color: var(--text-primary);
+}
+
+[data-theme="light"] .panel-close:hover {
+  background: rgba(15, 23, 42, 0.06);
+}
 
 /* Componentes dentro del juego en tema claro (evita botones negros) */
+/* Botones laterales con fondo claro */
 [data-theme="light"] .side-btn {
   background: rgba(255, 255, 255, 0.85);
   color: var(--text-secondary);
   border-color: rgba(15, 23, 42, 0.12);
   box-shadow: 0 4px 14px rgba(15, 23, 42, 0.10);
 }
+
 [data-theme="light"] .side-btn:hover {
   background: rgba(255, 255, 255, 0.95);
   color: var(--gold);
   border-color: var(--border-active);
   box-shadow: 0 0 20px rgba(217, 119, 6, 0.25);
 }
+
+/* Barra de pisos en tema claro */
 [data-theme="light"] #floorBar {
   background: rgba(255, 255, 255, 0.8);
   border-color: rgba(15, 23, 42, 0.12);
   box-shadow: 0 4px 14px rgba(15, 23, 42, 0.10);
 }
-[data-theme="light"] .floor-dot { border-color: rgba(15, 23, 42, 0.25); }
-[data-theme="light"] .floor-dot.unlocked { background: rgba(15, 23, 42, 0.25); border-color: rgba(15, 23, 42, 0.4); }
+
+[data-theme="light"] .floor-dot {
+  border-color: rgba(15, 23, 42, 0.25);
+}
+
+[data-theme="light"] .floor-dot.unlocked {
+  background: rgba(15, 23, 42, 0.25);
+  border-color: rgba(15, 23, 42, 0.4);
+}
+
+/* Boton mini (cargar partida) en tema claro */
 [data-theme="light"] .menu-mini {
   background: rgba(15, 23, 42, 0.03);
   color: var(--text-secondary);
   border-color: rgba(15, 23, 42, 0.12);
 }
-[data-theme="light"] .menu-mini:hover { background: rgba(255, 215, 0, 0.12); color: var(--gold); }
-[data-theme="light"] .panel-close { color: var(--text-secondary); border-color: rgba(15, 23, 42, 0.12); }
-[data-theme="light"] .load-skip { background: rgba(15, 23, 42, 0.04); color: var(--text-secondary); border-color: rgba(15, 23, 42, 0.12); }
-[data-theme="light"] .load-skip:hover { color: var(--gold); border-color: var(--border-active); }
-[data-theme="light"] #gameCanvas { box-shadow: none; }
-[data-theme="light"] .menu-theme-toggle { background: rgba(255,255,255,0.85); color: var(--text-primary); border-color: rgba(15,23,42,0.12); }
-[data-theme="light"] .menu-theme-toggle:hover { color: var(--gold); border-color: var(--border-active); }
-[data-theme="light"] .btn-continue, [data-theme="light"] .btn-prestige, [data-theme="light"] .btn-info, [data-theme="light"] .btn-save {
-  background: rgba(15, 23, 42, 0.04); color: var(--text-primary); border-color: rgba(15, 23, 42, 0.12);
+
+[data-theme="light"] .menu-mini:hover {
+  background: rgba(255, 215, 0, 0.12);
+  color: var(--gold);
 }
-[data-theme="light"] .btn-continue:hover, [data-theme="light"] .btn-prestige:hover, [data-theme="light"] .btn-info:hover, [data-theme="light"] .btn-save:hover {
-  background: rgba(255, 215, 0, 0.12); color: var(--gold); border-color: var(--border-active);
+
+[data-theme="light"] .panel-close {
+  color: var(--text-secondary);
+  border-color: rgba(15, 23, 42, 0.12);
+}
+
+[data-theme="light"] .load-skip {
+  background: rgba(15, 23, 42, 0.04);
+  color: var(--text-secondary);
+  border-color: rgba(15, 23, 42, 0.12);
+}
+
+[data-theme="light"] .load-skip:hover {
+  color: var(--gold);
+  border-color: var(--border-active);
+}
+
+[data-theme="light"] #gameCanvas {
+  box-shadow: none;
+}
+
+[data-theme="light"] .menu-theme-toggle {
+  background: rgba(255, 255, 255, 0.85);
+  color: var(--text-primary);
+  border-color: rgba(15, 23, 42, 0.12);
+}
+
+[data-theme="light"] .menu-theme-toggle:hover {
+  color: var(--gold);
+  border-color: var(--border-active);
+}
+
+/* Botones secundarios del menu en tema claro */
+[data-theme="light"] .btn-continue,
+[data-theme="light"] .btn-prestige,
+[data-theme="light"] .btn-info,
+[data-theme="light"] .btn-save {
+  background: rgba(15, 23, 42, 0.04);
+  color: var(--text-primary);
+  border-color: rgba(15, 23, 42, 0.12);
+}
+
+[data-theme="light"] .btn-continue:hover,
+[data-theme="light"] .btn-prestige:hover,
+[data-theme="light"] .btn-info:hover,
+[data-theme="light"] .btn-save:hover {
+  background: rgba(255, 215, 0, 0.12);
+  color: var(--gold);
+  border-color: var(--border-active);
 }
 
 /* HUD en tema claro: pastillas claras con texto oscuro para buen contraste */
-[data-theme="light"] .hud-cash, [data-theme="light"] .hud-gems, [data-theme="light"] .hud-floor,
-[data-theme="light"] .hud-score, [data-theme="light"] .hud-persec, [data-theme="light"] .hud-time {
+/* Estilo base de las pastillas del HUD en tema claro */
+[data-theme="light"] .hud-cash,
+[data-theme="light"] .hud-gems,
+[data-theme="light"] .hud-floor,
+[data-theme="light"] .hud-score,
+[data-theme="light"] .hud-persec,
+[data-theme="light"] .hud-time {
   background: rgba(255, 255, 255, 0.95);
   border-color: rgba(15, 23, 42, 0.2);
   box-shadow: 0 4px 12px rgba(15, 23, 42, 0.15);
-  text-shadow: none; /* Eliminar brillo para mejorar legibilidad en blanco */
+  text-shadow: none;
+  /* Eliminar brillo para mejorar legibilidad en blanco */
 }
-[data-theme="light"] .hud-cash { color: #b45309; font-weight: bold; } /* Naranja/oro más oscuro para contraste */
-[data-theme="light"] .hud-gems { color: #6d28d9; font-weight: bold; }
-[data-theme="light"] .hud-persec { color: #047857; font-weight: bold; }
-[data-theme="light"] .hud-floor, [data-theme="light"] .hud-score, [data-theme="light"] .hud-time { color: var(--text-primary); font-weight: bold; }
+
+[data-theme="light"] .hud-cash {
+  color: #b45309;
+  font-weight: bold;
+}
+
+/* Naranja/oro más oscuro para contraste */
+[data-theme="light"] .hud-gems {
+  color: #6d28d9;
+  font-weight: bold;
+}
+
+[data-theme="light"] .hud-persec {
+  color: #047857;
+  font-weight: bold;
+}
+
+[data-theme="light"] .hud-floor,
+[data-theme="light"] .hud-score,
+[data-theme="light"] .hud-time {
+  color: var(--text-primary);
+  font-weight: bold;
+}
 
 /* Log de eventos y barra de bonus en tema claro */
+/* Panel del log de eventos en tema claro */
 [data-theme="light"] .event-log-panel {
   background: rgba(255, 255, 255, 0.95);
   border-color: rgba(15, 23, 42, 0.15);
   box-shadow: 0 8px 32px rgba(15, 23, 42, 0.15);
 }
+
 [data-theme="light"] .event-log-header {
-  color: #b45309; /* Oro oscuro */
+  color: #b45309;
+  /* Oro oscuro */
   border-bottom-color: rgba(15, 23, 42, 0.1);
 }
-[data-theme="light"] .event-log-clear { color: rgba(15, 23, 42, 0.4); }
-[data-theme="light"] .event-log-clear:hover { color: #ef4444; }
-[data-theme="light"] .event-log-entry { border-bottom-color: rgba(15, 23, 42, 0.05); }
-[data-theme="light"] .event-log-time { color: rgba(15, 23, 42, 0.4); }
-[data-theme="light"] .event-log-entry.type-info { color: var(--text-secondary); }
-[data-theme="light"] .event-log-entry.type-bonus { color: #b45309; font-weight: 600; }
-[data-theme="light"] .event-log-entry.type-logro { color: #6d28d9; font-weight: 600; }
-[data-theme="light"] .event-log-entry.type-piso { color: #047857; font-weight: 600; }
 
+[data-theme="light"] .event-log-clear {
+  color: rgba(15, 23, 42, 0.4);
+}
+
+[data-theme="light"] .event-log-clear:hover {
+  color: #ef4444;
+}
+
+[data-theme="light"] .event-log-entry {
+  border-bottom-color: rgba(15, 23, 42, 0.05);
+}
+
+[data-theme="light"] .event-log-time {
+  color: rgba(15, 23, 42, 0.4);
+}
+
+[data-theme="light"] .event-log-entry.type-info {
+  color: var(--text-secondary);
+}
+
+[data-theme="light"] .event-log-entry.type-bonus {
+  color: #b45309;
+  font-weight: 600;
+}
+
+[data-theme="light"] .event-log-entry.type-logro {
+  color: #6d28d9;
+  font-weight: 600;
+}
+
+[data-theme="light"] .event-log-entry.type-piso {
+  color: #047857;
+  font-weight: 600;
+}
+
+/* Banner de bonus activo en tema claro */
 [data-theme="light"] .active-bonus-bar {
   background: rgba(255, 255, 255, 0.95);
   border-color: rgba(15, 23, 42, 0.2);
   box-shadow: 0 8px 32px rgba(15, 23, 42, 0.15);
 }
-[data-theme="light"] .bonus-bar-name { color: var(--text-primary); }
-[data-theme="light"] .bonus-bar-desc { color: var(--text-secondary); }
-[data-theme="light"] .bonus-bar-progress { background: rgba(15, 23, 42, 0.1); }
-[data-theme="light"] .bonus-bar-time { color: var(--text-secondary); font-weight: bold; }
-[data-theme="light"] .bonus-bar-fill { box-shadow: none; }
+
+[data-theme="light"] .bonus-bar-name {
+  color: var(--text-primary);
+}
+
+[data-theme="light"] .bonus-bar-desc {
+  color: var(--text-secondary);
+}
+
+[data-theme="light"] .bonus-bar-progress {
+  background: rgba(15, 23, 42, 0.1);
+}
+
+[data-theme="light"] .bonus-bar-time {
+  color: var(--text-secondary);
+  font-weight: bold;
+}
+
+[data-theme="light"] .bonus-bar-fill {
+  box-shadow: none;
+}

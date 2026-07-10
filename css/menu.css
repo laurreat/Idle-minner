@@ -1,8 +1,12 @@
 /* ==================== START MENU ==================== */
+/* Menu principal de inicio, superpuesto a pantalla completa (z-index 100) */
 #startMenu {
-  position: absolute; inset: 0;
-  display: flex; flex-direction: column;
-  justify-content: center; align-items: center;
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
   z-index: 100;
   background:
     radial-gradient(ellipse at 30% 20%, rgba(16, 185, 129, 0.08) 0%, transparent 50%),
@@ -11,23 +15,35 @@
   transition: opacity 0.6s cubic-bezier(0.4, 0, 0.2, 1), transform 0.6s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
+/* Scanlines decorativas del menu de inicio */
 #startMenu::before {
   content: '';
-  position: absolute; inset: 0;
-  background: repeating-linear-gradient(0deg, transparent, transparent 3px, rgba(255,255,255,0.01) 3px, rgba(255,255,255,0.01) 6px);
+  position: absolute;
+  inset: 0;
+  background: repeating-linear-gradient(0deg, transparent, transparent 3px, rgba(255, 255, 255, 0.01) 3px, rgba(255, 255, 255, 0.01) 6px);
   pointer-events: none;
 }
 
-#startMenu.hidden { opacity: 0; pointer-events: none; transform: scale(1.08); }
+/* Estado oculto del menu al iniciar partida (se desvanece y aleja) */
+#startMenu.hidden {
+  opacity: 0;
+  pointer-events: none;
+  transform: scale(1.08);
+}
 
+/* Marco decorativo exterior del menu */
 .menu-border {
-  position: absolute; inset: 16px;
+  position: absolute;
+  inset: 16px;
   border: 2px solid var(--gold-dim);
-  border-radius: 4px; pointer-events: none;
+  border-radius: 4px;
+  pointer-events: none;
 }
 
 .menu-border::before {
-  content: ''; position: absolute; inset: 6px;
+  content: '';
+  position: absolute;
+  inset: 6px;
   border: 1px solid rgba(255, 215, 0, 0.08);
   border-radius: 2px;
 }
@@ -35,18 +51,24 @@
 .menu-border::after {
   content: '';
   position: absolute;
-  top: -4px; left: 50%; transform: translateX(-50%);
-  width: 40px; height: 8px;
+  top: -4px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 40px;
+  height: 8px;
   background: var(--gold);
   border-radius: 2px;
   box-shadow: 0 0 15px rgba(255, 215, 0, 0.5);
 }
 
+/* Logo del juego (casco) arriba del titulo */
 .menu-logo {
-  position: relative; z-index: 1;
+  position: relative;
+  z-index: 1;
   margin-bottom: 12px;
 }
 
+/* Icono del logo con flotacion animada */
 .menu-logo i {
   font-size: clamp(42px, 8vw, 72px);
   color: var(--gold);
@@ -55,13 +77,25 @@
 }
 
 @keyframes logoFloat {
-  0%, 100% { transform: translateY(0) rotate(0deg); }
-  25% { transform: translateY(-10px) rotate(-2deg); }
-  75% { transform: translateY(-6px) rotate(2deg); }
+
+  0%,
+  100% {
+    transform: translateY(0) rotate(0deg);
+  }
+
+  25% {
+    transform: translateY(-10px) rotate(-2deg);
+  }
+
+  75% {
+    transform: translateY(-6px) rotate(2deg);
+  }
 }
 
+/* Titulo "IDLE MINER" con brillo pulsante */
 .menu-title {
-  position: relative; z-index: 1;
+  position: relative;
+  z-index: 1;
   font-family: 'Silkscreen', cursive;
   font-size: clamp(20px, 4vw, 32px);
   color: var(--gold);
@@ -71,13 +105,23 @@
   animation: titleGlow 4s ease-in-out infinite;
 }
 
+/* Animacion de resplandor del titulo */
 @keyframes titleGlow {
-  0%, 100% { text-shadow: 3px 3px 0 rgba(0,0,0,0.8), 0 0 20px rgba(255,215,0,0.3); }
-  50% { text-shadow: 3px 3px 0 rgba(0,0,0,0.8), 0 0 40px rgba(255,215,0,0.6); }
+
+  0%,
+  100% {
+    text-shadow: 3px 3px 0 rgba(0, 0, 0, 0.8), 0 0 20px rgba(255, 215, 0, 0.3);
+  }
+
+  50% {
+    text-shadow: 3px 3px 0 rgba(0, 0, 0, 0.8), 0 0 40px rgba(255, 215, 0, 0.6);
+  }
 }
 
+/* Subtitulo "Edición Profunda" */
 .menu-subtitle {
-  position: relative; z-index: 1;
+  position: relative;
+  z-index: 1;
   font-family: 'VT323', monospace;
   font-size: clamp(13px, 2.2vw, 18px);
   color: var(--text-secondary);
@@ -86,8 +130,10 @@
   margin-bottom: 40px;
 }
 
+/* Tarjeta central que agrupa los botones del menu */
 .menu-card {
-  position: relative; z-index: 1;
+  position: relative;
+  z-index: 1;
   width: min(340px, 88vw);
   background: var(--bg-card);
   border: 1px solid var(--border-subtle);
@@ -97,35 +143,52 @@
   box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
 }
 
+/* Boton base del menu (estilo comun a todas las acciones) */
 .menu-btn {
-  width: 100%; padding: 16px 24px;
-  border: none; border-radius: var(--radius-sm);
+  width: 100%;
+  padding: 16px 24px;
+  border: none;
+  border-radius: var(--radius-sm);
   font-family: 'Silkscreen', cursive;
   font-size: 14px;
   font-weight: 700;
   cursor: pointer;
   margin-bottom: 12px;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  display: flex; align-items: center;
-  justify-content: center; gap: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
   letter-spacing: 1px;
   position: relative;
   overflow: hidden;
 }
 
+/* Reflejo brillante que barre el boton al pasar el cursor */
 .menu-btn::after {
   content: '';
   position: absolute;
-  top: 0; left: -100%;
-  width: 100%; height: 100%;
-  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.15), transparent);
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.15), transparent);
   transition: left 0.5s ease;
 }
 
-.menu-btn:hover::after { left: 100%; }
-.menu-btn:active { transform: scale(0.96); }
-.menu-btn i { font-size: 18px; }
+.menu-btn:hover::after {
+  left: 100%;
+}
 
+.menu-btn:active {
+  transform: scale(0.96);
+}
+
+.menu-btn i {
+  font-size: 18px;
+}
+
+/* Boton "Nueva Partida": resaltado dorado principal */
 .btn-play {
   background: linear-gradient(135deg, #FFE066, #D97706);
   color: #1a1206;
@@ -137,14 +200,21 @@
   transform: translateY(-3px);
 }
 
-.btn-continue, .btn-prestige, .btn-info, .btn-save {
+/* Botones secundarios (continuar, prestigio, info, guardar): estilo neutro */
+.btn-continue,
+.btn-prestige,
+.btn-info,
+.btn-save {
   background: rgba(255, 255, 255, 0.04);
   color: var(--text-primary);
   border: 1px solid var(--border-subtle);
   box-shadow: none;
 }
 
-.btn-continue:hover, .btn-prestige:hover, .btn-info:hover, .btn-save:hover {
+.btn-continue:hover,
+.btn-prestige:hover,
+.btn-info:hover,
+.btn-save:hover {
   background: rgba(255, 215, 0, 0.12);
   color: var(--gold);
   border-color: var(--border-active);
@@ -152,12 +222,14 @@
   transform: translateY(-3px);
 }
 
+/* Separador visual horizontal del menu */
 .menu-divider {
   height: 1px;
   background: linear-gradient(90deg, transparent, var(--border-subtle), transparent);
   margin: 16px 0;
 }
 
+/* Bloque de resumen de estadisticas en el menu */
 .menu-stats {
   font-size: 15px;
   color: var(--text-secondary);
@@ -165,10 +237,14 @@
   line-height: 1.8;
 }
 
-.menu-stats span { color: var(--text-primary); }
+.menu-stats span {
+  color: var(--text-primary);
+}
 
+/* Pie del menu con aviso de guardado automatico */
 .menu-footer {
-  position: relative; z-index: 1;
+  position: relative;
+  z-index: 1;
   margin-top: 24px;
   text-align: center;
 }
@@ -180,36 +256,81 @@
 
 
 /* ==================== IMPROVED START MENU ==================== */
-.menu-actions { display: flex; flex-direction: column; gap: 4px; }
+/* Contenedor vertical de acciones principales */
+.menu-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
 
+/* Fila de dos botones en paralelo */
 .menu-row {
-  display: flex; gap: 10px; width: 100%;
+  display: flex;
+  gap: 10px;
+  width: 100%;
 }
 
-.menu-row .menu-btn { flex: 1; margin-bottom: 0; }
+/* Los botones dentro de una fila comparten el ancho */
+.menu-row .menu-btn {
+  flex: 1;
+  margin-bottom: 0;
+}
 
+/* Boton auxiliar pequeño (cargar partida) */
 .menu-mini {
-  width: 100%; padding: 12px;
-  border: 1px solid var(--border-subtle); border-radius: var(--radius-sm);
-  background: var(--bg-card); color: var(--text-secondary);
-  font-family: 'Silkscreen', cursive; font-size: 12px; cursor: pointer;
-  display: flex; align-items: center; justify-content: center; gap: 8px;
-  transition: all 0.25s ease; letter-spacing: 1px;
+  width: 100%;
+  padding: 12px;
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-sm);
+  background: var(--bg-card);
+  color: var(--text-secondary);
+  font-family: 'Silkscreen', cursive;
+  font-size: 12px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  transition: all 0.25s ease;
+  letter-spacing: 1px;
 }
-.menu-mini:hover { color: var(--gold); border-color: var(--border-active); transform: translateY(-2px); }
 
-.menu-theme-toggle {
-  position: absolute; top: 22px; right: 22px; z-index: 5;
-  width: 46px; height: 46px; border-radius: 50%;
-  border: 2px solid var(--border-subtle);
-  background: rgba(255,255,255,0.05); color: var(--text-primary);
-  font-size: 18px; cursor: pointer; display: flex;
-  align-items: center; justify-content: center;
-  transition: all 0.3s ease; backdrop-filter: blur(8px);
+.menu-mini:hover {
+  color: var(--gold);
+  border-color: var(--border-active);
+  transform: translateY(-2px);
 }
-.menu-theme-toggle:hover { border-color: var(--border-active); color: var(--gold); transform: rotate(20deg) scale(1.08); }
+
+/* Boton flotante de cambio de tema (arriba a la derecha del menu) */
+.menu-theme-toggle {
+  position: absolute;
+  top: 22px;
+  right: 22px;
+  z-index: 5;
+  width: 46px;
+  height: 46px;
+  border-radius: 50%;
+  border: 2px solid var(--border-subtle);
+  background: rgba(255, 255, 255, 0.05);
+  color: var(--text-primary);
+  font-size: 18px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.3s ease;
+  backdrop-filter: blur(8px);
+}
+
+.menu-theme-toggle:hover {
+  border-color: var(--border-active);
+  color: var(--gold);
+  transform: rotate(20deg) scale(1.08);
+}
 
 
 /* ==================== SAVE/LOAD CONTROLS ==================== */
-.file-input { display: none; }
-
+/* Input de archivo oculto usado para cargar partidas */
+.file-input {
+  display: none;
+}

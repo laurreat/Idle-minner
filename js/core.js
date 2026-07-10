@@ -4,19 +4,27 @@
 // vibración de pantalla y renderizado visual mejorado
 // ============================================================
 
+// Lienzo y contexto de dibujo 2D del juego
 const canvas = document.getElementById("gameCanvas");
 const ctx = canvas.getContext("2d");
+// Dimensiones lógicas del mundo (resolución base de dibujo)
 const W = 1000, H = 750;
+// Factor de escala de los personajes/sprites
 const CHAR_SCALE = 2.8;
+// Escala y desplazamiento usados para ajustar el lienzo a la pantalla (letterboxing)
 let viewScale = 1, viewOffX = 0, viewOffY = 0;
 
+// Redimensiona el lienzo al tamaño real del elemento (teniendo en cuenta el devicePixelRatio)
+// y recalcula la escala/centrado para mantener la proporción del mundo (W x H).
 function resizeCanvas() {
   const dpr = window.devicePixelRatio || 1;
   const rect = canvas.getBoundingClientRect();
   let cssW = rect.width, cssH = rect.height;
+  // Si el canvas aún no tiene tamaño válido, usa las dimensiones base por defecto
   if (cssW < 10 || cssH < 10) { cssW = W; cssH = H; }
   canvas.width = Math.max(1, Math.round(cssW * dpr));
   canvas.height = Math.max(1, Math.round(cssH * dpr));
+  // Escala uniforme = la menor relación para que todo el mundo quepa en pantalla
   viewScale = Math.min(canvas.width / W, canvas.height / H);
   viewOffX = (canvas.width - W * viewScale) / 2;
   viewOffY = (canvas.height - H * viewScale) / 2;
@@ -26,27 +34,36 @@ function resizeCanvas() {
 // ============================================================
 // CARGADOR DE SPRITES
 // ============================================================
+// Diccionario que contendrá las imágenes cargadas, indexadas por nombre
 const sprites = {};
+// Lista de nombres de sprites del minero y la tolva (animaciones y estados)
 const spriteNames = [
-  "miner_idle","miner_walk_1","miner_walk_2",
-  "miner_walk_reverse_1","miner_walk_reverse_2",
-  "miner_elevador_0","miner_elevador_1","miner_elevador_2",
-  "miner_tolva_1","miner_tolva_2",
-  "miner_tolva_reverse_1","miner_tolva_reverse_2",
-  "miner_tolva_reverse_3","miner_tolva_reverse_4",
+  "miner_idle", "miner_walk_1", "miner_walk_2",
+  "miner_walk_reverse_1", "miner_walk_reverse_2",
+  "miner_elevador_0", "miner_elevador_1", "miner_elevador_2",
+  "miner_tolva_1", "miner_tolva_2",
+  "miner_tolva_reverse_1", "miner_tolva_reverse_2",
+  "miner_tolva_reverse_3", "miner_tolva_reverse_4",
   "miner_mine",
-  "tolva_miner_0","tolva_miner_1","tolva_miner_2","tolva_miner_3"
+  "tolva_miner_0", "tolva_miner_1", "tolva_miner_2", "tolva_miner_3"
 ];
+// Carga de forma diferida cada sprite asignando su ruta en la carpeta Sprites/
 spriteNames.forEach(name => {
   sprites[name] = new Image();
   sprites[name].src = `Sprites/${name}.png`;
 });
+// Imagen de fondo del juego
 const backgroundImage = new Image();
 backgroundImage.src = "fondo.png";
 
 // ============================================================
 // ESTADO DEL JUEGO
 // ============================================================
+// Estado global persistente de la partida.
+// cash: oro disponible; gems: gemas disponibles; totalEarned/totalMined/totalClicks: acumulados históricos
+// score: puntuación; currentFloor: piso activo; prestigeCount: nº de prestigios realizados
+// prestigeGems/totalPrestigeGems: gemas de prestigio de esta ronda y en total
+// startTime/lastSave: marcas de tiempo para sesión y autoguardado; paused/started: banderas de control
 let game = {
   cash: 0,
   gems: 0,
@@ -67,6 +84,9 @@ let game = {
 // ============================================================
 // SISTEMA DE COMBO
 // ============================================================
+// Estado del combo de clics: count = clics encadenados; multiplier = multiplicador actual
+// lastClick = tiempo del último clic; decayTime = ms sin clic tras los cuales el combo decae en 1
+// maxCombo = tope de clics; thresholds/multValues = umbrales de clics y su multiplicador asociado
 let combo = {
   count: 0,
   multiplier: 1,
@@ -77,6 +97,7 @@ let combo = {
   multValues: [1.2, 1.5, 1.8, 2.2, 2.8, 3.5]
 };
 
+// Reduce el combo en 1 cada vez que pasa decayTime sin clic (decaimiento progresivo del combo)
 function updateCombo() {
   const now = Date.now();
   if (now - combo.lastClick > combo.decayTime && combo.count > 0) {
@@ -85,12 +106,15 @@ function updateCombo() {
   }
 }
 
+// Registra un clic de minado: incrementa el combo (hasta maxCombo) y refresca el multiplicador
 function addComboClick() {
   combo.count = Math.min(combo.count + 1, combo.maxCombo);
   combo.lastClick = Date.now();
   updateComboMultiplier();
 }
 
+// Recalcula el multiplicador del combo: toma el mayor umbral alcanzado por count
+// (se recorre la lista de mayor a menor para aplicar el multiplicador más alto)
 function updateComboMultiplier() {
   combo.multiplier = 1;
   for (let i = combo.thresholds.length - 1; i >= 0; i--) {
@@ -101,6 +125,7 @@ function updateComboMultiplier() {
   }
 }
 
+// Devuelve el color del indicador de combo según el nivel alcanzado (null si no hay combo)
 function getComboColor() {
   if (combo.count >= 50) return "#FF0066";
   if (combo.count >= 35) return "#FF4500";
@@ -113,6 +138,9 @@ function getComboColor() {
 // ============================================================
 // SISTEMA DE EVENTOS ESPECIALES
 // ============================================================
+// Estado del evento bonus activo. active = si hay evento en curso; type = definición del evento
+// timer = tiempo restante (ms); duration = duración total; x/y = posición del aviso en pantalla
+// totalTriggered = nº total de eventos; nextEventTime = espera hasta el próximo; lastEventTime = momento del último
 let bonusEvent = {
   active: false,
   type: null,
@@ -125,15 +153,18 @@ let bonusEvent = {
   lastEventTime: 0
 };
 
+// Catálogo de tipos de evento: cada uno con id, nombre, icono, color, multiplicador (mult) y descripción
 const BONUS_TYPES = [
   { id: "gold_rush", name: "¡Fiebre del Oro!", icon: "💰", color: "#FFD700", mult: 3, desc: "x3 oro durante 8s" },
   { id: "gem_storm", name: "¡Tormenta de Gemas!", icon: "💎", color: "#a78bfa", mult: 5, desc: "x5 probabilidad de gemas" },
   { id: "speed_demon", name: "¡Velocidad Extrema!", icon: "⚡", color: "#60a5fa", mult: 2, desc: "x2 velocidad de minería" }
 ];
 
+// Controla la temporización de eventos: lanza uno nuevo tras nextEventTime y descuenta su duración
 function updateBonusEvents(dt) {
   const now = Date.now();
 
+  // Si no hay evento activo y ya pasó el tiempo de espera, inicia uno nuevo
   if (!bonusEvent.active && now - bonusEvent.lastEventTime > bonusEvent.nextEventTime) {
     startBonusEvent();
   }
@@ -149,6 +180,8 @@ function updateBonusEvents(dt) {
   }
 }
 
+// Inicia un evento aleatorio: elige tipo, fija timer a la duración, posiciona el aviso y
+// reprograma el próximo evento con un retraso aleatorio (entre 45s y 105s)
 function startBonusEvent() {
   const type = BONUS_TYPES[Math.floor(Math.random() * BONUS_TYPES.length)];
   bonusEvent.active = true;
@@ -165,18 +198,21 @@ function startBonusEvent() {
   spawnParticles(bonusEvent.x, bonusEvent.y, type.color, 20);
 }
 
+// Multiplicador de oro: x3 solo durante "Fiebre del Oro", 1 en cualquier otro caso
 function getBonusMultiplier() {
   if (!bonusEvent.active) return 1;
   if (bonusEvent.type.id === "gold_rush") return bonusEvent.type.mult;
   return 1;
 }
 
+// Bonus de probabilidad de gema: x5 durante "Tormenta de Gemas", 1 si no
 function getGemChanceBonus() {
   if (!bonusEvent.active) return 1;
   if (bonusEvent.type.id === "gem_storm") return bonusEvent.type.mult;
   return 1;
 }
 
+// Bonus de velocidad de minería: x2 durante "Velocidad Extrema", 1 si no
 function getSpeedBonus() {
   if (!bonusEvent.active) return 1;
   if (bonusEvent.type.id === "speed_demon") return bonusEvent.type.mult;
@@ -186,14 +222,17 @@ function getSpeedBonus() {
 // ============================================================
 // EFECTOS DE PANTALLA
 // ============================================================
+// Estado de la vibración de pantalla: intensity = fuerza; duration = duración; elapsed = tiempo transcurrido
 let screenShake = { intensity: 0, duration: 0, elapsed: 0 };
 
+// Activa una vibración de pantalla con la intensidad y duración indicadas
 function triggerScreenShake(intensity, duration) {
   screenShake.intensity = intensity;
   screenShake.duration = duration;
   screenShake.elapsed = 0;
 }
 
+// Avanza el tiempo de la vibración; al terminar, anula la intensidad para detener el efecto
 function updateScreenShake(dt) {
   if (screenShake.elapsed < screenShake.duration) {
     screenShake.elapsed += dt;
@@ -202,6 +241,8 @@ function updateScreenShake(dt) {
   }
 }
 
+// Calcula el desplazamiento aleatorio actual de la vibración.
+// El factor decay (1 - progreso) hace que la sacudida sea más fuerte al inicio y se apague con el tiempo
 function getShakeOffset() {
   if (screenShake.intensity === 0) return { x: 0, y: 0 };
   const progress = screenShake.elapsed / screenShake.duration;
@@ -215,8 +256,10 @@ function getShakeOffset() {
 // ============================================================
 // PARTÍCULAS AMBIENTALES
 // ============================================================
+// Partículas decorativas de fondo que flotan en pantalla
 let ambientParticles = [];
 
+// Crea 30 partículas con posición, tamaño, velocidad, opacidad y deriva aleatorias
 function initAmbientParticles() {
   ambientParticles = [];
   for (let i = 0; i < 30; i++) {
@@ -231,6 +274,7 @@ function initAmbientParticles() {
   }
 }
 
+// Mueve las partículas hacia arriba y las reposiciona al salir de los bordes (efecto de bucle)
 function updateAmbientParticles() {
   ambientParticles.forEach(p => {
     p.y -= p.speed;
@@ -244,6 +288,7 @@ function updateAmbientParticles() {
   });
 }
 
+// Dibuja las partículas ambientales usando el color del mineral del piso actual
 function drawAmbientParticles() {
   const f = floors[game.currentFloor];
   const config = f.config;
@@ -260,6 +305,11 @@ function drawAmbientParticles() {
 // ============================================================
 // PISOS (10 pisos únicos con diferentes temas y materiales)
 // ============================================================
+// Configuración estática de cada piso. Campos:
+// name: nombre; bg: color de fondo; rockColor: color de roca; oreColor: color del mineral
+// oreValue: valor por unidad de mineral; oreChance: probabilidad de encontrar mineral al minar
+// unlockCost: coste en oro para desbloquear (0 = ya desbloqueado); depth: profundidad (m)
+// material: nombre del material; materialIcon: emoji representativo
 const FLOOR_CONFIGS = [
   { name: "Superficie", bg: "#87CEEB", rockColor: "#8B7355", oreColor: "#FFD700", oreValue: 1, oreChance: 0.3, unlockCost: 0, depth: 0, material: "Tierra", materialIcon: "🧱" },
   { name: "Tierra", bg: "#6B4226", rockColor: "#5C3317", oreColor: "#C0C0C0", oreValue: 2, oreChance: 0.25, unlockCost: 500, depth: 100, material: "Carbón", materialIcon: "⬛" },
@@ -273,13 +323,17 @@ const FLOOR_CONFIGS = [
   { name: "Centro de la Tierra", bg: "#000000", rockColor: "#050005", oreColor: "#FFFFFF", oreValue: 5000, oreChance: 0.04, unlockCost: 250000000, depth: 5000, material: "Diamante", materialIcon: "💎" }
 ];
 
+// Bandera por piso que indica si está desbloqueado (el piso 0 siempre lo está)
 let unlockedFloors = [true, false, false, false, false, false, false, false, false, false];
 
 // ============================================================
 // SISTEMA DE MINERÍA POR PISO
 // ============================================================
+// Array con el estado en tiempo de ejecución de cada piso (minero, elevador, tolva, etc.)
 let floors = [];
 
+// Construye el estado inicial de un piso: posiciones del minero/elevador/almacén, cajas,
+// estados de espera, auto-minero y contador de gemas encontradas en ese piso
 function initFloor(index) {
   const config = FLOOR_CONFIGS[index];
   return {
@@ -298,6 +352,7 @@ function initFloor(index) {
   };
 }
 
+// Inicializa todos los pisos y las partículas ambientales
 function initAllFloors() {
   floors = [];
   for (let i = 0; i < FLOOR_CONFIGS.length; i++) {
@@ -309,6 +364,8 @@ function initAllFloors() {
 // ============================================================
 // MEJORAS (por piso)
 // ============================================================
+// Fábrica de mejoras de un piso. Cada mejora tiene nivel, coste base y un multiplicador de coste,
+// de modo que el precio de subir de nivel escala exponencialmente: coste = baseCost * mult^level
 function createUpgrades() {
   return {
     miner: {
@@ -330,6 +387,7 @@ function createUpgrades() {
       costMultiplier: 1.7,
       getCurrentCost() { return Math.floor(this.baseCost * Math.pow(this.costMultiplier, this.level)); },
       getCapacity() { return this.baseCapacity + this.level * 20; },
+      // El tiempo de recolección se reduce un 5% por nivel (decaimiento exponencial), con mínimo de 100ms
       getCollectionTime() { return Math.max(100, this.baseCollectionTime * Math.pow(0.95, this.level)); }
     },
     autoMiner: {
@@ -348,6 +406,7 @@ function createUpgrades() {
   };
 }
 
+// Estado de mejoras por piso (un bloque de createUpgrades por cada piso)
 let floorUpgrades = [];
 function initFloorUpgrades() {
   floorUpgrades = [];
@@ -359,12 +418,15 @@ function initFloorUpgrades() {
 // ============================================================
 // MEJORAS GLOBALES
 // ============================================================
+// Mejoras que afectan a todo el juego (se pagan con gemas). El coste escala igual que las del piso.
 const globalUpgrades = {
+  // luck: aumenta la probabilidad base de encontrar gemas por nivel
   luck: {
     level: 0, maxLevel: 25, baseCost: 2000, costMultiplier: 2.2, currency: "gems",
     getCurrentCost() { return Math.floor(this.baseCost * Math.pow(this.costMultiplier, this.level)); },
     getGemChance() { return 0.01 + this.level * 0.005; }
   },
+  // speedBoost: multiplicador global de velocidad de minería (+10% por nivel)
   speedBoost: {
     level: 0, maxLevel: 20, baseCost: 5000, costMultiplier: 2.0, currency: "gems",
     getCurrentCost() { return Math.floor(this.baseCost * Math.pow(this.costMultiplier, this.level)); },
@@ -375,6 +437,8 @@ const globalUpgrades = {
 // ============================================================
 // LOGROS
 // ============================================================
+// Lista de logros: cada uno con id, nombre, descripción, icono, función check() (¿desbloqueado?)
+// y reward (recompensa en texto). check() se evalúa contra el estado global de la partida
 const ACHIEVEMENTS = [
   { id: "first_mine", name: "Primera Mina", desc: "Mina por primera vez", icon: "⛏️", check: () => game.totalClicks >= 1, reward: "50 oro" },
   { id: "hundred_clicks", name: "Minero Dedicado", desc: "Haz clic 100 veces", icon: "⚒️", check: () => game.totalClicks >= 100, reward: "200 oro" },
@@ -395,8 +459,11 @@ const ACHIEVEMENTS = [
   { id: "combo_25", name: "Leyenda del Combo", desc: "Alcanza un combo de 25", icon: "🚀", check: () => combo.count >= 25, reward: "10 gemas" }
 ];
 
+// Conjunto de ids de logros ya desbloqueados
 let unlockedAchievements = new Set();
 
 // ============================================================
 // SISTEMA DE GUARDADO / CARGA (ofuscado + verificación de integridad)
 // ============================================================
+// Guarda el estado del juego de forma ofuscada y comprueba la integridad al cargarlo
+// (las funciones saveGame/loadGame continúan en el resto del archivo)

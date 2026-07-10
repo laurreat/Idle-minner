@@ -1,215 +1,273 @@
 <!DOCTYPE html>
 <html lang="es">
+
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-<title>Idle Miner - Edición Profunda</title>
-<meta name="theme-color" content="#0a0a12">
-<link rel="icon" type="image/svg+xml" href="favicon.svg">
-<link rel="apple-touch-icon" href="favicon.svg">
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-<link rel="stylesheet" href="css/base.css">
-<link rel="stylesheet" href="css/theme.css">
-<link rel="stylesheet" href="css/menu.css">
-<link rel="stylesheet" href="css/panels.css">
-<link rel="stylesheet" href="css/loading.css">
-<link rel="stylesheet" href="css/responsive.css">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+  <title>Idle Miner - Edición Profunda</title>
+  <meta name="theme-color" content="#0a0a12">
+  <link rel="icon" type="image/svg+xml" href="favicon.svg">
+  <link rel="apple-touch-icon" href="favicon.svg">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  <link rel="stylesheet" href="css/base.css">
+  <link rel="stylesheet" href="css/theme.css">
+  <link rel="stylesheet" href="css/menu.css">
+  <link rel="stylesheet" href="css/panels.css">
+  <link rel="stylesheet" href="css/loading.css">
+  <link rel="stylesheet" href="css/responsive.css">
 </head>
+
 <body>
-<div id="loadingScreen">
-  <div class="load-miner">
-    <div class="halo"></div>
-    <i class="fas fa-hammer pick"></i>
+  <!-- Pantalla de carga inicial: se muestra mientras el juego carga recursos y progresa la barra -->
+  <div id="loadingScreen">
+    <!-- Contenedor del minero animado con su halo decorativo -->
+    <div class="load-miner">
+      <div class="halo"></div>
+      <i class="fas fa-hammer pick"></i>
+    </div>
+    <!-- Titulo y subtitulo del juego en la pantalla de carga -->
+    <div class="load-title">IDLE MINER</div>
+    <div class="load-sub">Edición Profunda</div>
+    <!-- Barra de progreso de carga (loadBar se rellena via JS) -->
+    <div class="load-bar-wrap">
+      <div class="load-bar" id="loadBar"></div>
+    </div>
+    <!-- Porcentaje de carga, actualizado por JS (loadPct) -->
+    <div class="load-pct" id="loadPct">0%</div>
+    <!-- Consejo/tooltip aleatorio mostrado durante la carga (loadTip) -->
+    <div class="load-tip" id="loadTip"></div>
+    <!-- Boton para saltar la pantalla de carga; llama a finishLoading() -->
+    <button class="load-skip" id="loadSkip" onclick="finishLoading()">Saltar carga <i
+        class="fas fa-forward"></i></button>
   </div>
-  <div class="load-title">IDLE MINER</div>
-  <div class="load-sub">Edición Profunda</div>
-  <div class="load-bar-wrap"><div class="load-bar" id="loadBar"></div></div>
-  <div class="load-pct" id="loadPct">0%</div>
-  <div class="load-tip" id="loadTip"></div>
-  <button class="load-skip" id="loadSkip" onclick="finishLoading()">Saltar carga <i class="fas fa-forward"></i></button>
-</div>
 
-<div id="mainLayout">
-  <div id="gameArea">
-    <canvas id="gameCanvas" width="1000" height="750"></canvas>
+  <!-- Contenedor principal del layout del juego -->
+  <div id="mainLayout">
+    <!-- Area de juego: contiene el canvas, el HUD, menus y paneles superpuestos -->
+    <div id="gameArea">
+      <!-- Lienzo principal donde se dibuja el juego (minero, elevador, almacen, roca) -->
+      <canvas id="gameCanvas" width="1000" height="750"></canvas>
 
-    <div id="hud">
-      <div class="hud-left">
-        <div class="hud-cash" id="hudCash">$0</div>
-        <div class="hud-gems" id="hudGems"><i class="fas fa-gem"></i> 0</div>
-      </div>
-      <div class="hud-center">
-        <div class="hud-floor" id="hudFloor">Piso 1</div>
-        <div class="hud-score" id="hudScore">Puntos: 0</div>
-      </div>
-      <div class="hud-right">
-        <div class="hud-gems" id="hudPerSec">$0/s</div>
-        <div class="hud-score" id="hudTime">00:00</div>
-      </div>
-    </div>
-
-    <div id="sideButtons">
-      <button class="side-btn" onclick="returnToMenu()" title="Volver al menu"><i class="fas fa-house"></i></button>
-      <button class="side-btn" onclick="openPanel('shop')" title="Tienda"><i class="fas fa-store"></i></button>
-      <button class="side-btn" onclick="openPanel('achievements')" title="Logros"><i class="fas fa-trophy"></i></button>
-      <button class="side-btn" onclick="openPanel('stats')" title="Estadisticas"><i class="fas fa-chart-bar"></i></button>
-      <button class="side-btn" onclick="openPanel('prestige')" title="Prestigio"><i class="fas fa-star"></i></button>
-      <button class="side-btn" onclick="toggleTheme()" title="Tema claro/oscuro"><i class="fas fa-circle-half-stroke"></i></button>
-    </div>
-
-    <div id="floorBar"></div>
-
-    <div id="startMenu">
-      <button class="menu-theme-toggle" id="menuThemeToggle" onclick="toggleTheme()" title="Cambiar tema">
-        <i class="fas fa-moon"></i>
-      </button>
-      <div class="menu-border"></div>
-      <div class="menu-logo"><i class="fas fa-helmet-safety"></i></div>
-      <div class="menu-title">IDLE MINER</div>
-      <div class="menu-subtitle">Edición Profunda</div>
-      <div class="menu-card">
-        <div class="menu-actions">
-          <button class="menu-btn btn-play" onclick="startNewGame()">
-            <i class="fas fa-play"></i> Nueva Partida
-          </button>
-          <button class="menu-btn btn-prestige" id="btnPrestigeMenu" style="display:none;" onclick="openPanel('prestige')">
-            <i class="fas fa-star"></i> Prestigio
-          </button>
+      <!-- HUD (Heads-Up Display): muestra recursos y estado durante la partida -->
+      <div id="hud">
+        <!-- Bloque izquierdo: oro (hudCash) y gemas (hudGems) -->
+        <div class="hud-left">
+          <div class="hud-cash" id="hudCash">$0</div>
+          <div class="hud-gems" id="hudGems"><i class="fas fa-gem"></i> 0</div>
         </div>
-        <div class="menu-divider"></div>
-        <div class="menu-row">
-          <button class="menu-btn btn-info" onclick="openPanel('howto')">
-            <i class="fas fa-book-open"></i> Como Jugar
-          </button>
-          <button class="menu-btn btn-save" onclick="downloadSave()">
-            <i class="fas fa-download"></i> Guardar
-          </button>
+        <!-- Bloque central: piso actual (hudFloor) y puntos (hudScore) -->
+        <div class="hud-center">
+          <div class="hud-floor" id="hudFloor">Piso 1</div>
+          <div class="hud-score" id="hudScore">Puntos: 0</div>
         </div>
-        <button class="menu-mini" onclick="document.getElementById('loadFile').click()">
-          <i class="fas fa-upload"></i> Cargar Partida desde Archivo
+        <!-- Bloque derecho: oro por segundo (hudPerSec) y tiempo (hudTime) -->
+        <div class="hud-right">
+          <div class="hud-gems" id="hudPerSec">$0/s</div>
+          <div class="hud-score" id="hudTime">00:00</div>
+        </div>
+      </div>
+
+      <!-- Botones laterales de acceso rapido (menu, tienda, logros, stats, prestigio, tema) -->
+      <div id="sideButtons">
+        <button class="side-btn" onclick="returnToMenu()" title="Volver al menu"><i class="fas fa-house"></i></button>
+        <button class="side-btn" onclick="openPanel('shop')" title="Tienda"><i class="fas fa-store"></i></button>
+        <button class="side-btn" onclick="openPanel('achievements')" title="Logros"><i
+            class="fas fa-trophy"></i></button>
+        <button class="side-btn" onclick="openPanel('stats')" title="Estadisticas"><i
+            class="fas fa-chart-bar"></i></button>
+        <button class="side-btn" onclick="openPanel('prestige')" title="Prestigio"><i class="fas fa-star"></i></button>
+        <button class="side-btn" onclick="toggleTheme()" title="Tema claro/oscuro"><i
+            class="fas fa-circle-half-stroke"></i></button>
+      </div>
+
+      <!-- Barra de seleccion de pisos (floorBar): los puntos se generan dinamicamente por JS -->
+      <div id="floorBar"></div>
+
+      <!-- Menu principal de inicio: logo, titulo, acciones de partida, guardado y carga -->
+      <div id="startMenu">
+        <!-- Boton flotante para alternar tema claro/oscuro -->
+        <button class="menu-theme-toggle" id="menuThemeToggle" onclick="toggleTheme()" title="Cambiar tema">
+          <i class="fas fa-moon"></i>
         </button>
-        <input type="file" id="loadFile" class="file-input" accept=".idlesave,.json" onchange="importSave(event)">
-        <div class="menu-stats" id="menuStats"></div>
-      </div>
-      <div class="menu-footer">
-        <p>Progreso guardado automaticamente de forma segura</p>
-      </div>
-    </div>
-
-    <div class="panel-overlay" id="panel-howto">
-      <div class="panel">
-        <div class="panel-header">
-          <h2><i class="fas fa-book-open"></i> Como Jugar</h2>
-          <button class="panel-close" onclick="closePanel('howto')"><i class="fas fa-xmark"></i></button>
+        <!-- Marco decorativo del menu -->
+        <div class="menu-border"></div>
+        <!-- Logo del juego (casco de minero) -->
+        <div class="menu-logo"><i class="fas fa-helmet-safety"></i></div>
+        <div class="menu-title">IDLE MINER</div>
+        <div class="menu-subtitle">Edición Profunda</div>
+        <!-- Tarjeta central con las acciones del menu -->
+        <div class="menu-card">
+          <!-- Acciones principales: nueva partida y (si aplica) prestigio -->
+          <div class="menu-actions">
+            <button class="menu-btn btn-play" onclick="startNewGame()">
+              <i class="fas fa-play"></i> Nueva Partida
+            </button>
+            <button class="menu-btn btn-prestige" id="btnPrestigeMenu" style="display:none;"
+              onclick="openPanel('prestige')">
+              <i class="fas fa-star"></i> Prestigio
+            </button>
+          </div>
+          <!-- Separador visual entre grupos de botones -->
+          <div class="menu-divider"></div>
+          <!-- Fila con botones de instrucciones y guardar -->
+          <div class="menu-row">
+            <button class="menu-btn btn-info" onclick="openPanel('howto')">
+              <i class="fas fa-book-open"></i> Como Jugar
+            </button>
+            <button class="menu-btn btn-save" onclick="downloadSave()">
+              <i class="fas fa-download"></i> Guardar
+            </button>
+          </div>
+          <!-- Boton auxiliar para cargar partida desde archivo (dispara el input oculto) -->
+          <button class="menu-mini" onclick="document.getElementById('loadFile').click()">
+            <i class="fas fa-upload"></i> Cargar Partida desde Archivo
+          </button>
+          <!-- Input oculto para seleccionar archivo de guardado; llama a importSave(event) -->
+          <input type="file" id="loadFile" class="file-input" accept=".idlesave,.json" onchange="importSave(event)">
+          <!-- Resumen de estadisticas del menu, rellenado por JS (menuStats) -->
+          <div class="menu-stats" id="menuStats"></div>
         </div>
-        <div class="panel-body">
-          <div class="howto-list">
-            <div class="howto-step">
-              <div class="howto-num">1</div>
-              <div class="howto-text"><i class="fas fa-hammer howto-icon"></i> <b>Minero:</b> Toca al minero (izquierda) para que extraiga material de la roca y lo lleve a la tolva.</div>
-            </div>
-            <div class="howto-step">
-              <div class="howto-num">2</div>
-              <div class="howto-text"><i class="fas fa-arrow-up howto-icon"></i> <b>Elevador:</b> Toca el elevador para que suba el material de la tolva hasta arriba.</div>
-            </div>
-            <div class="howto-step">
-              <div class="howto-num">3</div>
-              <div class="howto-text"><i class="fas fa-warehouse howto-icon"></i> <b>Almacen:</b> Toca el almacen (derecha) para que recoga el material y lo venda por oro automaticamente.</div>
-            </div>
-            <div class="howto-step">
-              <div class="howto-num">4</div>
-              <div class="howto-text"><i class="fas fa-fire howto-icon"></i> <b>Combos:</b> Toca rapido y seguidamente para aumentar tu multiplicador de combo y ganar mas.</div>
-            </div>
-            <div class="howto-step">
-              <div class="howto-num">5</div>
-              <div class="howto-text"><i class="fas fa-store howto-icon"></i> <b>Tienda:</b> Mejora minero, elevador, almacen y compra auto-mineros con el oro ganado.</div>
-            </div>
-            <div class="howto-step">
-              <div class="howto-num">6</div>
-              <div class="howto-text"><i class="fas fa-layer-group howto-icon"></i> <b>Pisos:</b> Desbloquea pisos mas profundos con materiales mas valiosos. Usa las gemas para mejoras globales.</div>
-            </div>
-            <div class="howto-step">
-              <div class="howto-num">7</div>
-              <div class="howto-text"><i class="fas fa-star howto-icon"></i> <b>Prestigio:</b> Reinicia a cambio de gemas permanentes cuando ya no puedas avanzar mas.</div>
+        <!-- Pie del menu con aviso de guardado automatico -->
+        <div class="menu-footer">
+          <p>Progreso guardado automaticamente de forma segura</p>
+        </div>
+      </div>
+
+      <!-- Panel "Como Jugar": instrucciones paso a paso del juego -->
+      <div class="panel-overlay" id="panel-howto">
+        <div class="panel">
+          <div class="panel-header">
+            <h2><i class="fas fa-book-open"></i> Como Jugar</h2>
+            <button class="panel-close" onclick="closePanel('howto')"><i class="fas fa-xmark"></i></button>
+          </div>
+          <div class="panel-body">
+            <!-- Lista de pasos explicativos del juego -->
+            <div class="howto-list">
+              <div class="howto-step">
+                <div class="howto-num">1</div>
+                <div class="howto-text"><i class="fas fa-hammer howto-icon"></i> <b>Minero:</b> Toca al minero
+                  (izquierda) para que extraiga material de la roca y lo lleve a la tolva.</div>
+              </div>
+              <div class="howto-step">
+                <div class="howto-num">2</div>
+                <div class="howto-text"><i class="fas fa-arrow-up howto-icon"></i> <b>Elevador:</b> Toca el elevador
+                  para que suba el material de la tolva hasta arriba.</div>
+              </div>
+              <div class="howto-step">
+                <div class="howto-num">3</div>
+                <div class="howto-text"><i class="fas fa-warehouse howto-icon"></i> <b>Almacen:</b> Toca el almacen
+                  (derecha) para que recoga el material y lo venda por oro automaticamente.</div>
+              </div>
+              <div class="howto-step">
+                <div class="howto-num">4</div>
+                <div class="howto-text"><i class="fas fa-fire howto-icon"></i> <b>Combos:</b> Toca rapido y seguidamente
+                  para aumentar tu multiplicador de combo y ganar mas.</div>
+              </div>
+              <div class="howto-step">
+                <div class="howto-num">5</div>
+                <div class="howto-text"><i class="fas fa-store howto-icon"></i> <b>Tienda:</b> Mejora minero, elevador,
+                  almacen y compra auto-mineros con el oro ganado.</div>
+              </div>
+              <div class="howto-step">
+                <div class="howto-num">6</div>
+                <div class="howto-text"><i class="fas fa-layer-group howto-icon"></i> <b>Pisos:</b> Desbloquea pisos mas
+                  profundos con materiales mas valiosos. Usa las gemas para mejoras globales.</div>
+              </div>
+              <div class="howto-step">
+                <div class="howto-num">7</div>
+                <div class="howto-text"><i class="fas fa-star howto-icon"></i> <b>Prestigio:</b> Reinicia a cambio de
+                  gemas permanentes cuando ya no puedas avanzar mas.</div>
+              </div>
             </div>
           </div>
         </div>
       </div>
-    </div>
 
-    <div class="panel-overlay" id="panel-shop">
-      <div class="panel">
-        <div class="panel-header">
-          <h2><i class="fas fa-store"></i> Tienda</h2>
-          <button class="panel-close" onclick="closePanel('shop')"><i class="fas fa-xmark"></i></button>
+      <!-- Panel de la Tienda: se rellena dinamicamente por JS (shopBody) -->
+      <div class="panel-overlay" id="panel-shop">
+        <div class="panel">
+          <div class="panel-header">
+            <h2><i class="fas fa-store"></i> Tienda</h2>
+            <button class="panel-close" onclick="closePanel('shop')"><i class="fas fa-xmark"></i></button>
+          </div>
+          <div class="panel-body" id="shopBody"></div>
         </div>
-        <div class="panel-body" id="shopBody"></div>
       </div>
-    </div>
 
-    <div class="panel-overlay" id="panel-achievements">
-      <div class="panel">
-        <div class="panel-header">
-          <h2><i class="fas fa-trophy"></i> Logros</h2>
-          <button class="panel-close" onclick="closePanel('achievements')"><i class="fas fa-xmark"></i></button>
+      <!-- Panel de Logros: se rellena dinamicamente por JS (achievementsBody) -->
+      <div class="panel-overlay" id="panel-achievements">
+        <div class="panel">
+          <div class="panel-header">
+            <h2><i class="fas fa-trophy"></i> Logros</h2>
+            <button class="panel-close" onclick="closePanel('achievements')"><i class="fas fa-xmark"></i></button>
+          </div>
+          <div class="panel-body" id="achievementsBody"></div>
         </div>
-        <div class="panel-body" id="achievementsBody"></div>
       </div>
-    </div>
 
-    <div class="panel-overlay" id="panel-stats">
-      <div class="panel">
-        <div class="panel-header">
-          <h2><i class="fas fa-chart-bar"></i> Estadisticas</h2>
-          <button class="panel-close" onclick="closePanel('stats')"><i class="fas fa-xmark"></i></button>
+      <!-- Panel de Estadisticas: se rellena dinamicamente por JS (statsBody) -->
+      <div class="panel-overlay" id="panel-stats">
+        <div class="panel">
+          <div class="panel-header">
+            <h2><i class="fas fa-chart-bar"></i> Estadisticas</h2>
+            <button class="panel-close" onclick="closePanel('stats')"><i class="fas fa-xmark"></i></button>
+          </div>
+          <div class="panel-body" id="statsBody"></div>
         </div>
-        <div class="panel-body" id="statsBody"></div>
       </div>
-    </div>
 
-    <div class="panel-overlay" id="panel-prestige">
-      <div class="panel">
-        <div class="panel-header">
-          <h2><i class="fas fa-star"></i> Prestigio</h2>
-          <button class="panel-close" onclick="closePanel('prestige')"><i class="fas fa-xmark"></i></button>
+      <!-- Panel de Prestigio: se rellena dinamicamente por JS (prestigeBody) -->
+      <div class="panel-overlay" id="panel-prestige">
+        <div class="panel">
+          <div class="panel-header">
+            <h2><i class="fas fa-star"></i> Prestigio</h2>
+            <button class="panel-close" onclick="closePanel('prestige')"><i class="fas fa-xmark"></i></button>
+          </div>
+          <div class="panel-body" id="prestigeBody"></div>
         </div>
-        <div class="panel-body" id="prestigeBody"></div>
       </div>
-    </div>
 
-    <div id="toastContainer"></div>
+      <!-- Contenedor de notificaciones emergentes (toasts), rellenado por JS -->
+      <div id="toastContainer"></div>
 
-    <!-- Panel de log de eventos del juego -->
-    <div id="eventLog" class="event-log-panel">
-      <div class="event-log-header">
-        <i class="fas fa-bolt"></i> Eventos
-        <button class="event-log-clear" onclick="clearEventLog()" title="Limpiar eventos"><i class="fas fa-trash"></i></button>
+      <!-- Panel de log de eventos del juego -->
+      <div id="eventLog" class="event-log-panel">
+        <div class="event-log-header">
+          <i class="fas fa-bolt"></i> Eventos
+          <button class="event-log-clear" onclick="clearEventLog()" title="Limpiar eventos"><i
+              class="fas fa-trash"></i></button>
+        </div>
+        <!-- Cuerpo del log: las entradas se agregan por JS (eventLogBody) -->
+        <div class="event-log-body" id="eventLogBody"></div>
       </div>
-      <div class="event-log-body" id="eventLogBody"></div>
-    </div>
 
-    <!-- Banner de evento activo (superpuesto al juego, en la parte inferior) -->
-    <div id="activeBonusBar" class="active-bonus-bar" style="display:none;">
-      <div class="bonus-bar-icon" id="bonusBarIcon"></div>
-      <div class="bonus-bar-info">
-        <div class="bonus-bar-name" id="bonusBarName"></div>
-        <div class="bonus-bar-desc" id="bonusBarDesc"></div>
-      </div>
-      <div class="bonus-bar-timer">
-        <div class="bonus-bar-progress"><div class="bonus-bar-fill" id="bonusBarFill"></div></div>
-        <div class="bonus-bar-time" id="bonusBarTime">8s</div>
+      <!-- Banner de evento activo (superpuesto al juego, en la parte inferior) -->
+      <div id="activeBonusBar" class="active-bonus-bar" style="display:none;">
+        <!-- Icono del bonus activo (bonusBarIcon) -->
+        <div class="bonus-bar-icon" id="bonusBarIcon"></div>
+        <!-- Informacion del bonus: nombre (bonusBarName) y descripcion (bonusBarDesc) -->
+        <div class="bonus-bar-info">
+          <div class="bonus-bar-name" id="bonusBarName"></div>
+          <div class="bonus-bar-desc" id="bonusBarDesc"></div>
+        </div>
+        <!-- Temporizador del bonus: barra de progreso (bonusBarFill) y tiempo restante (bonusBarTime) -->
+        <div class="bonus-bar-timer">
+          <div class="bonus-bar-progress">
+            <div class="bonus-bar-fill" id="bonusBarFill"></div>
+          </div>
+          <div class="bonus-bar-time" id="bonusBarTime">8s</div>
+        </div>
       </div>
     </div>
   </div>
-</div>
 
-<script src="js/core.js"></script>
-<script src="js/save.js"></script>
-<script src="js/animations.js"></script>
-<script src="js/gameplay.js"></script>
-<script src="js/characters.js"></script>
-<script src="js/ui.js"></script>
-<script src="js/game.js"></script>
+  <script src="js/core.js"></script>
+  <script src="js/save.js"></script>
+  <script src="js/animations.js"></script>
+  <script src="js/gameplay.js"></script>
+  <script src="js/characters.js"></script>
+  <script src="js/ui.js"></script>
+  <script src="js/game.js"></script>
 </body>
-</html>
 
+</html>
