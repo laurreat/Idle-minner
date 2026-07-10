@@ -25,7 +25,7 @@ function obfuscateSave(obj) {
   return btoa(unescape(encodeURIComponent(xored)));
 }
 
-// Revierte la ofuscacion y valida la integridad (detecta modificaciones)
+// Revierte la ofuscación y valida la integridad (detecta modificaciones)
 function deobfuscateSave(str) {
   str = (str || "").trim();
   try {
@@ -40,7 +40,7 @@ function deobfuscateSave(str) {
     if (simpleHash(json) !== checksum) throw new Error("tampered");
     return JSON.parse(json);
   } catch (e) {
-    // Formato legacy (JSON plano de versiones anteriores)
+    // Formato heredado (JSON plano de versiones anteriores)
     return JSON.parse(str);
   }
 }
@@ -126,7 +126,7 @@ function applySaveData(save) {
   }
 }
 
-// Guardado automatico en localStorage (ofuscado y con integridad)
+// Guardado automático en localStorage (ofuscado y con integridad)
 function saveGame(silent) {
   const saveData = buildSaveData();
   game.lastSave = Date.now();
@@ -231,7 +231,7 @@ function hasSave() {
 }
 
 // ============================================================
-// PRESTIGE SYSTEM
+// SISTEMA DE PRESTIGIO
 // ============================================================
 function calculatePrestigeGems() {
   return Math.floor(Math.pow(game.totalEarned / 100000, 0.5));
@@ -268,5 +268,5 @@ function doPrestige() {
 }
 
 // ============================================================
-// PARTICLES
+// PARTÍCULAS
 // ============================================================

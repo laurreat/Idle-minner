@@ -59,7 +59,7 @@ function drawDepthIndicator() {
 }
 
 // ============================================================
-// EVENT LISTENERS
+// ESCUCHADORES DE EVENTOS
 // ============================================================
 canvas.addEventListener("click", handleCanvasClick);
 
@@ -78,7 +78,7 @@ window.addEventListener("beforeunload", () => {
 });
 
 // ============================================================
-// INIT
+// INICIALIZACIÓN
 // ============================================================
 initTheme();
 initAllFloors();

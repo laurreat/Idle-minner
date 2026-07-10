@@ -1,7 +1,7 @@
 ﻿// ============================================================
-// IDLE MINER - Deep Earth Edition v3
-// Enhanced with combo system, bonus events, ambient effects,
-// screen shake, and improved visual rendering
+// IDLE MINER - Edición Profunda v3
+// Mejorado con sistema de combos, eventos especiales, efectos ambientales,
+// vibración de pantalla y renderizado visual mejorado
 // ============================================================
 
 const canvas = document.getElementById("gameCanvas");
@@ -24,7 +24,7 @@ function resizeCanvas() {
 }
 
 // ============================================================
-// SPRITE LOADER
+// CARGADOR DE SPRITES
 // ============================================================
 const sprites = {};
 const spriteNames = [
@@ -45,7 +45,7 @@ const backgroundImage = new Image();
 backgroundImage.src = "fondo.png";
 
 // ============================================================
-// GAME STATE
+// ESTADO DEL JUEGO
 // ============================================================
 let game = {
   cash: 0,
@@ -65,7 +65,7 @@ let game = {
 };
 
 // ============================================================
-// COMBO SYSTEM
+// SISTEMA DE COMBO
 // ============================================================
 let combo = {
   count: 0,
@@ -111,7 +111,7 @@ function getComboColor() {
 }
 
 // ============================================================
-// BONUS EVENTS SYSTEM
+// SISTEMA DE EVENTOS ESPECIALES
 // ============================================================
 let bonusEvent = {
   active: false,
@@ -181,7 +181,7 @@ function getSpeedBonus() {
 }
 
 // ============================================================
-// SCREEN EFFECTS
+// EFECTOS DE PANTALLA
 // ============================================================
 let screenShake = { intensity: 0, duration: 0, elapsed: 0 };
 
@@ -210,7 +210,7 @@ function getShakeOffset() {
 }
 
 // ============================================================
-// AMBIENT PARTICLES
+// PARTÍCULAS AMBIENTALES
 // ============================================================
 let ambientParticles = [];
 
@@ -255,7 +255,7 @@ function drawAmbientParticles() {
 }
 
 // ============================================================
-// FLOORS (10 unique floors with different themes and materials)
+// PISOS (10 pisos únicos con diferentes temas y materiales)
 // ============================================================
 const FLOOR_CONFIGS = [
   { name: "Superficie", bg: "#87CEEB", rockColor: "#8B7355", oreColor: "#FFD700", oreValue: 1, oreChance: 0.3, unlockCost: 0, depth: 0, material: "Tierra", materialIcon: "­ƒƒ½" },
@@ -275,7 +275,7 @@ let unlockedFloors = [true, false, false, false, false, false, false, false, fal
 let hasClickedBefore = false;
 
 // ============================================================
-// FLOOR-SPECIFIC MINING SYSTEM
+// SISTEMA DE MINERÍA POR PISO
 // ============================================================
 let floors = [];
 
@@ -306,7 +306,7 @@ function initAllFloors() {
 }
 
 // ============================================================
-// UPGRADES (per-floor)
+// MEJORAS (por piso)
 // ============================================================
 function createUpgrades() {
   return {
@@ -356,7 +356,7 @@ function initFloorUpgrades() {
 }
 
 // ============================================================
-// GLOBAL UPGRADES
+// MEJORAS GLOBALES
 // ============================================================
 const globalUpgrades = {
   luck: {
@@ -372,7 +372,7 @@ const globalUpgrades = {
 };
 
 // ============================================================
-// ACHIEVEMENTS
+// LOGROS
 // ============================================================
 const ACHIEVEMENTS = [
   { id: "first_mine", name: "Primera Mina", desc: "Mina por primera vez", icon: "ÔøÅ´©Å", check: () => game.totalClicks >= 1, reward: "50 oro" },
@@ -397,5 +397,5 @@ const ACHIEVEMENTS = [
 let unlockedAchievements = new Set();
 
 // ============================================================
-// SAVE / LOAD SYSTEM  (ofuscado + verificacion de integridad)
+// SISTEMA DE GUARDADO / CARGA (ofuscado + verificación de integridad)
 // ============================================================

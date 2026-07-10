@@ -39,6 +39,17 @@ function updateFloorBar() {
 }
 
 // ============================================================
+const TYPE_NAMES = {
+  miner: "Minero",
+  elevator: "Elevador",
+  storage: "Almacén",
+  sellMultiplier: "Multiplicador de Venta",
+  autoMiner: "Auto-Minero",
+  luck: "Suerte",
+  speedBoost: "Velocidad Global"
+};
+
+// ============================================================
 // GAME ACTIONS
 // ============================================================
 function switchFloor(index) {
@@ -255,7 +266,7 @@ function buyUpgrade(type) {
     upgrade.level++;
     renderShop();
     checkAchievements();
-    showToast(`Ô¼å´©Å ${type} mejorado a nivel ${upgrade.level}`);
+    showToast(`Ô¼å´©Å ${TYPE_NAMES[type] || type} mejorado a nivel ${upgrade.level}`);
     triggerScreenShake(3, 150);
   }
 }
@@ -269,7 +280,7 @@ function buyGlobalUpgrade(type) {
     upgrade.level++;
     renderShop();
     checkAchievements();
-    showToast(`Ô¼å´©Å ${type} mejorado a nivel ${upgrade.level}`);
+    showToast(`Ô¼å´©Å ${TYPE_NAMES[type] || type} mejorado a nivel ${upgrade.level}`);
     triggerScreenShake(4, 200);
   }
 }
@@ -537,7 +548,7 @@ function returnToMenu() {
 }
 
 // ============================================================
-// LOADING SCREEN
+// PANTALLA DE CARGA
 // ============================================================
 let loadingDone = false;
 

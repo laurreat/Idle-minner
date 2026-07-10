@@ -33,7 +33,7 @@ function drawBoxes(floorIdx) {
     ctx.fillRect(f.minerBox.x, f.minerBox.y, f.minerBox.width, f.minerBox.height);
   }
 
-  // MinerBox label with glow
+  // Etiqueta de la tolva con brillo
   ctx.fillStyle = "rgba(0,0,0,0.7)";
   roundRect(ctx, f.minerBox.x - 10, f.minerBox.y - 32, 105, 26, 8);
   ctx.fill();
@@ -52,7 +52,7 @@ function drawBoxes(floorIdx) {
   ctx.fillText(`ÔøÅ ${f.minerBox.material}`, f.minerBox.x + 42, f.minerBox.y - 14);
   ctx.shadowBlur = 0;
 
-  // Miner carrying indicator
+  // Indicador de carga del minero
   if (f.miner.material > 0) {
     ctx.fillStyle = "rgba(0,0,0,0.7)";
     roundRect(ctx, f.miner.x + 30, f.miner.y - 30, 70, 22, 6);
@@ -105,7 +105,7 @@ function drawMiner(floorIdx) {
     ctx.fillRect(drawX, drawY + breathe, f.miner.width * scale, f.miner.height * scale);
   }
 
-  // Progress bar only while mining (quieto), not while walking
+  // Barra de progreso solo mientras mina (quieto), no mientras camina
   if (f.minerState.isWaiting) {
     const barWidth = 80;
     const barHeight = 6;
@@ -126,7 +126,7 @@ function drawMiner(floorIdx) {
     ctx.fillText("Minando...", drawX + (f.miner.width * scale) / 2, barY - 6);
   }
 
-  // Click hint glow - only on first click
+  // Brillo de ayuda al clic - solo en el primer clic
   if (!hasClickedBefore && !f.miner.isMining && !f.minerState.isWaiting && f.miner.x <= 282) {
     ctx.strokeStyle = "rgba(255, 215, 0, 0.4)";
     ctx.lineWidth = 2;
@@ -178,7 +178,7 @@ function drawElevator(floorIdx) {
     ctx.fillRect(f.elevator.x, f.elevator.y, f.elevator.width * scale, f.elevator.height * scale);
   }
 
-  // Carrying indicator
+  // Indicador de carga
   if (f.elevator.carrying > 0) {
     ctx.fillStyle = "rgba(0,0,0,0.7)";
     roundRect(ctx, f.elevator.x - 10, f.elevator.y - 28, 70, 22, 6);
@@ -192,7 +192,7 @@ function drawElevator(floorIdx) {
     ctx.shadowBlur = 0;
   }
 
-  // Progress bar only while loading (quieto), not while moving
+  // Barra de progreso solo mientras carga (quieto), no mientras se mueve
   if (f.elevatorState.isWaiting && f.elevator.state === "down") {
     const barWidth = 80;
     const barHeight = 6;
@@ -237,7 +237,7 @@ function drawStorage(floorIdx) {
     ctx.fillRect(f.storage.x, f.storage.y, f.storage.width * scale, f.storage.height * scale);
   }
 
-  // Progress bar only while collecting/dropping (quieto), not while walking
+  // Barra de progreso solo mientras recoge/entrega (quieto), no mientras camina
   if (f.storageState.isWaiting) {
     const barWidth = 80;
     const barHeight = 6;
@@ -258,7 +258,7 @@ function drawStorage(floorIdx) {
     ctx.fillText(f.storage.carrying > 0 ? "Recogiendo..." : "Dejando...", f.storage.x + (f.storage.width * scale) / 2, barY - 6);
   }
 
-  // Click hint - only on first click
+  // Ayuda al clic - solo en el primer clic
   if (!hasClickedBefore && !f.storage.isCollecting) {
     ctx.strokeStyle = "rgba(255, 152, 0, 0.4)";
     ctx.lineWidth = 2;
@@ -314,7 +314,7 @@ function drawComboIndicator() {
   ctx.fillText(`­ƒöÑ COMBO x${combo.count}`, x, y + 5);
   ctx.shadowBlur = 0;
 
-  // Progress bar to next threshold
+  // Barra de progreso hacia el siguiente umbral
   let nextThreshold = combo.thresholds.find(t => t > combo.count);
   if (nextThreshold) {
     const prevThreshold = combo.thresholds[combo.thresholds.indexOf(nextThreshold) - 1] || 0;
@@ -340,7 +340,7 @@ function drawBonusEventIndicator() {
   const boxW = 280, boxH = 78;
   const bx = x - boxW / 2, by = y - 38;
 
-  // Pulsing background
+  // Fondo pulsante
   const pulse = Math.sin(Date.now() / 200) * 0.1 + 0.9;
   ctx.fillStyle = `rgba(0,0,0,${0.72 * pulse})`;
   roundRect(ctx, bx, by, boxW, boxH, 14);
@@ -352,7 +352,7 @@ function drawBonusEventIndicator() {
   ctx.stroke();
   ctx.globalAlpha = 1;
 
-  // Name + icon
+  // Nombre + icono
   ctx.fillStyle = type.color;
   ctx.font = "bold 22px 'VT323', monospace";
   ctx.textAlign = "center";
@@ -361,12 +361,12 @@ function drawBonusEventIndicator() {
   ctx.fillText(`${type.icon} ${type.name}`, x, y - 6);
   ctx.shadowBlur = 0;
 
-  // Effect description
+  // Descripción del efecto
   ctx.fillStyle = "rgba(255,255,255,0.85)";
   ctx.font = "13px 'VT323', monospace";
   ctx.fillText(type.desc, x, y + 14);
 
-  // Duration progress bar
+  // Barra de progreso de duración
   const barW = boxW - 40, barH = 7, barX = bx + 20, barY = y + 24;
   ctx.fillStyle = "rgba(255,255,255,0.15)";
   roundRect(ctx, barX, barY, barW, barH, 4);
@@ -375,7 +375,7 @@ function drawBonusEventIndicator() {
   roundRect(ctx, barX, barY, barW * progress, barH, 4);
   ctx.fill();
 
-  // Time left + total events counter
+  // Tiempo restante + contador de eventos totales
   ctx.fillStyle = "rgba(255,255,255,0.8)";
   ctx.font = "12px 'VT323', monospace";
   ctx.textAlign = "left";
@@ -399,5 +399,5 @@ function roundRect(ctx, x, y, w, h, r) {
 }
 
 // ============================================================
-// UI UPDATES
+// ACTUALIZACIONES DE UI
 // ============================================================

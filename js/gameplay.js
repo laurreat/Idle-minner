@@ -155,6 +155,6 @@ function updateAutoMiner(floorIdx) {
 }
 
 // ============================================================
-// DRAWING
+// DIBUJADO
 // ============================================================
 // Fondo a pantalla completa (cubre todo el lienzo fisico, sin letterbox)
