@@ -45,11 +45,11 @@ function drawBoxes(floorIdx) {
   ctx.globalAlpha = 1;
 
   ctx.fillStyle = config.oreColor;
-  ctx.font = "bold 14px 'VT323', monospace";
+  ctx.font = "bold 18px 'VT323', monospace";
   ctx.textAlign = "center";
   ctx.shadowColor = "rgba(0,0,0,0.8)";
   ctx.shadowBlur = 4;
-  ctx.fillText(`ÔøÅ ${f.minerBox.material}`, f.minerBox.x + 42, f.minerBox.y - 14);
+  ctx.fillText(`⛏️ ${f.minerBox.material}`, f.minerBox.x + 42, f.minerBox.y - 14);
   ctx.shadowBlur = 0;
 
   // Indicador de carga del minero
@@ -58,7 +58,7 @@ function drawBoxes(floorIdx) {
     roundRect(ctx, f.miner.x + 30, f.miner.y - 30, 70, 22, 6);
     ctx.fill();
     ctx.fillStyle = config.oreColor;
-    ctx.font = "bold 12px 'VT323', monospace";
+    ctx.font = "bold 15px 'VT323', monospace";
     ctx.textAlign = "center";
     ctx.shadowColor = "rgba(0,0,0,0.8)";
     ctx.shadowBlur = 4;
@@ -71,11 +71,11 @@ function drawBoxes(floorIdx) {
     roundRect(ctx, f.storage.x - 20, f.storage.y - 34, 85, 26, 8);
     ctx.fill();
     ctx.fillStyle = "#4ade80";
-    ctx.font = "bold 13px 'VT323', monospace";
+    ctx.font = "bold 16px 'VT323', monospace";
     ctx.textAlign = "center";
     ctx.shadowColor = "rgba(0,0,0,0.8)";
     ctx.shadowBlur = 4;
-    ctx.fillText(`­ƒÆ░ ${f.storage.carrying}`, f.storage.x + 22, f.storage.y - 16);
+    ctx.fillText(`💰 ${f.storage.carrying}`, f.storage.x + 22, f.storage.y - 16);
     ctx.shadowBlur = 0;
   }
 }
@@ -121,7 +121,7 @@ function drawMiner(floorIdx) {
     ctx.fill();
 
     ctx.fillStyle = "#fff";
-    ctx.font = "10px 'VT323', monospace";
+    ctx.font = "12px 'VT323', monospace";
     ctx.textAlign = "center";
     ctx.fillText("Minando...", drawX + (f.miner.width * scale) / 2, barY - 6); // ya en español
   }
@@ -184,11 +184,11 @@ function drawElevator(floorIdx) {
     roundRect(ctx, f.elevator.x - 10, f.elevator.y - 28, 70, 22, 6);
     ctx.fill();
     ctx.fillStyle = "#FFD700";
-    ctx.font = "bold 12px 'VT323', monospace";
+    ctx.font = "bold 15px 'VT323', monospace";
     ctx.textAlign = "center";
     ctx.shadowColor = "rgba(0,0,0,0.8)";
     ctx.shadowBlur = 4;
-    ctx.fillText(`­ƒôª ${f.elevator.carrying}`, f.elevator.x + 25, f.elevator.y - 13);
+    ctx.fillText(`📦 ${f.elevator.carrying}`, f.elevator.x + 25, f.elevator.y - 13);
     ctx.shadowBlur = 0;
   }
 
@@ -208,7 +208,7 @@ function drawElevator(floorIdx) {
     ctx.fill();
 
     ctx.fillStyle = "#fff";
-    ctx.font = "10px 'VT323', monospace";
+    ctx.font = "12px 'VT323', monospace";
     ctx.textAlign = "center";
     ctx.fillText("Cargando...", f.elevator.x + (f.elevator.width * scale) / 2, barY - 6); // ya en español
   }
@@ -253,7 +253,7 @@ function drawStorage(floorIdx) {
     ctx.fill();
 
     ctx.fillStyle = "#fff";
-    ctx.font = "10px 'VT323', monospace";
+    ctx.font = "12px 'VT323', monospace";
     ctx.textAlign = "center";
     ctx.fillText(f.storage.carrying > 0 ? "Recogiendo..." : "Dejando...", f.storage.x + (f.storage.width * scale) / 2, barY - 6);
   }
@@ -281,7 +281,7 @@ function drawFloorIndicator() {
   ctx.globalAlpha = 1;
 
   ctx.fillStyle = config.oreColor;
-  ctx.font = "bold 16px 'VT323', monospace";
+  ctx.font = "bold 18px 'VT323', monospace";
   ctx.textAlign = "center";
   ctx.shadowColor = "rgba(0,0,0,0.8)";
   ctx.shadowBlur = 4;
@@ -307,11 +307,11 @@ function drawComboIndicator() {
   ctx.globalAlpha = 1;
 
   ctx.fillStyle = color;
-  ctx.font = "bold 20px 'VT323', monospace";
+  ctx.font = "bold 24px 'VT323', monospace";
   ctx.textAlign = "center";
   ctx.shadowColor = color;
   ctx.shadowBlur = 10;
-  ctx.fillText(`­ƒöÑ COMBO x${combo.count}`, x, y + 5);
+  ctx.fillText(`🔥 COMBO x${combo.count}`, x, y + 5);
   ctx.shadowBlur = 0;
 
   // Barra de progreso hacia el siguiente umbral
@@ -354,7 +354,7 @@ function drawBonusEventIndicator() {
 
   // Nombre + icono
   ctx.fillStyle = type.color;
-  ctx.font = "bold 22px 'VT323', monospace";
+  ctx.font = "bold 26px 'VT323', monospace";
   ctx.textAlign = "center";
   ctx.shadowColor = type.color;
   ctx.shadowBlur = 12;
@@ -363,7 +363,7 @@ function drawBonusEventIndicator() {
 
   // Descripción del efecto
   ctx.fillStyle = "rgba(255,255,255,0.85)";
-  ctx.font = "13px 'VT323', monospace";
+  ctx.font = "16px 'VT323', monospace";
   ctx.fillText(type.desc, x, y + 14);
 
   // Barra de progreso de duración
@@ -377,7 +377,7 @@ function drawBonusEventIndicator() {
 
   // Tiempo restante + contador de eventos totales
   ctx.fillStyle = "rgba(255,255,255,0.8)";
-  ctx.font = "12px 'VT323', monospace";
+  ctx.font = "14px 'VT323', monospace";
   ctx.textAlign = "left";
   ctx.fillText(`${timeLeft}s`, barX, barY - 4);
   ctx.textAlign = "right";

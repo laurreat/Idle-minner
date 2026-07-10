@@ -1,4 +1,4 @@
-﻿function getFloorSpeedMult() {
+function getFloorSpeedMult() {
   return globalUpgrades.speedBoost.getSpeedMult() * getSpeedBonus();
 }
 
@@ -7,7 +7,7 @@ function moveMiner(floorIdx) {
   const fu = floorUpgrades[floorIdx];
   const speedMult = getFloorSpeedMult();
 
-  if (f.miner.isMining && f.miner.x < 720) {
+  if (f.miner.isMining && f.miner.x < 728) {
     f.miner.x += 2.5 * speedMult;
   } else if (f.miner.x >= 720 && !f.minerState.isWaiting) {
     f.minerState.isWaiting = true;
@@ -21,7 +21,7 @@ function moveMiner(floorIdx) {
         f.gemsFound++;
         game.gems++;
         spawnParticles(f.miner.x, f.miner.y, "#a78bfa", 12);
-        spawnFloatingText(f.miner.x, f.miner.y - 30, "+1 ­ƒÆÄ", "#a78bfa", 20);
+        spawnFloatingText(f.miner.x, f.miner.y - 30, "+1 💎", "#a78bfa", 28);
         triggerScreenShake(3, 200);
       }
 
@@ -119,8 +119,8 @@ function moveStorage(floorIdx) {
         game.totalEarned += earned;
         game.score += earned;
 
-        const text = bonusMult > 1 ? `+$${formatNum(earned)} ­ƒöÑ` : `+$${formatNum(earned)}`;
-        spawnFloatingText(f.storage.x, f.storage.y - 40, text, bonusMult > 1 ? "#FF4500" : "#FFD700", bonusMult > 1 ? 20 : 16);
+        const text = bonusMult > 1 ? `+$${formatNum(earned)} 🔥` : `+$${formatNum(earned)}`;
+        spawnFloatingText(f.storage.x, f.storage.y - 40, text, bonusMult > 1 ? "#FF4500" : "#FFD700", bonusMult > 1 ? 20 : 22);
         f.storage.carrying = 0;
       }
       f.storage.state = "idle";

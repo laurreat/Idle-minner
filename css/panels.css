@@ -42,7 +42,7 @@
 
 .panel-header h2 {
   font-family: 'Silkscreen', cursive;
-  font-size: 17px;
+  font-size: clamp(17px, 2.00vw, 28px);
   color: var(--text-primary);
   display: flex; align-items: center; gap: 10px;
 }
@@ -54,7 +54,7 @@
   border: 1px solid var(--border-subtle);
   background: transparent;
   color: var(--text-secondary);
-  font-size: 14px; cursor: pointer;
+  font-size: clamp(14px, 1.65vw, 23px); cursor: pointer;
   display: flex; align-items: center; justify-content: center;
   transition: all 0.2s;
 }
@@ -76,7 +76,7 @@
 
 .shop-section h3 {
   font-family: 'Silkscreen', cursive;
-  font-size: 12px;
+  font-size: clamp(12px, 1.41vw, 20px);
   color: var(--text-secondary);
   text-transform: uppercase;
   letter-spacing: 2px;
@@ -86,7 +86,7 @@
   border-bottom: 1px solid var(--border-subtle);
 }
 
-.shop-section h3 i { color: var(--emerald); font-size: 14px; }
+.shop-section h3 i { color: var(--emerald); font-size: clamp(14px, 1.65vw, 23px); }
 
 .shop-item {
   display: flex; align-items: center; gap: 14px;
@@ -123,25 +123,25 @@
 .shop-icon {
   width: 42px; height: 42px; border-radius: var(--radius-sm);
   display: flex; align-items: center; justify-content: center;
-  font-size: 18px; flex-shrink: 0;
+  font-size: clamp(18px, 2.12vw, 30px); flex-shrink: 0;
 }
 
 .shop-info { flex: 1; min-width: 0; }
 .shop-info .name {
   font-family: 'Silkscreen', cursive;
-  font-size: 13px;
+  font-size: clamp(13px, 1.53vw, 21px);
   color: var(--text-primary);
   font-weight: 700;
 }
 
 .shop-info .desc {
-  font-size: 12.5px;
+  font-size: clamp(12.5px, 1.47vw, 21px);
   color: var(--text-secondary);
   margin-top: 3px;
 }
 
 .shop-info .level {
-  font-size: 11.5px;
+  font-size: clamp(11.5px, 1.35vw, 19px);
   color: var(--purple);
   margin-top: 3px;
 }
@@ -150,7 +150,7 @@
   padding: 6px 12px;
   border-radius: 6px;
   font-family: 'Silkscreen', cursive;
-  font-size: 12px;
+  font-size: clamp(12px, 1.41vw, 20px);
   font-weight: 700;
   white-space: nowrap;
 }
@@ -165,7 +165,7 @@
   background: rgba(14, 165, 233, 0.06);
   color: #0ea5e9;
   font-family: 'Silkscreen', cursive;
-  font-size: 13px;
+  font-size: clamp(13px, 1.53vw, 21px);
   font-weight: 600;
   cursor: pointer;
   margin-top: 14px;
@@ -202,17 +202,17 @@
 
 .achievement.locked { opacity: 0.35; }
 
-.ach-icon { font-size: 22px; color: var(--gold); width: 32px; text-align: center; }
+.ach-icon { font-size: clamp(22px, 2.59vw, 36px); color: var(--gold); width: 32px; text-align: center; }
 
 .ach-info .ach-name {
   font-family: 'Silkscreen', cursive;
-  font-size: 12px;
+  font-size: clamp(12px, 1.41vw, 20px);
   color: var(--text-primary);
   font-weight: 700;
 }
 
-.ach-info .ach-desc { font-size: 12.5px; color: var(--text-secondary); margin-top: 2px; }
-.ach-info .ach-reward { font-size: 10px; color: var(--purple); margin-top: 2px; }
+.ach-info .ach-desc { font-size: clamp(12.5px, 1.47vw, 21px); color: var(--text-secondary); margin-top: 2px; }
+.ach-info .ach-reward { font-size: clamp(10px, 1.18vw, 17px); color: var(--purple); margin-top: 2px; }
 
 /* Stats */
 .stat-grid { display: grid; gap: 12px; }
@@ -231,7 +231,7 @@
 }
 
 .stat-card .stat-label {
-  font-size: 12.5px;
+  font-size: clamp(12.5px, 1.47vw, 21px);
   color: var(--text-secondary);
   text-transform: uppercase;
   letter-spacing: 1px;
@@ -239,7 +239,7 @@
 
 .stat-card .stat-value {
   font-family: 'Silkscreen', cursive;
-  font-size: 20px;
+  font-size: clamp(20px, 2.35vw, 33px);
   font-weight: 800;
   color: var(--text-primary);
   margin-top: 6px;
@@ -251,21 +251,21 @@
 .prestige-info h3 {
   font-family: 'Silkscreen', cursive;
   color: var(--gold);
-  font-size: 20px;
+  font-size: clamp(20px, 2.35vw, 33px);
   margin-bottom: 14px;
   display: flex; align-items: center; justify-content: center; gap: 10px;
 }
 
 .prestige-info p {
   color: var(--text-secondary);
-  font-size: 14px;
+  font-size: clamp(14px, 1.65vw, 23px);
   line-height: 1.7;
   margin-bottom: 10px;
 }
 
 .prestige-gems {
   font-family: 'Silkscreen', cursive;
-  font-size: 36px;
+  font-size: clamp(36px, 4.24vw, 59px);
   font-weight: 800;
   color: var(--purple);
   margin: 20px 0;
@@ -279,7 +279,7 @@
   border-radius: var(--radius-sm);
   border: none;
   font-family: 'Silkscreen', cursive;
-  font-size: 14px;
+  font-size: clamp(14px, 1.65vw, 23px);
   font-weight: 700;
   cursor: pointer;
   transition: all 0.25s ease;
@@ -321,7 +321,7 @@
   backdrop-filter: blur(12px);
   color: var(--text-primary);
   font-family: 'Silkscreen', cursive;
-  font-size: 13px;
+  font-size: clamp(13px, 1.53vw, 21px);
   font-weight: 600;
   animation: toastIn 0.35s ease, toastOut 0.35s ease 2.7s forwards;
   white-space: nowrap;
@@ -355,12 +355,12 @@
 .howto-num {
   flex-shrink: 0; width: 34px; height: 34px; border-radius: 50%;
   display: flex; align-items: center; justify-content: center;
-  font-family: 'Silkscreen', cursive; font-size: 16px; font-weight: 800;
+  font-family: 'Silkscreen', cursive; font-size: clamp(16px, 1.88vw, 26px); font-weight: 800;
   background: var(--gold-dim); color: var(--gold);
 }
-.howto-text { font-size: 15px; line-height: 1.7; color: var(--text-secondary); }
+.howto-text { font-size: clamp(15px, 1.76vw, 25px); line-height: 1.7; color: var(--text-secondary); }
 .howto-text b { color: var(--text-primary); }
-.howto-icon { font-size: 24px; color: var(--gold); margin-right: 2px; flex-shrink: 0; }
+.howto-icon { font-size: clamp(24px, 2.82vw, 40px); color: var(--gold); margin-right: 2px; flex-shrink: 0; }
 
 @media (min-width: 820px) {
   .howto-list { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
@@ -399,7 +399,7 @@
   justify-content: space-between;
   padding: 7px 10px 6px;
   font-family: 'Silkscreen', cursive;
-  font-size: 11px;
+  font-size: clamp(11px, 1.29vw, 18px);
   color: var(--gold);
   border-bottom: 1px solid rgba(255,255,255,0.06);
   letter-spacing: 1px;
@@ -407,14 +407,14 @@
   flex-shrink: 0;
 }
 
-.event-log-header i { font-size: 11px; }
+.event-log-header i { font-size: clamp(11px, 1.29vw, 18px); }
 
 .event-log-clear {
   margin-left: auto;
   background: none;
   border: none;
   color: rgba(255,255,255,0.25);
-  font-size: 10px;
+  font-size: clamp(10px, 1.18vw, 17px);
   cursor: pointer;
   padding: 2px 4px;
   border-radius: 4px;
@@ -437,7 +437,7 @@
   align-items: flex-start;
   gap: 7px;
   padding: 5px 10px;
-  font-size: 11.5px;
+  font-size: clamp(11.5px, 1.35vw, 19px);
   font-family: 'Silkscreen', cursive;
   color: var(--text-secondary);
   border-bottom: 1px solid rgba(255,255,255,0.03);
@@ -459,7 +459,7 @@
 .event-log-entry.type-warn   { color: #f59e0b; }
 
 .event-log-time {
-  font-size: 9.5px;
+  font-size: clamp(9.5px, 1.12vw, 16px);
   color: rgba(255,255,255,0.2);
   flex-shrink: 0;
   margin-top: 1px;
@@ -496,7 +496,7 @@
 }
 
 .bonus-bar-icon {
-  font-size: 20px;
+  font-size: clamp(20px, 2.35vw, 33px);
   flex-shrink: 0;
   filter: drop-shadow(0 0 6px currentColor);
 }
@@ -508,7 +508,7 @@
 
 .bonus-bar-name {
   font-family: 'Silkscreen', cursive;
-  font-size: 12px;
+  font-size: clamp(12px, 1.41vw, 20px);
   font-weight: 700;
   color: var(--text-primary);
   white-space: nowrap;
@@ -517,7 +517,7 @@
 }
 
 .bonus-bar-desc {
-  font-size: 10.5px;
+  font-size: clamp(10.5px, 1.24vw, 17px);
   color: var(--text-secondary);
   margin-top: 1px;
   font-family: 'Silkscreen', cursive;
@@ -548,7 +548,7 @@
 
 .bonus-bar-time {
   font-family: 'Silkscreen', cursive;
-  font-size: 10px;
+  font-size: clamp(10px, 1.18vw, 17px);
   color: rgba(255,255,255,0.5);
 }
 
@@ -560,6 +560,6 @@
   }
   .active-bonus-bar {
     min-width: 200px;
-    font-size: 10px;
+    font-size: clamp(10px, 1.18vw, 17px);
   }
 }

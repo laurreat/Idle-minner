@@ -583,7 +583,7 @@ function toggleTheme() {
   const newTheme = isLight ? "dark" : "light";
   applyTheme(newTheme);
   try { localStorage.setItem(THEME_KEY, newTheme); } catch (e) {}
-  showToast(newTheme === "light" ? "Ô☀️ Tema claro" : "🌙 Tema oscuro");
+  showToast(newTheme === "light" ? "☀️ Tema claro" : "🌙 Tema oscuro");
 }
 
 function initTheme() {
