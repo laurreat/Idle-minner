@@ -123,7 +123,7 @@ function drawMiner(floorIdx) {
     ctx.fillStyle = "#fff";
     ctx.font = "10px 'VT323', monospace";
     ctx.textAlign = "center";
-    ctx.fillText("Minando...", drawX + (f.miner.width * scale) / 2, barY - 6);
+    ctx.fillText("Minando...", drawX + (f.miner.width * scale) / 2, barY - 6); // ya en español
   }
 
   // Brillo de ayuda al clic - solo en el primer clic
@@ -210,7 +210,7 @@ function drawElevator(floorIdx) {
     ctx.fillStyle = "#fff";
     ctx.font = "10px 'VT323', monospace";
     ctx.textAlign = "center";
-    ctx.fillText("Cargando...", f.elevator.x + (f.elevator.width * scale) / 2, barY - 6);
+    ctx.fillText("Cargando...", f.elevator.x + (f.elevator.width * scale) / 2, barY - 6); // ya en español
   }
 
   if (!f.elevator.isMoving) {
@@ -381,7 +381,7 @@ function drawBonusEventIndicator() {
   ctx.textAlign = "left";
   ctx.fillText(`${timeLeft}s`, barX, barY - 4);
   ctx.textAlign = "right";
-  ctx.fillText(`Eventos: ${bonusEvent.totalTriggered}`, barX + barW, barY - 4);
+  ctx.fillText(`Eventos: ${bonusEvent.totalTriggered}`, barX + barW, barY - 4); // ya en español
 }
 
 function roundRect(ctx, x, y, w, h, r) {

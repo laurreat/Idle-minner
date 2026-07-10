@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="es">
 <head>
 <meta charset="UTF-8">
@@ -178,6 +178,28 @@
     </div>
 
     <div id="toastContainer"></div>
+
+    <!-- Panel de log de eventos del juego -->
+    <div id="eventLog" class="event-log-panel">
+      <div class="event-log-header">
+        <i class="fas fa-bolt"></i> Eventos
+        <button class="event-log-clear" onclick="clearEventLog()" title="Limpiar eventos"><i class="fas fa-trash"></i></button>
+      </div>
+      <div class="event-log-body" id="eventLogBody"></div>
+    </div>
+
+    <!-- Banner de evento activo (superpuesto al juego, en la parte inferior) -->
+    <div id="activeBonusBar" class="active-bonus-bar" style="display:none;">
+      <div class="bonus-bar-icon" id="bonusBarIcon"></div>
+      <div class="bonus-bar-info">
+        <div class="bonus-bar-name" id="bonusBarName"></div>
+        <div class="bonus-bar-desc" id="bonusBarDesc"></div>
+      </div>
+      <div class="bonus-bar-timer">
+        <div class="bonus-bar-progress"><div class="bonus-bar-fill" id="bonusBarFill"></div></div>
+        <div class="bonus-bar-time" id="bonusBarTime">8s</div>
+      </div>
+    </div>
   </div>
 </div>
 

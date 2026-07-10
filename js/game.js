@@ -1,4 +1,4 @@
-﻿function gameLoop() {
+function gameLoop() {
   const now = Date.now();
   const dt = now - lastTime;
   lastTime = now;
@@ -35,7 +35,8 @@
     drawFloatingTexts();
     drawFloorIndicator();
     drawComboIndicator();
-    drawBonusEventIndicator();
+    // El evento de bonus ahora se muestra como barra HTML (no en canvas)
+    // drawBonusEventIndicator();
     drawDepthIndicator();
 
     updateHUD();

@@ -1,4 +1,4 @@
-﻿// ============================================================
+// ============================================================
 // IDLE MINER - Edición Profunda v3
 // Mejorado con sistema de combos, eventos especiales, efectos ambientales,
 // vibración de pantalla y renderizado visual mejorado
@@ -126,9 +126,9 @@ let bonusEvent = {
 };
 
 const BONUS_TYPES = [
-  { id: "gold_rush", name: "Fiebre del Oro!", icon: "­ƒÆ░", color: "#FFD700", mult: 3, desc: "x3 oro por 8s" },
-  { id: "gem_storm", name: "Tormenta de Gemas!", icon: "­ƒÆÄ", color: "#a78bfa", mult: 5, desc: "x5 chance gemas" },
-  { id: "speed_demon", name: "Velocidad Extrema!", icon: "ÔÜí", color: "#60a5fa", mult: 2, desc: "x2 velocidad" }
+  { id: "gold_rush", name: "¡Fiebre del Oro!", icon: "💰", color: "#FFD700", mult: 3, desc: "x3 oro durante 8s" },
+  { id: "gem_storm", name: "¡Tormenta de Gemas!", icon: "💎", color: "#a78bfa", mult: 5, desc: "x5 probabilidad de gemas" },
+  { id: "speed_demon", name: "¡Velocidad Extrema!", icon: "⚡", color: "#60a5fa", mult: 2, desc: "x2 velocidad de minería" }
 ];
 
 function updateBonusEvents(dt) {
@@ -140,9 +140,11 @@ function updateBonusEvents(dt) {
 
   if (bonusEvent.active) {
     bonusEvent.timer -= dt;
+    updateActiveBonusBar();
     if (bonusEvent.timer <= 0) {
       bonusEvent.active = false;
-      showToast(`${bonusEvent.type.icon} Evento terminado`);
+      hideBonusBar();
+      addEventLog(`${bonusEvent.type.icon} Evento terminado: ${bonusEvent.type.name}`, 'info');
     }
   }
 }
@@ -158,7 +160,8 @@ function startBonusEvent() {
   bonusEvent.lastEventTime = Date.now();
   bonusEvent.nextEventTime = 45000 + Math.random() * 60000;
 
-  showToast(`${type.icon} ${type.name} ${type.desc}`, true);
+  showBonusBar(type);
+  addEventLog(`${type.icon} ¡EVENTO! ${type.name} — ${type.desc}`, 'bonus');
   spawnParticles(bonusEvent.x, bonusEvent.y, type.color, 20);
 }
 
@@ -258,16 +261,16 @@ function drawAmbientParticles() {
 // PISOS (10 pisos únicos con diferentes temas y materiales)
 // ============================================================
 const FLOOR_CONFIGS = [
-  { name: "Superficie", bg: "#87CEEB", rockColor: "#8B7355", oreColor: "#FFD700", oreValue: 1, oreChance: 0.3, unlockCost: 0, depth: 0, material: "Tierra", materialIcon: "­ƒƒ½" },
-  { name: "Tierra", bg: "#6B4226", rockColor: "#5C3317", oreColor: "#C0C0C0", oreValue: 2, oreChance: 0.25, unlockCost: 500, depth: 100, material: "Carb├│n", materialIcon: "Ô¼ø" },
-  { name: "Piedra", bg: "#4A4A4A", rockColor: "#3A3A3A", oreColor: "#CD7F32", oreValue: 5, oreChance: 0.2, unlockCost: 5000, depth: 300, material: "Hierro", materialIcon: "­ƒö®" },
-  { name: "Cueva Cristalina", bg: "#1a3a5c", rockColor: "#2a4a6c", oreColor: "#00CED1", oreValue: 12, oreChance: 0.18, unlockCost: 25000, depth: 600, material: "Cobre", materialIcon: "­ƒƒá" },
-  { name: "Magma", bg: "#4a0a0a", rockColor: "#3a0a0a", oreColor: "#FF4500", oreValue: 30, oreChance: 0.15, unlockCost: 100000, depth: 1000, material: "Oro", materialIcon: "­ƒƒí" },
-  { name: "Obsidiana", bg: "#0a0a1a", rockColor: "#050510", oreColor: "#9400D3", oreValue: 75, oreChance: 0.12, unlockCost: 500000, depth: 1500, material: "Plata", materialIcon: "ÔÜ¬" },
-  { name: "Diamante", bg: "#0a1a2a", rockColor: "#0a1525", oreColor: "#00FFFF", oreValue: 200, oreChance: 0.1, unlockCost: 2500000, depth: 2200, material: "Platino", materialIcon: "­ƒÆá" },
-  { name: "N├║cleo Exterior", bg: "#2a0a00", rockColor: "#1a0500", oreColor: "#FF6347", oreValue: 500, oreChance: 0.08, unlockCost: 10000000, depth: 3000, material: "Rub├¡", materialIcon: "­ƒö┤" },
-  { name: "N├║cleo Interno", bg: "#1a0000", rockColor: "#0f0000", oreColor: "#FFD700", oreValue: 1500, oreChance: 0.06, unlockCost: 50000000, depth: 4000, material: "Esmeralda", materialIcon: "­ƒƒó" },
-  { name: "Centro de la Tierra", bg: "#000000", rockColor: "#050005", oreColor: "#FFFFFF", oreValue: 5000, oreChance: 0.04, unlockCost: 250000000, depth: 5000, material: "Diamante", materialIcon: "­ƒÆÄ" }
+  { name: "Superficie", bg: "#87CEEB", rockColor: "#8B7355", oreColor: "#FFD700", oreValue: 1, oreChance: 0.3, unlockCost: 0, depth: 0, material: "Tierra", materialIcon: "🧱" },
+  { name: "Tierra", bg: "#6B4226", rockColor: "#5C3317", oreColor: "#C0C0C0", oreValue: 2, oreChance: 0.25, unlockCost: 500, depth: 100, material: "Carbón", materialIcon: "⬛" },
+  { name: "Piedra", bg: "#4A4A4A", rockColor: "#3A3A3A", oreColor: "#CD7F32", oreValue: 5, oreChance: 0.2, unlockCost: 5000, depth: 300, material: "Hierro", materialIcon: "🪨" },
+  { name: "Cueva Cristalina", bg: "#1a3a5c", rockColor: "#2a4a6c", oreColor: "#00CED1", oreValue: 12, oreChance: 0.18, unlockCost: 25000, depth: 600, material: "Cobre", materialIcon: "💎" },
+  { name: "Magma", bg: "#4a0a0a", rockColor: "#3a0a0a", oreColor: "#FF4500", oreValue: 30, oreChance: 0.15, unlockCost: 100000, depth: 1000, material: "Oro", materialIcon: "🥇" },
+  { name: "Obsidiana", bg: "#0a0a1a", rockColor: "#050510", oreColor: "#9400D3", oreValue: 75, oreChance: 0.12, unlockCost: 500000, depth: 1500, material: "Plata", materialIcon: "🥈" },
+  { name: "Diamante", bg: "#0a1a2a", rockColor: "#0a1525", oreColor: "#00FFFF", oreValue: 200, oreChance: 0.1, unlockCost: 2500000, depth: 2200, material: "Platino", materialIcon: "💠" },
+  { name: "Núcleo Exterior", bg: "#2a0a00", rockColor: "#1a0500", oreColor: "#FF6347", oreValue: 500, oreChance: 0.08, unlockCost: 10000000, depth: 3000, material: "Rubí", materialIcon: "🔴" },
+  { name: "Núcleo Interno", bg: "#1a0000", rockColor: "#0f0000", oreColor: "#FFD700", oreValue: 1500, oreChance: 0.06, unlockCost: 50000000, depth: 4000, material: "Esmeralda", materialIcon: "🟢" },
+  { name: "Centro de la Tierra", bg: "#000000", rockColor: "#050005", oreColor: "#FFFFFF", oreValue: 5000, oreChance: 0.04, unlockCost: 250000000, depth: 5000, material: "Diamante", materialIcon: "💎" }
 ];
 
 let unlockedFloors = [true, false, false, false, false, false, false, false, false, false];
@@ -375,23 +378,23 @@ const globalUpgrades = {
 // LOGROS
 // ============================================================
 const ACHIEVEMENTS = [
-  { id: "first_mine", name: "Primera Mina", desc: "Mina por primera vez", icon: "ÔøÅ´©Å", check: () => game.totalClicks >= 1, reward: "50 oro" },
-  { id: "hundred_clicks", name: "Minero Dedicado", desc: "Haz clic 100 veces", icon: "­ƒæå", check: () => game.totalClicks >= 100, reward: "200 oro" },
-  { id: "thousand_clicks", name: "Minero Experto", desc: "Haz clic 1,000 veces", icon: "­ƒÆ¬", check: () => game.totalClicks >= 1000, reward: "1 gema" },
-  { id: "first_k", name: "Primer Mil", desc: "Gana $1,000 en total", icon: "­ƒÆ░", check: () => game.totalEarned >= 1000, reward: "100 oro" },
-  { id: "first_100k", name: "Rico", desc: "Gana $100,000 en total", icon: "­ƒñæ", check: () => game.totalEarned >= 100000, reward: "5 gemas" },
-  { id: "first_million", name: "Millonario", desc: "Gana $1,000,000 en total", icon: "­ƒÆÄ", check: () => game.totalEarned >= 1000000, reward: "25 gemas" },
-  { id: "floor_2", name: "Explorador", desc: "Desbloquea el Piso 2", icon: "­ƒöô", check: () => unlockedFloors[1], reward: "2 gemas" },
-  { id: "floor_5", name: "Profundo", desc: "Desbloquea el Piso 5", icon: "­ƒò│´©Å", check: () => unlockedFloors[4], reward: "10 gemas" },
-  { id: "floor_10", name: "Centro de la Tierra", desc: "Desbloquea todos los pisos", icon: "­ƒîì", check: () => unlockedFloors[9], reward: "50 gemas" },
-  { id: "prestige_1", name: "Renacimiento", desc: "Haz tu primer prestigio", icon: "Ô¡É", check: () => game.prestigeCount >= 1, reward: "10 gemas" },
-  { id: "prestige_5", name: "Veterano", desc: "Haz 5 prestigios", icon: "­ƒîƒ", check: () => game.prestigeCount >= 5, reward: "50 gemas" },
-  { id: "auto_miner", name: "Automatizaci├│n", desc: "Compra un auto-minero", icon: "­ƒñû", check: () => { for (let f of floorUpgrades) if (f.autoMiner.level > 0) return true; return false; }, reward: "5 gemas" },
-  { id: "speed_max", name: "Velocidad M├íxima", desc: "Maximiza la velocidad del elevador", icon: "ÔÜí", check: () => { for (let f of floorUpgrades) if (f.elevator.level >= f.elevator.maxLevel) return true; return false; }, reward: "15 gemas" },
-  { id: "ten_k_mined", name: "Toneladas", desc: "Mina 10,000 unidades", icon: "­ƒÅö´©Å", check: () => game.totalMined >= 10000, reward: "3 gemas" },
-  { id: "score_100k", name: "Puntuaci├│n Alta", desc: "Alcanza 100,000 puntos", icon: "­ƒÅå", check: () => game.score >= 100000, reward: "20 gemas" },
-  { id: "combo_10", name: "Maestro del Combo", desc: "Alcanza un combo de 10", icon: "­ƒöÑ", check: () => combo.count >= 10, reward: "3 gemas" },
-  { id: "combo_25", name: "Leyenda del Combo", desc: "Alcanza un combo de 25", icon: "­ƒÆÑ", check: () => combo.count >= 25, reward: "10 gemas" }
+  { id: "first_mine", name: "Primera Mina", desc: "Mina por primera vez", icon: "⛏️", check: () => game.totalClicks >= 1, reward: "50 oro" },
+  { id: "hundred_clicks", name: "Minero Dedicado", desc: "Haz clic 100 veces", icon: "⚒️", check: () => game.totalClicks >= 100, reward: "200 oro" },
+  { id: "thousand_clicks", name: "Minero Experto", desc: "Haz clic 1,000 veces", icon: "💎", check: () => game.totalClicks >= 1000, reward: "1 gema" },
+  { id: "first_k", name: "Primer Mil", desc: "Gana $1,000 en total", icon: "💰", check: () => game.totalEarned >= 1000, reward: "100 oro" },
+  { id: "first_100k", name: "Rico", desc: "Gana $100,000 en total", icon: "🏦", check: () => game.totalEarned >= 100000, reward: "5 gemas" },
+  { id: "first_million", name: "Millonario", desc: "Gana $1,000,000 en total", icon: "👑", check: () => game.totalEarned >= 1000000, reward: "25 gemas" },
+  { id: "floor_2", name: "Explorador", desc: "Desbloquea el Piso 2", icon: "🗺️", check: () => unlockedFloors[1], reward: "2 gemas" },
+  { id: "floor_5", name: "Profundo", desc: "Desbloquea el Piso 5", icon: "🌋", check: () => unlockedFloors[4], reward: "10 gemas" },
+  { id: "floor_10", name: "Centro de la Tierra", desc: "Desbloquea todos los pisos", icon: "🌍", check: () => unlockedFloors[9], reward: "50 gemas" },
+  { id: "prestige_1", name: "Renacimiento", desc: "Haz tu primer prestigio", icon: "✨", check: () => game.prestigeCount >= 1, reward: "10 gemas" },
+  { id: "prestige_5", name: "Veterano", desc: "Haz 5 prestigios", icon: "🌟", check: () => game.prestigeCount >= 5, reward: "50 gemas" },
+  { id: "auto_miner", name: "Automatización", desc: "Compra un auto-minero", icon: "🤖", check: () => { for (let f of floorUpgrades) if (f.autoMiner.level > 0) return true; return false; }, reward: "5 gemas" },
+  { id: "speed_max", name: "Velocidad Máxima", desc: "Maximiza la velocidad del elevador", icon: "⚡", check: () => { for (let f of floorUpgrades) if (f.elevator.level >= f.elevator.maxLevel) return true; return false; }, reward: "15 gemas" },
+  { id: "ten_k_mined", name: "Toneladas", desc: "Mina 10,000 unidades", icon: "⚖️", check: () => game.totalMined >= 10000, reward: "3 gemas" },
+  { id: "score_100k", name: "Puntuación Alta", desc: "Alcanza 100,000 puntos", icon: "🏆", check: () => game.score >= 100000, reward: "20 gemas" },
+  { id: "combo_10", name: "Maestro del Combo", desc: "Alcanza un combo de 10", icon: "🔥", check: () => combo.count >= 10, reward: "3 gemas" },
+  { id: "combo_25", name: "Leyenda del Combo", desc: "Alcanza un combo de 25", icon: "🚀", check: () => combo.count >= 25, reward: "10 gemas" }
 ];
 
 let unlockedAchievements = new Set();

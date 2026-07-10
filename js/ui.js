@@ -1,4 +1,4 @@
-﻿function updateHUD() {
+function updateHUD() {
   document.getElementById("hudCash").textContent = `$${formatNum(game.cash)}`;
   document.getElementById("hudGems").textContent = `­ƒÆÄ ${game.gems}`;
   document.getElementById("hudFloor").textContent = `Piso ${game.currentFloor + 1}: ${FLOOR_CONFIGS[game.currentFloor].name}`;
@@ -9,9 +9,9 @@
     if (!unlockedFloors[i]) continue;
     const fu = floorUpgrades[i];
     if (fu.autoMiner.isActive()) {
-      const cyclesPerSec = 1000 / fu.autoMiner.getInterval();
-      const amount = Math.min(fu.miner.getMiningAmount(), fu.elevator.getCapacity(), fu.storage.getCapacity());
-      perSec += cyclesPerSec * amount * fu.sellMultiplier.getMultiplier();
+      const ciclosPorSeg = 1000 / fu.autoMiner.getInterval();
+      const cantidad = Math.min(fu.miner.getMiningAmount(), fu.elevator.getCapacity(), fu.storage.getCapacity());
+      perSec += ciclosPorSeg * cantidad * fu.sellMultiplier.getMultiplier();
     }
   }
   document.getElementById("hudPerSec").textContent = `$${formatNum(Math.floor(perSec))}/s`;
@@ -59,12 +59,13 @@ function switchFloor(index) {
       game.cash -= cost;
       unlockedFloors[index] = true;
       game.currentFloor = index;
-      showToast(`­ƒöô ┬íPiso ${index + 1} desbloqueado!`);
+      showToast(`🏔️ ¡Piso ${index + 1} desbloqueado!`);
+      addEventLog(`🏔️ ¡Piso ${index + 1} (${FLOOR_CONFIGS[index].name}) desbloqueado!`, 'piso');
       triggerScreenShake(5, 300);
       checkAchievements();
       updateFloorBar();
     } else {
-      showToast(`ÔØî Necesitas $${formatNum(cost)}`);
+      showToast(`⚠️ Necesitas $${formatNum(cost)} para desbloquear este piso`);
     }
     return;
   }
@@ -177,7 +178,7 @@ function renderShop() {
   html += `<div class="shop-item ${!canStor ? (fu.storage.level >= fu.storage.maxLevel ? 'maxed' : 'cant-afford') : ''}" onclick="buyUpgrade('storage')">
     <div class="shop-icon" style="background:rgba(255,152,0,0.15);">­ƒôª</div>
     <div class="shop-info">
-      <div class="name">Almac├®n</div>
+      <div class="name">Almacén</div>
       <div class="desc">+20 capacidad, -5% tiempo</div>
       <div class="level">Nivel ${fu.storage.level}/${fu.storage.maxLevel}</div>
     </div>
@@ -266,7 +267,8 @@ function buyUpgrade(type) {
     upgrade.level++;
     renderShop();
     checkAchievements();
-    showToast(`Ô¼å´©Å ${TYPE_NAMES[type] || type} mejorado a nivel ${upgrade.level}`);
+    showToast(`✅ ${TYPE_NAMES[type] || type} mejorado a nivel ${upgrade.level}`);
+    addEventLog(`✅ ${TYPE_NAMES[type] || type} → nivel ${upgrade.level}`, 'info');
     triggerScreenShake(3, 150);
   }
 }
@@ -280,7 +282,8 @@ function buyGlobalUpgrade(type) {
     upgrade.level++;
     renderShop();
     checkAchievements();
-    showToast(`Ô¼å´©Å ${TYPE_NAMES[type] || type} mejorado a nivel ${upgrade.level}`);
+    showToast(`✅ ${TYPE_NAMES[type] || type} mejorado a nivel ${upgrade.level}`);
+    addEventLog(`💎 ${TYPE_NAMES[type] || type} → nivel ${upgrade.level}`, 'bonus');
     triggerScreenShake(4, 200);
   }
 }
@@ -310,39 +313,39 @@ function renderStats() {
   body.innerHTML = `
     <div class="stat-grid">
       <div class="stat-card">
-        <div class="stat-label">­ƒÆ░ Oro Total Ganado</div>
+        <div class="stat-label">💰 Oro Total Ganado</div>
         <div class="stat-value" style="color:var(--gold);">$${formatNum(game.totalEarned)}</div>
       </div>
       <div class="stat-card">
-        <div class="stat-label">­ƒÆÄ Gemas</div>
+        <div class="stat-label">💎 Gemas</div>
         <div class="stat-value" style="color:var(--purple);">${game.gems}</div>
       </div>
       <div class="stat-card">
-        <div class="stat-label">ÔøÅ´©Å Total Minado</div>
+        <div class="stat-label">⛏️ Total Minado</div>
         <div class="stat-value" style="color:var(--emerald);">${formatNum(game.totalMined)}</div>
       </div>
       <div class="stat-card">
-        <div class="stat-label">­ƒæå Clics Totales</div>
+        <div class="stat-label">👆 Clics Totales</div>
         <div class="stat-value" style="color:#ec4899;">${formatNum(game.totalClicks)}</div>
       </div>
       <div class="stat-card">
-        <div class="stat-label">Ô¡É Prestigios</div>
+        <div class="stat-label">⭐ Prestigios</div>
         <div class="stat-value" style="color:#f59e0b;">${game.prestigeCount}</div>
       </div>
       <div class="stat-card">
-        <div class="stat-label">­ƒÅå Puntuaci├│n</div>
+        <div class="stat-label">🏅 Puntuación</div>
         <div class="stat-value" style="color:#6366f1;">${formatNum(game.score)}</div>
       </div>
       <div class="stat-card">
-        <div class="stat-label">ÔÅ▒´©Å Tiempo Jugado</div>
+        <div class="stat-label">⏱️ Tiempo Jugado</div>
         <div class="stat-value">${formatTime(elapsed)}</div>
       </div>
       <div class="stat-card">
-        <div class="stat-label">­ƒù║´©Å Pisos Desbloqueados</div>
+        <div class="stat-label">🏔️ Pisos Desbloqueados</div>
         <div class="stat-value">${unlockedFloors.filter(Boolean).length}/${FLOOR_CONFIGS.length}</div>
       </div>
       <div class="stat-card">
-        <div class="stat-label">­ƒöÑ Combo M├íximo</div>
+        <div class="stat-label">🔥 Combo Máximo</div>
         <div class="stat-value" style="color:#FF4500;">${combo.maxCombo}</div>
       </div>
     </div>
@@ -354,16 +357,16 @@ function renderPrestige() {
   const gems = calculatePrestigeGems();
   body.innerHTML = `
     <div class="prestige-info">
-      <h3>Ô¡É Reiniciar por Gemas</h3>
+      <h3>⭐ Reiniciar por Gemas</h3>
       <p>Al hacer prestigio, pierdes todo tu oro y mejoras de piso, pero ganas <strong>gemas</strong> que dan bonificaciones permanentes.</p>
       <p>Las gemas se usan para mejoras globales que afectan TODOS los pisos.</p>
       <div class="prestige-gems">+${gems} ­ƒÆÄ</div>
       <p style="font-size:13px;color:var(--text-secondary);">Gemas actuales: ${game.gems} | Total prestigio: ${game.totalPrestigeGems}</p>
       <p style="font-size:13px;color:var(--text-secondary);">Prestigios realizados: ${game.prestigeCount}</p>
-      ${gems < 1 ? '<p style="color:#ef4444;margin-top:14px;">Necesitas minar m├ís para obtener gemas de prestigio.</p>' : ''}
+      ${gems < 1 ? '<p style="color:#ef4444;margin-top:14px;">Necesitas minar más para obtener gemas de prestigio.</p>' : ''}
       <div class="prestige-btns">
         <button class="btn-cancel" onclick="closePanel('prestige')">Cancelar</button>
-        ${gems >= 1 ? `<button class="btn-confirm-prestige" onclick="doPrestige()">Ô¡É Confirmar Prestigio</button>` : ''}
+        ${gems >= 1 ? `<button class="btn-confirm-prestige" onclick="doPrestige()">⭐ Confirmar Prestigio</button>` : ''}
       </div>
     </div>
   `;
@@ -376,7 +379,8 @@ function checkAchievements() {
   ACHIEVEMENTS.forEach(ach => {
     if (!unlockedAchievements.has(ach.id) && ach.check()) {
       unlockedAchievements.add(ach.id);
-      showToast(`­ƒÅå Logro: ${ach.name}`, true);
+      showToast(`🏆 Logro: ${ach.name}`, true);
+      addEventLog(`🏆 ¡Logro desbloqueado! ${ach.name}`, 'logro');
       triggerScreenShake(5, 300);
 
       if (ach.reward.includes("gema")) {
@@ -392,8 +396,61 @@ function checkAchievements() {
 }
 
 // ============================================================
-// TOAST NOTIFICATIONS
+// SISTEMA DE NOTIFICACIONES (Toast + Log de Eventos)
 // ============================================================
+
+// Añade una entrada al log de eventos del panel lateral
+function addEventLog(message, type = 'info') {
+  const body = document.getElementById('eventLogBody');
+  if (!body) return;
+
+  const now = new Date();
+  const timeStr = now.toLocaleTimeString('es-MX', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+
+  const entry = document.createElement('div');
+  entry.className = `event-log-entry type-${type}`;
+  entry.innerHTML = `<span class="event-log-time">${timeStr}</span><span class="event-log-msg">${message}</span>`;
+
+  body.insertBefore(entry, body.firstChild);
+
+  // Limitar a 50 entradas
+  while (body.children.length > 50) {
+    body.removeChild(body.lastChild);
+  }
+}
+
+function clearEventLog() {
+  const body = document.getElementById('eventLogBody');
+  if (body) body.innerHTML = '';
+}
+
+// Muestra la barra de evento activo en la parte inferior del juego
+function showBonusBar(type) {
+  const bar = document.getElementById('activeBonusBar');
+  if (!bar) return;
+  document.getElementById('bonusBarIcon').textContent = type.icon;
+  document.getElementById('bonusBarName').textContent = type.name;
+  document.getElementById('bonusBarDesc').textContent = type.desc;
+  document.getElementById('bonusBarFill').style.background = type.color;
+  document.getElementById('bonusBarFill').style.width = '100%';
+  bar.style.borderColor = type.color + '55';
+  bar.style.display = 'flex';
+}
+
+function hideBonusBar() {
+  const bar = document.getElementById('activeBonusBar');
+  if (bar) bar.style.display = 'none';
+}
+
+function updateActiveBonusBar() {
+  if (!bonusEvent.active) return;
+  const progress = Math.max(0, bonusEvent.timer / bonusEvent.duration);
+  const fill = document.getElementById('bonusBarFill');
+  const time = document.getElementById('bonusBarTime');
+  if (fill) fill.style.width = (progress * 100) + '%';
+  if (time) time.textContent = Math.ceil(bonusEvent.timer / 1000) + 's';
+}
+
 function showToast(message, isAchievement = false) {
   const container = document.getElementById("toastContainer");
   const toast = document.createElement("div");
@@ -401,6 +458,10 @@ function showToast(message, isAchievement = false) {
   toast.textContent = message;
   container.appendChild(toast);
   setTimeout(() => toast.remove(), 3000);
+
+  // También añadir al log con tipo apropiado
+  const tipo = isAchievement ? 'logro' : 'info';
+  addEventLog(message, tipo);
 }
 
 // ============================================================
@@ -442,11 +503,15 @@ function startNewGame() {
   combo.count = 0;
   combo.multiplier = 1;
   bonusEvent.active = false;
+  hideBonusBar();
+  clearEventLog();
+  addEventLog('⛏️ ¡Nueva partida iniciada!', 'piso');
 
   document.getElementById("startMenu").classList.add("hidden");
   document.getElementById("hud").classList.add("active");
   document.getElementById("sideButtons").classList.add("active");
   document.getElementById("floorBar").classList.add("active");
+  document.getElementById("eventLog").classList.add("visible");
   updateFloorBar();
 }
 
@@ -458,8 +523,9 @@ function continueGame() {
     document.getElementById("hud").classList.add("active");
     document.getElementById("sideButtons").classList.add("active");
     document.getElementById("floorBar").classList.add("active");
+    document.getElementById("eventLog").classList.add("visible");
     updateFloorBar();
-    showToast("­ƒôé Partida cargada");
+    showToast("📂 Partida cargada");
   }
 }
 
@@ -476,7 +542,7 @@ function showMainMenu() {
       const data = deobfuscateSave(localStorage.getItem(SAVE_KEY));
       const stats = data.game;
       document.getElementById("menuStats").innerHTML =
-        `├Ültima partida: $${formatNum(stats.totalEarned || 0)} | Piso ${stats.currentFloor + 1} | ${formatTime(Math.floor((Date.now() - stats.startTime) / 1000))}`;
+        `Última partida: $${formatNum(stats.totalEarned || 0)} | Piso ${stats.currentFloor + 1} | ${formatTime(Math.floor((Date.now() - stats.startTime) / 1000))}`;
     } catch (e) {
       document.getElementById("menuStats").innerHTML = "";
     }
@@ -490,12 +556,12 @@ function showMainMenu() {
 // ============================================================
 const THEME_KEY = "idleMiner_theme";
 const THEME_TIPS = [
-  "Toca al minero para extraer material ÔøÅ´©Å",
-  "Usa combos tocando rapido para ganar mas ­ƒöÑ",
-  "El auto-minero trabaja solo por ti ­ƒñû",
-  "Desbloquea pisos mas profundos para mas oro ­ƒù║´©Å",
-  "Las gemas desbloquean mejoras globales ­ƒÆÄ",
-  "Haz prestigio para ganar bonificaciones Ô¡É"
+  "Toca al minero para extraer material ⛏️",
+  "Usa combos tocando rápido para ganar más 🔥",
+  "El auto-minero trabaja solo por ti 🤖",
+  "Desbloquea pisos más profundos para más oro 🏔️",
+  "Las gemas desbloquean mejoras globales 💎",
+  "Haz prestigio para ganar bonificaciones ⭐"
 ];
 
 function applyTheme(theme) {
@@ -517,7 +583,7 @@ function toggleTheme() {
   const newTheme = isLight ? "dark" : "light";
   applyTheme(newTheme);
   try { localStorage.setItem(THEME_KEY, newTheme); } catch (e) {}
-  showToast(newTheme === "light" ? "ÔÿÇ´©Å Tema claro" : "­ƒîÖ Tema oscuro");
+  showToast(newTheme === "light" ? "Ô☀️ Tema claro" : "🌙 Tema oscuro");
 }
 
 function initTheme() {
@@ -541,9 +607,11 @@ function returnToMenu() {
   saveGame(true);
   game.paused = true;
   closeAllPanels();
+  hideBonusBar();
   document.getElementById("hud").classList.remove("active");
   document.getElementById("sideButtons").classList.remove("active");
   document.getElementById("floorBar").classList.remove("active");
+  document.getElementById("eventLog").classList.remove("visible");
   showMainMenu();
 }
 

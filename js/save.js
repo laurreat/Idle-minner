@@ -1,4 +1,4 @@
-﻿const SAVE_KEY = "idleMiner_deepEarth_v3";
+const SAVE_KEY = "idleMiner_deepEarth_v3";
 const SAVE_SALT = "IDLEMINER_v3::";
 const SAVE_XOR = "caveMinerSecureKey2024";
 
@@ -121,7 +121,7 @@ function applySaveData(save) {
     if (offlineEarnings > 0) {
       game.cash += offlineEarnings;
       game.totalEarned += offlineEarnings;
-      setTimeout(() => showToast(`­ƒÆñ Ganaste $${formatNum(offlineEarnings)} mientras no estabas (${formatTime(offlineTime)})`), 1000);
+      setTimeout(() => showToast(`💡 Ganaste $${formatNum(offlineEarnings)} mientras no estabas (${formatTime(offlineTime)})`), 1000);
     }
   }
 }
@@ -133,7 +133,7 @@ function saveGame(silent) {
   saveData.game.lastSave = game.lastSave;
   try {
     localStorage.setItem(SAVE_KEY, obfuscateSave(saveData));
-    if (!silent) showToast("­ƒÆ¥ Partida guardada");
+    if (!silent) showToast("💾 Partida guardada");
   } catch (e) {
     console.error("Save failed:", e);
   }
@@ -148,7 +148,7 @@ function loadGame() {
     return true;
   } catch (e) {
     console.error("Load failed:", e);
-    showToast("ÔÜá´©Å Guardado local corrupto");
+    showToast("⚠️ Guardado local corrupto");
     return false;
   }
 }
@@ -173,7 +173,7 @@ function downloadSave() {
   a.download = `idlesave-${ts}.idlesave`;
   a.click();
   URL.revokeObjectURL(url);
-  showToast("­ƒôÑ Partida guardada en archivo");
+  showToast("💾 Partida guardada en archivo");
 }
 
 // Importar partida desde archivo (.idlesave o .json)
@@ -196,11 +196,12 @@ function importSave(event) {
       document.getElementById("hud").classList.add("active");
       document.getElementById("sideButtons").classList.add("active");
       document.getElementById("floorBar").classList.add("active");
+      document.getElementById("eventLog").classList.add("visible");
       updateFloorBar();
-      showToast("­ƒôé Partida cargada desde archivo");
+      showToast("📂 Partida cargada desde archivo");
     } catch (e) {
       console.error(e);
-      showToast("ÔÜá´©Å Archivo invalido o modificado");
+      showToast("⚠️ Archivo inválido o modificado");
     }
   };
   reader.readAsText(file);
@@ -263,7 +264,7 @@ function doPrestige() {
   bonusEvent.active = false;
 
   saveGame();
-  showToast(`Ô¡É ┬íPrestigio! +${gems} gemas`);
+  showToast(`⭐ ¡Prestigio! +${gems} gemas`);
   closePanel('prestige');
 }
 
