@@ -1,0 +1,91 @@
+/* ==================== THEME SYSTEM ==================== */
+body, #startMenu, .menu-card, .panel, #gameCanvas, #hud, #sideButtons, #floorBar {
+  transition: background 0.5s ease, color 0.5s ease, border-color 0.5s ease, box-shadow 0.5s ease;
+}
+
+[data-theme="light"] {
+  --bg-primary: #f4f6fb;
+  --bg-secondary: #ffffff;
+  --bg-card: rgba(15, 23, 42, 0.03);
+  --border-subtle: rgba(15, 23, 42, 0.10);
+  --border-active: rgba(217, 119, 6, 0.45);
+  --gold: #d97706;
+  --gold-dim: rgba(217, 119, 6, 0.15);
+  --emerald: #059669;
+  --emerald-glow: rgba(5, 150, 105, 0.35);
+  --purple: #7c3aed;
+  --purple-glow: rgba(124, 58, 237, 0.3);
+  --text-primary: #0f172a;
+  --text-secondary: #475569;
+  --text-dim: #64748b;
+  --radius: 12px;
+  --radius-sm: 8px;
+}
+
+[data-theme="light"] body::before {
+  background:
+    radial-gradient(ellipse at 20% 50%, rgba(5, 150, 105, 0.07) 0%, transparent 50%),
+    radial-gradient(ellipse at 80% 50%, rgba(124, 58, 237, 0.06) 0%, transparent 50%),
+    repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0,0,0,0.015) 2px, rgba(0,0,0,0.015) 4px);
+}
+
+[data-theme="light"] #startMenu {
+  background:
+    radial-gradient(ellipse at 30% 20%, rgba(5, 150, 105, 0.10) 0%, transparent 50%),
+    radial-gradient(ellipse at 70% 80%, rgba(124, 58, 237, 0.08) 0%, transparent 50%),
+    linear-gradient(180deg, #f4f6fb 0%, #e8edf7 50%, #f4f6fb 100%);
+}
+
+[data-theme="light"] #startMenu::before {
+  background: repeating-linear-gradient(0deg, transparent, transparent 3px, rgba(0,0,0,0.02) 3px, rgba(0,0,0,0.02) 6px);
+}
+
+[data-theme="light"] .panel-overlay { background: rgba(255, 255, 255, 0.7); }
+[data-theme="light"] .panel { box-shadow: 0 24px 80px rgba(15, 23, 42, 0.18); }
+[data-theme="light"] .menu-card { box-shadow: 0 20px 60px rgba(15, 23, 42, 0.15); }
+[data-theme="light"] .panel-header { background: rgba(15, 23, 42, 0.02); }
+[data-theme="light"] .stat-card,
+[data-theme="light"] .achievement,
+[data-theme="light"] .shop-item { background: rgba(15, 23, 42, 0.025); }
+[data-theme="light"] .toast { background: rgba(255, 255, 255, 0.92); color: var(--text-primary); }
+[data-theme="light"] .panel-close:hover { background: rgba(15, 23, 42, 0.06); }
+
+/* Componentes dentro del juego en tema claro (evita botones negros) */
+[data-theme="light"] .side-btn {
+  background: rgba(255, 255, 255, 0.85);
+  color: var(--text-secondary);
+  border-color: rgba(15, 23, 42, 0.12);
+  box-shadow: 0 4px 14px rgba(15, 23, 42, 0.10);
+}
+[data-theme="light"] .side-btn:hover {
+  background: rgba(255, 255, 255, 0.95);
+  color: var(--gold);
+  border-color: var(--border-active);
+  box-shadow: 0 0 20px rgba(217, 119, 6, 0.25);
+}
+[data-theme="light"] #floorBar {
+  background: rgba(255, 255, 255, 0.8);
+  border-color: rgba(15, 23, 42, 0.12);
+  box-shadow: 0 4px 14px rgba(15, 23, 42, 0.10);
+}
+[data-theme="light"] .floor-dot { border-color: rgba(15, 23, 42, 0.25); }
+[data-theme="light"] .floor-dot.unlocked { background: rgba(15, 23, 42, 0.25); border-color: rgba(15, 23, 42, 0.4); }
+[data-theme="light"] .menu-mini {
+  background: rgba(15, 23, 42, 0.03);
+  color: var(--text-secondary);
+  border-color: rgba(15, 23, 42, 0.12);
+}
+[data-theme="light"] .menu-mini:hover { background: rgba(255, 215, 0, 0.12); color: var(--gold); }
+[data-theme="light"] .panel-close { color: var(--text-secondary); border-color: rgba(15, 23, 42, 0.12); }
+[data-theme="light"] .load-skip { background: rgba(15, 23, 42, 0.04); color: var(--text-secondary); border-color: rgba(15, 23, 42, 0.12); }
+[data-theme="light"] .load-skip:hover { color: var(--gold); border-color: var(--border-active); }
+[data-theme="light"] #gameCanvas { box-shadow: none; }
+[data-theme="light"] .menu-theme-toggle { background: rgba(255,255,255,0.85); color: var(--text-primary); border-color: rgba(15,23,42,0.12); }
+[data-theme="light"] .menu-theme-toggle:hover { color: var(--gold); border-color: var(--border-active); }
+[data-theme="light"] .btn-continue, [data-theme="light"] .btn-prestige, [data-theme="light"] .btn-info, [data-theme="light"] .btn-save {
+  background: rgba(15, 23, 42, 0.04); color: var(--text-primary); border-color: rgba(15, 23, 42, 0.12);
+}
+[data-theme="light"] .btn-continue:hover, [data-theme="light"] .btn-prestige:hover, [data-theme="light"] .btn-info:hover, [data-theme="light"] .btn-save:hover {
+  background: rgba(255, 215, 0, 0.12); color: var(--gold); border-color: var(--border-active);
+}
+
