@@ -45,8 +45,20 @@ body, #startMenu, .menu-card, .panel, #gameCanvas, #hud, #sideButtons, #floorBar
 [data-theme="light"] .menu-card { box-shadow: 0 20px 60px rgba(15, 23, 42, 0.15); }
 [data-theme="light"] .panel-header { background: rgba(15, 23, 42, 0.02); }
 [data-theme="light"] .stat-card,
-[data-theme="light"] .achievement,
-[data-theme="light"] .shop-item { background: rgba(15, 23, 42, 0.025); }
+[data-theme="light"] .achievement { background: rgba(15, 23, 42, 0.025); }
+[data-theme="light"] .shop-item { 
+  background: #ffffff; 
+  border-color: rgba(15, 23, 42, 0.08);
+  box-shadow: 0 2px 8px rgba(15, 23, 42, 0.04);
+}
+[data-theme="light"] .shop-item:hover {
+  background: #ffffff;
+  border-color: var(--border-active);
+  box-shadow: 0 4px 12px rgba(217, 119, 6, 0.15);
+}
+/* Mejorar la visibilidad de items no comprables en tema claro (0.4 es muy bajo) */
+[data-theme="light"] .shop-item.cant-afford { opacity: 0.7; filter: grayscale(50%); background: #f8fafc; }
+
 [data-theme="light"] .toast { background: rgba(255, 255, 255, 0.92); color: var(--text-primary); }
 [data-theme="light"] .panel-close:hover { background: rgba(15, 23, 42, 0.06); }
 
@@ -92,12 +104,42 @@ body, #startMenu, .menu-card, .panel, #gameCanvas, #hud, #sideButtons, #floorBar
 /* HUD en tema claro: pastillas claras con texto oscuro para buen contraste */
 [data-theme="light"] .hud-cash, [data-theme="light"] .hud-gems, [data-theme="light"] .hud-floor,
 [data-theme="light"] .hud-score, [data-theme="light"] .hud-persec, [data-theme="light"] .hud-time {
-  background: rgba(255, 255, 255, 0.92);
-  border-color: rgba(15, 23, 42, 0.14);
-  box-shadow: 0 6px 18px rgba(15, 23, 42, 0.14), inset 0 0 0 1px rgba(15, 23, 42, 0.04);
+  background: rgba(255, 255, 255, 0.95);
+  border-color: rgba(15, 23, 42, 0.2);
+  box-shadow: 0 4px 12px rgba(15, 23, 42, 0.15);
+  text-shadow: none; /* Eliminar brillo para mejorar legibilidad en blanco */
 }
-[data-theme="light"] .hud-cash { color: var(--gold); }
-[data-theme="light"] .hud-gems { color: var(--purple); }
-[data-theme="light"] .hud-persec { color: var(--emerald); }
-[data-theme="light"] .hud-floor, [data-theme="light"] .hud-score, [data-theme="light"] .hud-time { color: var(--text-secondary); }
+[data-theme="light"] .hud-cash { color: #b45309; font-weight: bold; } /* Naranja/oro más oscuro para contraste */
+[data-theme="light"] .hud-gems { color: #6d28d9; font-weight: bold; }
+[data-theme="light"] .hud-persec { color: #047857; font-weight: bold; }
+[data-theme="light"] .hud-floor, [data-theme="light"] .hud-score, [data-theme="light"] .hud-time { color: var(--text-primary); font-weight: bold; }
 
+/* Log de eventos y barra de bonus en tema claro */
+[data-theme="light"] .event-log-panel {
+  background: rgba(255, 255, 255, 0.95);
+  border-color: rgba(15, 23, 42, 0.15);
+  box-shadow: 0 8px 32px rgba(15, 23, 42, 0.15);
+}
+[data-theme="light"] .event-log-header {
+  color: #b45309; /* Oro oscuro */
+  border-bottom-color: rgba(15, 23, 42, 0.1);
+}
+[data-theme="light"] .event-log-clear { color: rgba(15, 23, 42, 0.4); }
+[data-theme="light"] .event-log-clear:hover { color: #ef4444; }
+[data-theme="light"] .event-log-entry { border-bottom-color: rgba(15, 23, 42, 0.05); }
+[data-theme="light"] .event-log-time { color: rgba(15, 23, 42, 0.4); }
+[data-theme="light"] .event-log-entry.type-info { color: var(--text-secondary); }
+[data-theme="light"] .event-log-entry.type-bonus { color: #b45309; font-weight: 600; }
+[data-theme="light"] .event-log-entry.type-logro { color: #6d28d9; font-weight: 600; }
+[data-theme="light"] .event-log-entry.type-piso { color: #047857; font-weight: 600; }
+
+[data-theme="light"] .active-bonus-bar {
+  background: rgba(255, 255, 255, 0.95);
+  border-color: rgba(15, 23, 42, 0.2);
+  box-shadow: 0 8px 32px rgba(15, 23, 42, 0.15);
+}
+[data-theme="light"] .bonus-bar-name { color: var(--text-primary); }
+[data-theme="light"] .bonus-bar-desc { color: var(--text-secondary); }
+[data-theme="light"] .bonus-bar-progress { background: rgba(15, 23, 42, 0.1); }
+[data-theme="light"] .bonus-bar-time { color: var(--text-secondary); font-weight: bold; }
+[data-theme="light"] .bonus-bar-fill { box-shadow: none; }

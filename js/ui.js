@@ -1,6 +1,6 @@
 function updateHUD() {
   document.getElementById("hudCash").textContent = `$${formatNum(game.cash)}`;
-  document.getElementById("hudGems").textContent = `­ƒÆÄ ${game.gems}`;
+  document.getElementById("hudGems").textContent = `💎 ${game.gems}`;
   document.getElementById("hudFloor").textContent = `Piso ${game.currentFloor + 1}: ${FLOOR_CONFIGS[game.currentFloor].name}`;
   document.getElementById("hudScore").textContent = `Puntos: ${formatNum(game.score)}`;
 
@@ -152,7 +152,7 @@ function renderShop() {
   const minerCost = fu.miner.getCurrentCost();
   const canMiner = game.cash >= minerCost && fu.miner.level < fu.miner.maxLevel;
   html += `<div class="shop-item ${!canMiner ? (fu.miner.level >= fu.miner.maxLevel ? 'maxed' : 'cant-afford') : ''}" onclick="buyUpgrade('miner')">
-    <div class="shop-icon" style="background:rgba(16,185,129,0.15);">ÔøÅ´©Å</div>
+    <div class="shop-icon" style="background:rgba(16,185,129,0.15);">⛏️</div>
     <div class="shop-info">
       <div class="name">Minero</div>
       <div class="desc">+3 material, -80ms tiempo</div>
@@ -164,7 +164,7 @@ function renderShop() {
   const elevCost = fu.elevator.getCurrentCost();
   const canElev = game.cash >= elevCost && fu.elevator.level < fu.elevator.maxLevel;
   html += `<div class="shop-item ${!canElev ? (fu.elevator.level >= fu.elevator.maxLevel ? 'maxed' : 'cant-afford') : ''}" onclick="buyUpgrade('elevator')">
-    <div class="shop-icon" style="background:rgba(33,150,243,0.15);">­ƒøù</div>
+    <div class="shop-icon" style="background:rgba(33,150,243,0.15);">🛗</div>
     <div class="shop-info">
       <div class="name">Elevador</div>
       <div class="desc">+0.4 velocidad, +15 capacidad</div>
@@ -176,7 +176,7 @@ function renderShop() {
   const storCost = fu.storage.getCurrentCost();
   const canStor = game.cash >= storCost && fu.storage.level < fu.storage.maxLevel;
   html += `<div class="shop-item ${!canStor ? (fu.storage.level >= fu.storage.maxLevel ? 'maxed' : 'cant-afford') : ''}" onclick="buyUpgrade('storage')">
-    <div class="shop-icon" style="background:rgba(255,152,0,0.15);">­ƒôª</div>
+    <div class="shop-icon" style="background:rgba(255,152,0,0.15);">📦</div>
     <div class="shop-info">
       <div class="name">Almacén</div>
       <div class="desc">+20 capacidad, -5% tiempo</div>
@@ -188,7 +188,7 @@ function renderShop() {
   const sellCost = fu.sellMultiplier.getCurrentCost();
   const canSell = game.cash >= sellCost && fu.sellMultiplier.level < fu.sellMultiplier.maxLevel;
   html += `<div class="shop-item ${!canSell ? (fu.sellMultiplier.level >= fu.sellMultiplier.maxLevel ? 'maxed' : 'cant-afford') : ''}" onclick="buyUpgrade('sellMultiplier')">
-    <div class="shop-icon" style="background:rgba(255,215,0,0.15);">­ƒÆ░</div>
+    <div class="shop-icon" style="background:rgba(255,215,0,0.15);">💰</div>
     <div class="shop-info">
       <div class="name">Multiplicador Venta</div>
       <div class="desc">+2x valor (actual: ${fu.sellMultiplier.getMultiplier()}x)</div>
@@ -200,7 +200,7 @@ function renderShop() {
   const autoCost = fu.autoMiner.getCurrentCost();
   const canAuto = game.cash >= autoCost && fu.autoMiner.level < fu.autoMiner.maxLevel;
   html += `<div class="shop-item ${!canAuto ? (fu.autoMiner.level >= fu.autoMiner.maxLevel ? 'maxed' : 'cant-afford') : ''}" onclick="buyUpgrade('autoMiner')">
-    <div class="shop-icon" style="background:rgba(139,92,246,0.15);">­ƒñû</div>
+    <div class="shop-icon" style="background:rgba(139,92,246,0.15);">🤖</div>
     <div class="shop-info">
       <div class="name">Auto-Minero</div>
       <div class="desc">Auto mina cada ${fu.autoMiner.isActive() ? (fu.autoMiner.getInterval()/1000).toFixed(1) + 's' : '5s'}</div>
@@ -216,25 +216,25 @@ function renderShop() {
   const luckCost = globalUpgrades.luck.getCurrentCost();
   const canLuck = game.gems >= luckCost && globalUpgrades.luck.level < globalUpgrades.luck.maxLevel;
   html += `<div class="shop-item ${!canLuck ? (globalUpgrades.luck.level >= globalUpgrades.luck.maxLevel ? 'maxed' : 'cant-afford') : ''}" onclick="buyGlobalUpgrade('luck')">
-    <div class="shop-icon" style="background:rgba(167,139,250,0.15);">­ƒìÇ</div>
+    <div class="shop-icon" style="background:rgba(167,139,250,0.15);">🍀</div>
     <div class="shop-info">
       <div class="name">Suerte</div>
       <div class="desc">+0.5% chance gemas (actual: ${(globalUpgrades.luck.getGemChance()*100).toFixed(1)}%)</div>
       <div class="level">Nivel ${globalUpgrades.luck.level}/${globalUpgrades.luck.maxLevel}</div>
     </div>
-    <div class="shop-cost cost-gem">${globalUpgrades.luck.level >= globalUpgrades.luck.maxLevel ? 'MAX' : '­ƒÆÄ ' + luckCost}</div>
+    <div class="shop-cost cost-gem">${globalUpgrades.luck.level >= globalUpgrades.luck.maxLevel ? 'MAX' : '💎 ' + luckCost}</div>
   </div>`;
 
   const speedCost = globalUpgrades.speedBoost.getCurrentCost();
   const canSpeed = game.gems >= speedCost && globalUpgrades.speedBoost.level < globalUpgrades.speedBoost.maxLevel;
   html += `<div class="shop-item ${!canSpeed ? (globalUpgrades.speedBoost.level >= globalUpgrades.speedBoost.maxLevel ? 'maxed' : 'cant-afford') : ''}" onclick="buyGlobalUpgrade('speedBoost')">
-    <div class="shop-icon" style="background:rgba(236,72,153,0.15);">ÔÜí</div>
+    <div class="shop-icon" style="background:rgba(236,72,153,0.15);">⚡</div>
     <div class="shop-info">
       <div class="name">Velocidad Global</div>
       <div class="desc">+10% velocidad (actual: ${globalUpgrades.speedBoost.getSpeedMult().toFixed(1)}x)</div>
       <div class="level">Nivel ${globalUpgrades.speedBoost.level}/${globalUpgrades.speedBoost.maxLevel}</div>
     </div>
-    <div class="shop-cost cost-gem">${globalUpgrades.speedBoost.level >= globalUpgrades.speedBoost.maxLevel ? 'MAX' : '­ƒÆÄ ' + speedCost}</div>
+    <div class="shop-cost cost-gem">${globalUpgrades.speedBoost.level >= globalUpgrades.speedBoost.maxLevel ? 'MAX' : '💎 ' + speedCost}</div>
   </div>`;
 
   html += `</div>`;
@@ -245,7 +245,7 @@ function renderShop() {
     const canUnlock = game.cash >= cost;
     html += `<div class="shop-section"><h3><i class="fas fa-unlock"></i> Desbloquear Piso</h3>
     <div class="shop-item ${!canUnlock ? 'cant-afford' : ''}" onclick="switchFloor(${nextFloor})">
-      <div class="shop-icon" style="background:rgba(255,215,0,0.15);">­ƒù║´©Å</div>
+      <div class="shop-icon" style="background:rgba(255,215,0,0.15);">🗺️</div>
       <div class="shop-info">
         <div class="name">${FLOOR_CONFIGS[nextFloor].name}</div>
         <div class="desc">Profundidad: ${FLOOR_CONFIGS[nextFloor].depth}m | Valor: ${FLOOR_CONFIGS[nextFloor].oreValue}x</div>
@@ -360,7 +360,7 @@ function renderPrestige() {
       <h3>⭐ Reiniciar por Gemas</h3>
       <p>Al hacer prestigio, pierdes todo tu oro y mejoras de piso, pero ganas <strong>gemas</strong> que dan bonificaciones permanentes.</p>
       <p>Las gemas se usan para mejoras globales que afectan TODOS los pisos.</p>
-      <div class="prestige-gems">+${gems} ­ƒÆÄ</div>
+      <div class="prestige-gems">+${gems} ­💎</div>
       <p style="font-size:13px;color:var(--text-secondary);">Gemas actuales: ${game.gems} | Total prestigio: ${game.totalPrestigeGems}</p>
       <p style="font-size:13px;color:var(--text-secondary);">Prestigios realizados: ${game.prestigeCount}</p>
       ${gems < 1 ? '<p style="color:#ef4444;margin-top:14px;">Necesitas minar más para obtener gemas de prestigio.</p>' : ''}

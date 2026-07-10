@@ -60,6 +60,7 @@ body::before {
   image-rendering: auto;
 }
 
+
 #hud {
   position: absolute; top: 0; left: 0; right: 0; bottom: 0;
   padding: 2.2% 2.5%; display: none;
@@ -79,10 +80,10 @@ body::before {
   font-family: 'Silkscreen', cursive;
   display: inline-flex; align-items: center; gap: 7px;
   padding: 9px 16px; border-radius: 999px;
-  background: rgba(6, 9, 18, 0.78);
+  background: rgba(6, 9, 18, 0.95);
   border: 1.5px solid rgba(255, 255, 255, 0.14);
   box-shadow: 0 6px 18px rgba(0, 0, 0, 0.55), inset 0 0 0 1px rgba(255, 255, 255, 0.05);
-  backdrop-filter: blur(10px);
+  backdrop-filter: blur(12px);
   letter-spacing: 0.5px; white-space: nowrap;
 }
 
