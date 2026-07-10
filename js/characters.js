@@ -37,7 +37,7 @@ function drawBoxes(floorIdx) {
   ctx.fillStyle = "rgba(0,0,0,0.7)";
   roundRect(ctx, f.minerBox.x - 10, f.minerBox.y - 32, 105, 26, 8);
   ctx.fill();
-  ctx.strokeStyle = config.oreColor;
+  // ctx.strokeStyle = config.oreColor;
   ctx.globalAlpha = 0.3;
   ctx.lineWidth = 1;
   roundRect(ctx, f.minerBox.x - 10, f.minerBox.y - 32, 105, 26, 8);
@@ -125,11 +125,41 @@ function drawMiner(floorIdx) {
     ctx.textAlign = "center";
     ctx.fillText("Minando...", drawX + (f.miner.width * scale) / 2, barY - 6); // ya en español
   }
+
+  // Brillo de ayuda al clic - solo en el primer clic
+  // if (!hasClickedBefore && !f.miner.isMining && !f.minerState.isWaiting && f.miner.x <= 282) {
+  //   ctx.strokeStyle = "rgba(255, 215, 0, 0.4)";
+  //   ctx.lineWidth = 2;
+  //   ctx.beginPath();
+  //   ctx.arc(drawX + f.miner.width * scale / 2, drawY + f.miner.height * scale / 2, 70 + Math.sin(Date.now() / 300) * 6, 0, Math.PI * 2);
+  //   ctx.stroke();
+  // }
 }
 
 function drawElevator(floorIdx) {
   const f = floors[floorIdx];
   const scale = CHAR_SCALE;
+
+  // ctx.strokeStyle = "#444";
+  ctx.lineWidth = 4;
+  ctx.beginPath();
+  ctx.moveTo(f.elevator.x + 40, 0);
+  ctx.lineTo(f.elevator.x + 40, f.elevator.y);
+  ctx.stroke();
+
+  // ctx.strokeStyle = "#555";
+  ctx.lineWidth = 5;
+  ctx.beginPath();
+  ctx.moveTo(f.elevator.x - 5, 200);
+  ctx.lineTo(f.elevator.x - 5, f.elevator.y + f.elevator.height * scale + 10);
+  ctx.stroke();
+  ctx.beginPath();
+  ctx.moveTo(f.elevator.x + f.elevator.width * scale + 5, 200);
+  ctx.lineTo(f.elevator.x + f.elevator.width * scale + 5, f.elevator.y + f.elevator.height * scale + 10);
+  ctx.stroke();
+
+  ctx.fillStyle = "rgba(0,0,0,0.25)";
+  ctx.fillRect(f.elevator.x - 10, 200, f.elevator.width * scale + 20, f.elevator.y + f.elevator.height * scale - 200 + 20);
 
   let spriteToDraw;
   switch (f.elevator.state) {
@@ -182,6 +212,14 @@ function drawElevator(floorIdx) {
     ctx.textAlign = "center";
     ctx.fillText("Cargando...", f.elevator.x + (f.elevator.width * scale) / 2, barY - 6); // ya en español
   }
+
+  if (!f.elevator.isMoving) {
+    // ctx.strokeStyle = "rgba(96, 165, 250, 0.25)";
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.arc(f.elevator.x + f.elevator.width * scale / 2, f.elevator.y + f.elevator.height * scale / 2, 65 + Math.sin(Date.now() / 400) * 5, 0, Math.PI * 2);
+    ctx.stroke();
+  }
 }
 
 function drawStorage(floorIdx) {
@@ -219,6 +257,15 @@ function drawStorage(floorIdx) {
     ctx.textAlign = "center";
     ctx.fillText(f.storage.carrying > 0 ? "Recogiendo..." : "Dejando...", f.storage.x + (f.storage.width * scale) / 2, barY - 6);
   }
+
+  // Ayuda al clic - solo en el primer clic
+  if (!hasClickedBefore && !f.storage.isCollecting) {
+    // ctx.strokeStyle = "rgba(255, 152, 0, 0.4)";
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.arc(f.storage.x + f.storage.width * scale / 2, f.storage.y + f.storage.height * scale / 2, 65 + Math.sin(Date.now() / 350) * 5, 0, Math.PI * 2);
+    ctx.stroke();
+  }
 }
 
 function drawFloorIndicator() {
@@ -226,7 +273,7 @@ function drawFloorIndicator() {
   ctx.fillStyle = "rgba(0,0,0,0.6)";
   roundRect(ctx, W / 2 - 140, H - 48, 280, 38, 12);
   ctx.fill();
-  ctx.strokeStyle = config.oreColor;
+  // ctx.strokeStyle = config.oreColor;
   ctx.globalAlpha = 0.3;
   ctx.lineWidth = 1;
   roundRect(ctx, W / 2 - 140, H - 48, 280, 38, 12);
@@ -249,15 +296,15 @@ function drawComboIndicator() {
   const x = W / 2;
   const y = 60;
 
-  ctx.fillStyle = "rgba(0,0,0,0.6)";
-  roundRect(ctx, x - 80, y - 20, 160, 36, 10);
-  ctx.fill();
-  ctx.strokeStyle = color;
-  ctx.globalAlpha = 0.5;
-  ctx.lineWidth = 2;
-  roundRect(ctx, x - 80, y - 20, 160, 36, 10);
-  ctx.stroke();
-  ctx.globalAlpha = 1;
+  // ctx.fillStyle = "rgba(0,0,0,0.6)";
+  // roundRect(ctx, x - 80, y - 20, 160, 36, 10);
+  // ctx.fill();
+  // ctx.strokeStyle = color;
+  // ctx.globalAlpha = 0.5;
+  // ctx.lineWidth = 2;
+  // roundRect(ctx, x - 80, y - 20, 160, 36, 10);
+  // ctx.stroke();
+  // ctx.globalAlpha = 1;
 
   ctx.fillStyle = color;
   ctx.font = "bold 24px 'VT323', monospace";
@@ -294,16 +341,16 @@ function drawBonusEventIndicator() {
   const bx = x - boxW / 2, by = y - 38;
 
   // Fondo pulsante
-  const pulse = Math.sin(Date.now() / 200) * 0.1 + 0.9;
-  ctx.fillStyle = `rgba(0,0,0,${0.72 * pulse})`;
-  roundRect(ctx, bx, by, boxW, boxH, 14);
-  ctx.fill();
-  ctx.strokeStyle = type.color;
-  ctx.lineWidth = 2;
-  ctx.globalAlpha = 0.7;
-  roundRect(ctx, bx, by, boxW, boxH, 14);
-  ctx.stroke();
-  ctx.globalAlpha = 1;
+  // const pulse = Math.sin(Date.now() / 200) * 0.1 + 0.9;
+  // ctx.fillStyle = `rgba(0,0,0,${0.72 * pulse})`;
+  // roundRect(ctx, bx, by, boxW, boxH, 14);
+  // ctx.fill();
+  // ctx.strokeStyle = type.color;
+  // ctx.lineWidth = 2;
+  // ctx.globalAlpha = 0.7;
+  // roundRect(ctx, bx, by, boxW, boxH, 14);
+  // ctx.stroke();
+  // ctx.globalAlpha = 1;
 
   // Nombre + icono
   ctx.fillStyle = type.color;
