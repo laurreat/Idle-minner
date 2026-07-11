@@ -100,10 +100,17 @@ function handleCanvasClick(event) {
   const f = floors[game.currentFloor];
   const s = CHAR_SCALE;
 
-  // Caja de colisión del minero: al escalar (s>1) el área crece centrándose en el punto original.
-  const mw = f.miner.width * s, mh = f.miner.height * s;
-  const mx = f.miner.x - f.miner.width * (s - 1) / 2;
-  const my = f.miner.y - f.miner.height * (s - 1) / 2;
+  // Caja de colisión del minero: usa las dimensiones reales del sprite (centrada en su punto).
+  let minerSprite;
+  if (f.miner.isMining) minerSprite = sprites.miner_walk_1;
+  else if (f.miner.x > 282) minerSprite = sprites.miner_walk_reverse_1;
+  else minerSprite = sprites.miner_idle;
+  let mw = f.miner.width * s, mh = f.miner.height * s;
+  if (minerSprite && minerSprite.complete && minerSprite.naturalWidth > 0) {
+    mw = minerSprite.naturalWidth * s; mh = minerSprite.naturalHeight * s;
+  }
+  const mx = f.miner.x + f.miner.width / 2 - mw / 2;
+  const my = f.miner.y + f.miner.height / 2 - mh / 2;
   if (x >= mx && x <= mx + mw && y >= my && y <= my + mh) {
     // Sólo inicia a minar si no está minando, no está esperando y está en posición (x <= 282).
     if (!f.miner.isMining && !f.minerState.isWaiting && f.miner.x <= 282) {
@@ -116,9 +123,13 @@ function handleCanvasClick(event) {
   }
 
   // Caja de colisión del elevador (mismo cálculo de centrado que el minero).
-  const ew = f.elevator.width * s, eh = f.elevator.height * s;
-  const ex = f.elevator.x - f.elevator.width * (s - 1) / 2;
-  const ey = f.elevator.y - f.elevator.height * (s - 1) / 2;
+  let elevatorSprite = sprites.miner_elevador_0;
+  let ew = f.elevator.width * s, eh = f.elevator.height * s;
+  if (elevatorSprite && elevatorSprite.complete && elevatorSprite.naturalWidth > 0) {
+    ew = elevatorSprite.naturalWidth * s; eh = elevatorSprite.naturalHeight * s;
+  }
+  const ex = f.elevator.x + f.elevator.width / 2 - ew / 2;
+  const ey = f.elevator.y + f.elevator.height / 2 - eh / 2;
   if (x >= ex && x <= ex + ew && y >= ey && y <= ey + eh) {
     if (!f.elevator.isMoving) {
       f.elevator.isMoving = true;
@@ -128,9 +139,13 @@ function handleCanvasClick(event) {
   }
 
   // Caja de colisión del almacén (mismo cálculo de centrado que los anteriores).
-  const sw = f.storage.width * s, sh = f.storage.height * s;
-  const sx = f.storage.x - f.storage.width * (s - 1) / 2;
-  const sy = f.storage.y - f.storage.height * (s - 1) / 2;
+  if (!f.storage.currentSprite) f.storage.currentSprite = sprites.miner_tolva_1;
+  let sw = f.storage.width * s, sh = f.storage.height * s;
+  if (f.storage.currentSprite && f.storage.currentSprite.complete && f.storage.currentSprite.naturalWidth > 0) {
+    sw = f.storage.currentSprite.naturalWidth * s; sh = f.storage.currentSprite.naturalHeight * s;
+  }
+  const sx = f.storage.x + f.storage.width / 2 - sw / 2;
+  const sy = f.storage.y + f.storage.height / 2 - sh / 2;
   if (x >= sx && x <= sx + sw && y >= sy && y <= sy + sh) {
     if (!f.storage.isCollecting) {
       f.storage.isCollecting = true;

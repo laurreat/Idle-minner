@@ -107,26 +107,38 @@ function drawMiner(floorIdx) {
   }
 
   const scale = CHAR_SCALE;
-  // Centra el sprite escalado sobre el punto (x,y) original del minero
-  const drawX = f.miner.x - (f.miner.width * (scale - 1)) / 2;
-  const drawY = f.miner.y - (f.miner.height * (scale - 1)) / 2;
-
   // Animación de respiración: oscila ±2px verticalmente con una onda senoidal
   const breathe = Math.sin(Date.now() / 500) * 2;
 
+  // Dibuja el sprite con sus dimensiones reales (píxeles naturales) preservando proporción.
+  // Usa la caja lógica (width/height) solo como respaldo si el sprite no está cargado.
+  let dw, dh;
+  if (spriteToDraw && spriteToDraw.complete && spriteToDraw.naturalWidth > 0) {
+    dw = spriteToDraw.naturalWidth * scale;
+    dh = spriteToDraw.naturalHeight * scale;
+  } else {
+    dw = f.miner.width * scale;
+    dh = f.miner.height * scale;
+  }
+  // Centra el sprite sobre el punto central (x,y) del minero
+  const minerCX = f.miner.x + f.miner.width / 2;
+  const minerCY = f.miner.y + f.miner.height / 2;
+  const drawX = minerCX - dw / 2;
+  const drawY = minerCY - dh / 2;
+
   // Dibuja el minero con sprite si está cargado; si no, rectángulo dorado de respaldo
   if (spriteToDraw && spriteToDraw.complete) {
-    ctx.drawImage(spriteToDraw, drawX, drawY + breathe, f.miner.width * scale, f.miner.height * scale);
+    ctx.drawImage(spriteToDraw, drawX, drawY + breathe, dw, dh);
   } else {
     ctx.fillStyle = "#FFD700";
-    ctx.fillRect(drawX, drawY + breathe, f.miner.width * scale, f.miner.height * scale);
+    ctx.fillRect(drawX, drawY + breathe, dw, dh);
   }
 
   // Barra de progreso solo mientras mina (quieto), no mientras camina
   if (f.minerState.isWaiting) {
     const barWidth = 80;
     const barHeight = 6;
-    const barX = drawX + (f.miner.width * scale) / 2 - barWidth / 2;
+    const barX = drawX + dw / 2 - barWidth / 2;
     const barY = drawY - 16;
 
     ctx.fillStyle = "rgba(0,0,0,0.6)";
@@ -140,7 +152,7 @@ function drawMiner(floorIdx) {
     ctx.fillStyle = "#fff";
     ctx.font = "12px 'VT323', monospace";
     ctx.textAlign = "center";
-    ctx.fillText("Minando...", drawX + (f.miner.width * scale) / 2, barY - 6); // ya en español
+    ctx.fillText("Minando...", drawX + dw / 2, barY - 6); // ya en español
   }
 }
 
@@ -159,28 +171,41 @@ function drawElevator(floorIdx) {
     default: spriteToDraw = sprites.miner_elevador_0;
   }
 
+  // Dibuja el sprite con sus dimensiones reales (píxeles naturales) preservando proporción.
+  // Usa la caja lógica (width/height) solo como respaldo si el sprite no está cargado.
+  let ew, eh;
+  if (spriteToDraw && spriteToDraw.complete && spriteToDraw.naturalWidth > 0) {
+    ew = spriteToDraw.naturalWidth * scale;
+    eh = spriteToDraw.naturalHeight * scale;
+  } else {
+    ew = f.elevator.width * scale;
+    eh = f.elevator.height * scale;
+  }
+  // Centra el sprite sobre el punto central (x,y) del elevador
+  const elevCX = f.elevator.x + f.elevator.width / 2;
+  const elevCY = f.elevator.y + f.elevator.height / 2;
+  const eDrawX = elevCX - ew / 2;
+  const eDrawY = elevCY - eh / 2;
+
   // Centra el sprite escalado sobre el punto original y dibuja; respaldo azul si no carga
   if (spriteToDraw && spriteToDraw.complete) {
-    ctx.drawImage(spriteToDraw,
-      f.elevator.x - (f.elevator.width * (scale - 1)) / 2,
-      f.elevator.y - (f.elevator.height * (scale - 1)) / 2,
-      f.elevator.width * scale, f.elevator.height * scale);
+    ctx.drawImage(spriteToDraw, eDrawX, eDrawY, ew, eh);
   } else {
     ctx.fillStyle = "#2196F3";
-    ctx.fillRect(f.elevator.x, f.elevator.y, f.elevator.width * scale, f.elevator.height * scale);
+    ctx.fillRect(eDrawX, eDrawY, ew, eh);
   }
 
   // Indicador flotante de lo que transporta el elevador (📦 carrying)
   if (f.elevator.carrying > 0) {
     ctx.fillStyle = "rgba(0,0,0,0.7)";
-    roundRect(ctx, f.elevator.x - 10, f.elevator.y - 28, 70, 22, 6);
+    roundRect(ctx, eDrawX - 10, eDrawY - 28, 70, 22, 6);
     ctx.fill();
     ctx.fillStyle = "#FFD700";
     ctx.font = "bold 15px 'VT323', monospace";
     ctx.textAlign = "center";
     ctx.shadowColor = "rgba(0,0,0,0.8)";
     ctx.shadowBlur = 4;
-    ctx.fillText(`📦 ${f.elevator.carrying}`, f.elevator.x + 25, f.elevator.y - 13);
+    ctx.fillText(`📦 ${f.elevator.carrying}`, eDrawX + 25, eDrawY - 13);
     ctx.shadowBlur = 0;
   }
 
@@ -189,8 +214,8 @@ function drawElevator(floorIdx) {
     const barWidth = 80;
     const barHeight = 6;
     // Centra la barra sobre el elevador y la coloca encima
-    const barX = f.elevator.x + (f.elevator.width * scale) / 2 - barWidth / 2;
-    const barY = f.elevator.y - 16;
+    const barX = eDrawX + ew / 2 - barWidth / 2;
+    const barY = eDrawY - 16;
 
     ctx.fillStyle = "rgba(0,0,0,0.6)";
     roundRect(ctx, barX - 2, barY - 2, barWidth + 4, barHeight + 4, 4);
@@ -203,7 +228,7 @@ function drawElevator(floorIdx) {
     ctx.fillStyle = "#fff";
     ctx.font = "12px 'VT323', monospace";
     ctx.textAlign = "center";
-    ctx.fillText("Cargando...", f.elevator.x + (f.elevator.width * scale) / 2, barY - 6); // ya en español
+    ctx.fillText("Cargando...", eDrawX + ew / 2, barY - 6); // ya en español
   }
 }
 
@@ -215,15 +240,28 @@ function drawStorage(floorIdx) {
   if (!f.storage.currentSprite) f.storage.currentSprite = sprites.miner_tolva_1;
   const scale = CHAR_SCALE;
 
+  // Dibuja el sprite con sus dimensiones reales (píxeles naturales) preservando proporción.
+  // Usa la caja lógica (width/height) solo como respaldo si el sprite no está cargado.
+  let sw, sh;
+  if (f.storage.currentSprite && f.storage.currentSprite.complete && f.storage.currentSprite.naturalWidth > 0) {
+    sw = f.storage.currentSprite.naturalWidth * scale;
+    sh = f.storage.currentSprite.naturalHeight * scale;
+  } else {
+    sw = f.storage.width * scale;
+    sh = f.storage.height * scale;
+  }
+  // Centra el sprite sobre el punto central (x,y) del almacén
+  const storCX = f.storage.x + f.storage.width / 2;
+  const storCY = f.storage.y + f.storage.height / 2;
+  const sDrawX = storCX - sw / 2;
+  const sDrawY = storCY - sh / 2;
+
   // Centra el sprite escalado sobre el punto original; respaldo naranja si no carga
   if (f.storage.currentSprite && f.storage.currentSprite.complete) {
-    ctx.drawImage(f.storage.currentSprite,
-      f.storage.x - (f.storage.width * (scale - 1)) / 2,
-      f.storage.y - (f.storage.height * (scale - 1)) / 2,
-      f.storage.width * scale, f.storage.height * scale);
+    ctx.drawImage(f.storage.currentSprite, sDrawX, sDrawY, sw, sh);
   } else {
     ctx.fillStyle = "#FF9800";
-    ctx.fillRect(f.storage.x, f.storage.y, f.storage.width * scale, f.storage.height * scale);
+    ctx.fillRect(sDrawX, sDrawY, sw, sh);
   }
 
   // Barra de progreso solo mientras recoge/entrega (quieto), no mientras camina
@@ -231,8 +269,8 @@ function drawStorage(floorIdx) {
     const barWidth = 80;
     const barHeight = 6;
     // Centra la barra sobre el almacén y la coloca encima
-    const barX = f.storage.x + (f.storage.width * scale) / 2 - barWidth / 2;
-    const barY = f.storage.y - 16;
+    const barX = sDrawX + sw / 2 - barWidth / 2;
+    const barY = sDrawY - 16;
 
     ctx.fillStyle = "rgba(0,0,0,0.6)";
     roundRect(ctx, barX - 2, barY - 2, barWidth + 4, barHeight + 4, 4);
@@ -247,7 +285,7 @@ function drawStorage(floorIdx) {
     ctx.font = "12px 'VT323', monospace";
     ctx.textAlign = "center";
     // Texto cambia según si lleva carga (recogiendo) o está vacío (dejando)
-    ctx.fillText(f.storage.carrying > 0 ? "Recogiendo..." : "Dejando...", f.storage.x + (f.storage.width * scale) / 2, barY - 6);
+    ctx.fillText(f.storage.carrying > 0 ? "Recogiendo..." : "Dejando...", sDrawX + sw / 2, barY - 6);
   }
 }
 
