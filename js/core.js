@@ -10,7 +10,7 @@ const ctx = canvas.getContext("2d");
 // Dimensiones lógicas del mundo (resolución base de dibujo)
 const W = 1000, H = 750;
 // Factor de escala de los personajes/sprites
-const CHAR_SCALE = 0.2;
+const CHAR_SCALE = 3.5;
 // Escala y desplazamiento usados para ajustar el lienzo a la pantalla (letterboxing)
 let viewScale = 1, viewOffX = 0, viewOffY = 0;
 
