@@ -105,8 +105,8 @@ function handleCanvasClick(event) {
   const mx = f.miner.x - f.miner.width * (s - 1) / 2;
   const my = f.miner.y - f.miner.height * (s - 1) / 2;
   if (x >= mx && x <= mx + mw && y >= my && y <= my + mh) {
-    // Sólo inicia a minar si no está minando, no está esperando y está en su punto original (x <= 70).
-    if (!f.miner.isMining && !f.minerState.isWaiting && f.miner.x <= 70) {
+    // Sólo inicia a minar si no está minando, no está esperando y está en su punto original (x <= 110).
+    if (!f.miner.isMining && !f.minerState.isWaiting && f.miner.x <= 110) {
       f.miner.isMining = true;
       game.totalClicks++;
       addComboClick();

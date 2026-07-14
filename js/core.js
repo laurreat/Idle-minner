@@ -337,10 +337,10 @@ function initFloor(index) {
   return {
     index: index,
     config: config,
-    miner: { x: 70, y: 620, width: 45, height: 45, material: 0, isMining: false },
+    miner: { x: 110, y: 620, width: 45, height: 45, material: 0, isMining: false },
     elevator: { x: -130, y: 380, width: 68, height: 68, carrying: 0, isMoving: false, direction: 1, state: "idle", maxCapacity: 130 },
     storage: { x: 1100, y: 420, width: 45, height: 45, carrying: 0, isCollecting: false, state: "idle", currentSprite: null, initialX: 1100, maxCapacity: 100, collectionTime: 500 },
-    minerBox: { x: -20, y: 640, width: 90, height: 90, material: 0 },
+    minerBox: { x: -30, y: 610, width: 110, height: 110, material: 0 },
     minerState: { isWaiting: false, miningTimeout: null, miningTime: 5000 },
     elevatorState: { isWaiting: false, elevatorTimeout: null },
     storageState: { isWaiting: false, storageTimeout: null },

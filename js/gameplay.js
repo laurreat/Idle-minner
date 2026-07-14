@@ -10,7 +10,7 @@ function getFloorSpeedMult() {
 //    - Suma el material minado al total global y al puntaje según el valor del mineral.
 //    - Con cierta probabilidad (chance de gema * bonus) encuentra una gema (💎).
 //    - Suelta partículas y detiene el minado.
-// 3) Si ya no mina y está lejos de su punto original (x > 70), retrocede; al llegar (x <= 70)
+// 3) Si ya no mina y está lejos de su punto original (x > 110), retrocede; al llegar (x <= 110)
 //    deposita el material minado en la caja del minero (minerBox) para el elevador.
 function moveMiner(floorIdx) {
   const f = floors[floorIdx];
@@ -43,11 +43,11 @@ function moveMiner(floorIdx) {
       f.minerState.isWaiting = false;
       // Espera el tiempo de minado configurado por mejoras del minero.
     }, fu.miner.getMiningTime());
-  } else if (!f.miner.isMining && f.miner.x > 70) {
+  } else if (!f.miner.isMining && f.miner.x > 110) {
     // Regresa a su punto original a 2.5 px/frame (escalado por velocidad).
     f.miner.x -= 2.5 * speedMult;
-    if (f.miner.x <= 70) {
-      f.miner.x = 70;
+    if (f.miner.x <= 110) {
+      f.miner.x = 110;
       if (f.miner.material > 0) {
         f.minerBox.material += f.miner.material;
         spawnParticles(f.minerBox.x + 40, f.minerBox.y + 40, FLOOR_CONFIGS[floorIdx].oreColor, 10);
@@ -77,14 +77,15 @@ function moveElevator(floorIdx) {
       if (f.elevator.y < elevatorStopY && !f.elevatorState.isWaiting) {
         f.elevator.y += fu.elevator.getSpeed() * speedMult;
       } else if (f.elevator.y >= elevatorStopY && !f.elevatorState.isWaiting) {
-        // Toma el mínimo entre el material disponible y su capacidad máxima.
-        const materialToTake = Math.min(f.minerBox.material, fu.elevator.getCapacity());
+        // Acumula el material de la tolva sin superar su capacidad (lo que ya lleva + lo nuevo).
+        const capacity = fu.elevator.getCapacity();
+        const materialToTake = Math.min(f.minerBox.material, capacity - f.elevator.carrying);
         // Tiempo de espera: por cada unidad de capacidad tarda 1000 ms (1 s) lleno.
-        const waitTime = materialToTake * (1000 / fu.elevator.getCapacity());
+        const waitTime = materialToTake * (1000 / capacity);
         f.elevatorState.isWaiting = true;
         f.elevatorState.elevatorTimeout = setTimeout(() => {
-          f.elevator.carrying = materialToTake;
           f.minerBox.material -= materialToTake;
+          f.elevator.carrying += materialToTake;
           f.elevator.direction = -1;
           f.elevator.state = "up";
           f.elevatorState.isWaiting = false;
@@ -179,14 +180,14 @@ function moveStorage(floorIdx) {
 }
 
 // Controla el minado automático del piso: si el auto-minero está activo y el
-// minero está en reposo en su punto original (x <= 70), acumula un temporizador
+// minero está en reposo en su punto original (x <= 110), acumula un temporizador
 // (+16 ms por frame ≈ 60 FPS). Al alcanzar el intervalo de mejora, reinicia el
 // temporizador y dispara el minado (isMining = true), reiniciando el ciclo.
 function updateAutoMiner(floorIdx) {
   const f = floors[floorIdx];
   const fu = floorUpgrades[floorIdx];
 
-  if (fu.autoMiner.isActive() && !f.miner.isMining && !f.minerState.isWaiting && f.miner.x <= 70) {
+  if (fu.autoMiner.isActive() && !f.miner.isMining && !f.minerState.isWaiting && f.miner.x <= 110) {
     // Incrementa ~16 ms por frame (asumiendo 60 FPS).
     f.autoMiner.timer += 16;
     if (f.autoMiner.timer >= fu.autoMiner.getInterval()) {

@@ -104,7 +104,7 @@ function drawMiner(floorIdx) {
   } else if (f.miner.isMining) {
     // Caminando hacia la roca para minar
     spriteToDraw = sprites.miner_walk;
-  } else if (f.miner.x > 70) {
+  } else if (f.miner.x > 110) {
     // Volviendo a la tolva tras entregar
     spriteToDraw = sprites.miner_walk_reverse;
   } else {
