@@ -97,10 +97,15 @@ function drawMiner(floorIdx) {
   const f = floors[floorIdx];
   let spriteToDraw;
 
-  // Selecciona el sprite según el estado/dirección del minero (un fotograma por sentido)
-  if (f.miner.isMining) {
+  // Selecciona el sprite según el estado/dirección del minero
+  if (f.minerState.isWaiting) {
+    // Extrae material en la roca: muestra el sprite de minado
+    spriteToDraw = sprites.miner_mine;
+  } else if (f.miner.isMining) {
+    // Caminando hacia la roca para minar
     spriteToDraw = sprites.miner_walk;
   } else if (f.miner.x > 282) {
+    // Volviendo a la tolva tras entregar
     spriteToDraw = sprites.miner_walk_reverse;
   } else {
     spriteToDraw = sprites.miner_idle;
