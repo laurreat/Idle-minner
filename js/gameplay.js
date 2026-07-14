@@ -20,7 +20,7 @@ function moveMiner(floorIdx) {
   if (f.miner.isMining && f.miner.x < 728) {
     // Avanza 2.5 px por frame escalado por la velocidad del piso.
     f.miner.x += 2.5 * speedMult;
-  } else if (f.miner.x >= 720 && !f.minerState.isWaiting) {
+  } else if (f.miner.isMining && f.miner.x >= 720 && !f.minerState.isWaiting) {
     f.minerState.isWaiting = true;
     f.minerState.miningTimeout = setTimeout(() => {
       const amount = fu.miner.getMiningAmount();
