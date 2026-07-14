@@ -9,8 +9,8 @@ const canvas = document.getElementById("gameCanvas");
 const ctx = canvas.getContext("2d");
 // Dimensiones lógicas del mundo (resolución base de dibujo)
 const W = 1000, H = 750;
-// Factor de escala de los personajes/sprites
-const CHAR_SCALE = 3.5;
+// Factor de escala de los personajes/sprites (se recalcula en resizeCanvas segun la pantalla)
+let CHAR_SCALE = 3.5;
 // Escala y desplazamiento usados para ajustar el lienzo a la pantalla (letterboxing)
 let viewScale = 1, viewOffX = 0, viewOffY = 0;
 
@@ -28,6 +28,11 @@ function resizeCanvas() {
   viewScale = Math.min(canvas.width / W, canvas.height / H);
   viewOffX = (canvas.width - W * viewScale) / 2;
   viewOffY = (canvas.height - H * viewScale) / 2;
+  // Escala de personajes adaptativa: en pantallas pequeñas (viewScale bajo) los
+  // sprites crecen para mantenerse legibles, sin recortar el escenario. Se acerca a
+  // un tamaño constante en pantalla y se limita para no solapar elementos del mundo.
+  const csFactor = Math.min(1.6, Math.max(0.75, 1 / viewScale));
+  CHAR_SCALE = Math.min(4.6, Math.max(2.6, 3.5 * csFactor));
   ctx.imageSmoothingEnabled = true;
 }
 
