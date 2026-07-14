@@ -69,6 +69,8 @@ let game = {
   totalMined: 0,
   totalClicks: 0,
   score: 0,
+  maxCombo: 0,
+  totalGems: 0,
   currentFloor: 0,
   prestigeCount: 0,
   prestigeGems: 0,
@@ -108,6 +110,7 @@ function updateCombo() {
 function addComboClick() {
   combo.count = Math.min(combo.count + 1, combo.maxCombo);
   combo.lastClick = Date.now();
+  if (combo.count > game.maxCombo) game.maxCombo = combo.count;
   updateComboMultiplier();
 }
 
@@ -453,8 +456,28 @@ const ACHIEVEMENTS = [
   { id: "speed_max", name: "Velocidad Máxima", desc: "Maximiza la velocidad del elevador", icon: "⚡", check: () => { for (let f of floorUpgrades) if (f.elevator.level >= f.elevator.maxLevel) return true; return false; }, reward: "15 gemas" },
   { id: "ten_k_mined", name: "Toneladas", desc: "Mina 10,000 unidades", icon: "⚖️", check: () => game.totalMined >= 10000, reward: "3 gemas" },
   { id: "score_100k", name: "Puntuación Alta", desc: "Alcanza 100,000 puntos", icon: "🏆", check: () => game.score >= 100000, reward: "20 gemas" },
-  { id: "combo_10", name: "Maestro del Combo", desc: "Alcanza un combo de 10", icon: "🔥", check: () => combo.count >= 10, reward: "3 gemas" },
-  { id: "combo_25", name: "Leyenda del Combo", desc: "Alcanza un combo de 25", icon: "🚀", check: () => combo.count >= 25, reward: "10 gemas" }
+  { id: "combo_10", name: "Maestro del Combo", desc: "Alcanza un combo de 10", icon: "🔥", check: () => game.maxCombo >= 10, reward: "3 gemas" },
+  { id: "combo_25", name: "Leyenda del Combo", desc: "Alcanza un combo de 25", icon: "🚀", check: () => game.maxCombo >= 25, reward: "10 gemas" },
+  { id: "combo_50", name: "Combo Imparable", desc: "Alcanza el combo máximo de 50", icon: "💥", check: () => game.maxCombo >= 50, reward: "25 gemas" },
+  { id: "five_k_clicks", name: "Manos de Acero", desc: "Haz clic 5,000 veces", icon: "🦾", check: () => game.totalClicks >= 5000, reward: "5 gemas" },
+  { id: "ten_k_clicks", name: "Adicto a la Mina", desc: "Haz clic 10,000 veces", icon: "🖱️", check: () => game.totalClicks >= 10000, reward: "10 gemas" },
+  { id: "fifty_k_clicks", name: "Máquina Humana", desc: "Haz clic 50,000 veces", icon: "🤯", check: () => game.totalClicks >= 50000, reward: "30 gemas" },
+  { id: "ten_million", name: "Multimillonario", desc: "Gana $10,000,000 en total", icon: "💵", check: () => game.totalEarned >= 10000000, reward: "50 gemas" },
+  { id: "hundred_million", name: "Magnate Minero", desc: "Gana $100,000,000 en total", icon: "🏭", check: () => game.totalEarned >= 100000000, reward: "100 gemas" },
+  { id: "one_billion", name: "Imperio del Oro", desc: "Gana $1,000,000,000 en total", icon: "🏰", check: () => game.totalEarned >= 1000000000, reward: "250 gemas" },
+  { id: "mined_100k", name: "Excavadora", desc: "Mina 100,000 unidades", icon: "🚜", check: () => game.totalMined >= 100000, reward: "15 gemas" },
+  { id: "mined_1m", name: "Devora Montañas", desc: "Mina 1,000,000 de unidades", icon: "⛰️", check: () => game.totalMined >= 1000000, reward: "40 gemas" },
+  { id: "score_1m", name: "Puntuación Épica", desc: "Alcanza 1,000,000 de puntos", icon: "🎯", check: () => game.score >= 1000000, reward: "40 gemas" },
+  { id: "score_10m", name: "Puntuación Legendaria", desc: "Alcanza 10,000,000 de puntos", icon: "🏵️", check: () => game.score >= 10000000, reward: "100 gemas" },
+  { id: "gems_10", name: "Coleccionista", desc: "Consigue 10 gemas en total", icon: "💎", check: () => game.totalGems >= 10, reward: "50 oro" },
+  { id: "gems_100", name: "Joyero", desc: "Consigue 100 gemas en total", icon: "📿", check: () => game.totalGems >= 100, reward: "10 gemas" },
+  { id: "gems_500", name: "Tesoro Real", desc: "Consigue 500 gemas en total", icon: "👑", check: () => game.totalGems >= 500, reward: "50 gemas" },
+  { id: "floor_3", name: "Descendiendo", desc: "Desbloquea el Piso 3", icon: "🪜", check: () => unlockedFloors[2], reward: "4 gemas" },
+  { id: "floor_7", name: "Abismo", desc: "Desbloquea el Piso 7", icon: "🕳️", check: () => unlockedFloors[6], reward: "25 gemas" },
+  { id: "prestige_10", name: "Inmortal", desc: "Haz 10 prestigios", icon: "♾️", check: () => game.prestigeCount >= 10, reward: "100 gemas" },
+  { id: "first_event", name: "Sorpresa", desc: "Activa tu primer evento especial", icon: "🎁", check: () => bonusEvent.totalTriggered >= 1, reward: "3 gemas" },
+  { id: "ten_events", name: "Cazador de Eventos", desc: "Activa 10 eventos especiales", icon: "🎊", check: () => bonusEvent.totalTriggered >= 10, reward: "15 gemas" },
+  { id: "auto_all", name: "Fábrica Automática", desc: "Ten un auto-minero en los 10 pisos", icon: "🏗️", check: () => floorUpgrades.every(fu => fu.autoMiner.level > 0), reward: "40 gemas" }
 ];
 
 // Conjunto de ids de logros ya desbloqueados

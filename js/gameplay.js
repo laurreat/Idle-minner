@@ -33,6 +33,7 @@ function moveMiner(floorIdx) {
       if (Math.random() < globalUpgrades.luck.getGemChance() * getGemChanceBonus()) {
         f.gemsFound++;
         game.gems++;
+        game.totalGems++;
         spawnParticles(f.miner.x, f.miner.y, "#a78bfa", 12);
         spawnFloatingText(f.miner.x, f.miner.y - 30, "+1 💎", "#a78bfa", 28);
         triggerScreenShake(3, 200);
@@ -119,7 +120,7 @@ function moveStorage(floorIdx) {
       f.storage.state = "moving";
     }
     if (f.storage.state === "moving") {
-      if (f.storage.x > 212) {
+      if (f.storage.x > 202) {
         f.storage.x -= 2.5 * speedMult;
         f.storage.currentSprite = sprites.miner_tolva;
       } else if (!f.storageState.isWaiting) {

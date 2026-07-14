@@ -280,6 +280,7 @@ function doPrestige() {
   game.prestigeGems += gems;
   game.totalPrestigeGems += gems;
   game.gems += gems;
+  game.totalGems += gems;
 
   game.cash = 0;
   game.totalEarned = 0;

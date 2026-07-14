@@ -377,7 +377,27 @@ function renderStats() {
       </div>
       <div class="stat-card">
         <div class="stat-label">🔥 Combo Máximo</div>
-        <div class="stat-value" style="color:#FF4500;">${combo.maxCombo}</div>
+        <div class="stat-value" style="color:#FF4500;">${game.maxCombo}</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">⚡ Combo Actual</div>
+        <div class="stat-value" style="color:${getComboColor() || 'var(--text-primary)'};">${combo.count} (x${combo.multiplier.toFixed(1)})</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">💰 Oro Actual</div>
+        <div class="stat-value" style="color:var(--gold);">$${formatNum(game.cash)}</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">💠 Gemas Totales</div>
+        <div class="stat-value" style="color:var(--purple);">${formatNum(game.totalGems)}</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">🎉 Eventos Activados</div>
+        <div class="stat-value" style="color:#22d3ee;">${bonusEvent.totalTriggered}</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">🏆 Logros</div>
+        <div class="stat-value" style="color:var(--gold);">${unlockedAchievements.size}/${ACHIEVEMENTS.length}</div>
       </div>
     </div>
   `;
@@ -421,6 +441,7 @@ function checkAchievements() {
       if (ach.reward.includes("gema")) {
         const gems = parseInt(ach.reward) || 1;
         game.gems += gems;
+        game.totalGems += gems;
       } else if (ach.reward.includes("oro")) {
         const gold = parseInt(ach.reward.replace(/[^0-9]/g, '')) || 0;
         game.cash += gold;
@@ -537,8 +558,8 @@ function formatTime(seconds) {
 function startNewGame() {
   game = {
     cash: 0, gems: 0, totalEarned: 0, totalMined: 0, totalClicks: 0,
-    score: 0, currentFloor: 0, prestigeCount: 0, prestigeGems: 0,
-    totalPrestigeGems: 0, startTime: Date.now(), lastSave: Date.now(),
+    score: 0, maxCombo: 0, totalGems: 0, currentFloor: 0, prestigeCount: 0,
+    prestigeGems: 0, totalPrestigeGems: 0, startTime: Date.now(), lastSave: Date.now(),
     paused: false, started: true
   };
   unlockedFloors = [true, false, false, false, false, false, false, false, false, false];
@@ -550,6 +571,7 @@ function startNewGame() {
   combo.count = 0;
   combo.multiplier = 1;
   bonusEvent.active = false;
+  bonusEvent.totalTriggered = 0;
   hideBonusBar();
   clearEventLog();
   addEventLog('⛏️ ¡Nueva partida iniciada!', 'piso');
