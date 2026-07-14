@@ -38,8 +38,7 @@ function resizeCanvas() {
 const sprites = {};
 // Lista de nombres de sprites del minero y la tolva (animaciones y estados)
 const spriteNames = [
-  "miner_idle", "miner_walk_1", "miner_walk_2",
-  "miner_walk_reverse_1", "miner_walk_reverse_2",
+  "miner_idle", "miner_walk", "miner_walk_reverse",
   "miner_elevador_0", "miner_elevador_1", "miner_elevador_2",
   "miner_tolva_1", "miner_tolva_2",
   "miner_tolva_reverse_1", "miner_tolva_reverse_2",

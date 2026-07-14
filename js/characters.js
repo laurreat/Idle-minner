@@ -97,11 +97,11 @@ function drawMiner(floorIdx) {
   const f = floors[floorIdx];
   let spriteToDraw;
 
-  // Alterna sprites de caminata cada 200ms para simular animación (fotogramas)
+  // Selecciona el sprite según el estado/dirección del minero (un fotograma por sentido)
   if (f.miner.isMining) {
-    spriteToDraw = Math.floor(Date.now() / 200) % 2 === 0 ? sprites.miner_walk_1 : sprites.miner_walk_2;
+    spriteToDraw = sprites.miner_walk;
   } else if (f.miner.x > 282) {
-    spriteToDraw = Math.floor(Date.now() / 200) % 2 === 0 ? sprites.miner_walk_reverse_1 : sprites.miner_walk_reverse_2;
+    spriteToDraw = sprites.miner_walk_reverse;
   } else {
     spriteToDraw = sprites.miner_idle;
   }
