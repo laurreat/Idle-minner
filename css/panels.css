@@ -357,9 +357,10 @@
 }
 
 /* Stats */
-/* Rejilla de tarjetas de estadisticas */
+/* Rejilla de tarjetas de estadisticas (2 columnas por defecto, se adapta por responsive) */
 .stat-grid {
   display: grid;
+  grid-template-columns: repeat(2, 1fr);
   gap: 12px;
 }
 
