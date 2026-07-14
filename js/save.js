@@ -120,8 +120,8 @@ function applySaveData(save) {
     });
   }
 
-  // Recalcula el layout responsivo según el ancho guardado para adaptar las
-  // posiciones restauradas al aspecto actual de la pantalla.
+  // Recalcula el layout responsivo del escenario según el ancho guardado (layoutW)
+  // para que las posiciones/restauradas se adapten al aspecto actual de la pantalla.
   lastLayoutW = save.layoutW || 1000;
   relayoutWorld();
 
