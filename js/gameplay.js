@@ -73,7 +73,7 @@ function moveElevator(floorIdx) {
       // El sprite está centrado en (x,y), así que su borde inferior queda en
       // y + height*(scale+1)/2. Se detiene justo al alcanzar el borde inferior de la
       // tolva (minerBox), sin pasarse por el nuevo tamaño del elevador.
-      const elevatorStopY = f.minerBox.y + f.minerBox.height - f.elevator.height * (CHAR_SCALE + 1) / 2;
+      const elevatorStopY = f.minerBox.y + f.minerBox.height - f.elevator.height * (CHAR_SCALE + 1) / 2 + 5;
       if (f.elevator.y < elevatorStopY && !f.elevatorState.isWaiting) {
         f.elevator.y += fu.elevator.getSpeed() * speedMult;
       } else if (f.elevator.y >= elevatorStopY && !f.elevatorState.isWaiting) {
