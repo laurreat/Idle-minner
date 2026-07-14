@@ -92,7 +92,7 @@ function moveElevator(floorIdx) {
       }
     } else {
       f.elevator.y -= fu.elevator.getSpeed() * speedMult;
-      if (f.elevator.y <= 420) {
+      if (f.elevator.y <= 380) {
         f.elevator.isMoving = false;
         f.elevator.direction = 1;
         f.elevator.state = "idle";
