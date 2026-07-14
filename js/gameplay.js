@@ -10,7 +10,7 @@ function getFloorSpeedMult() {
 //    - Suma el material minado al total global y al puntaje según el valor del mineral.
 //    - Con cierta probabilidad (chance de gema * bonus) encuentra una gema (💎).
 //    - Suelta partículas y detiene el minado.
-// 3) Si ya no mina y está lejos de la tolva (x > 282), retrocede; al llegar (x <= 282)
+// 3) Si ya no mina y está lejos de su punto original (x > 70), retrocede; al llegar (x <= 70)
 //    deposita el material minado en la caja del minero (minerBox) para el elevador.
 function moveMiner(floorIdx) {
   const f = floors[floorIdx];
@@ -43,11 +43,11 @@ function moveMiner(floorIdx) {
       f.minerState.isWaiting = false;
       // Espera el tiempo de minado configurado por mejoras del minero.
     }, fu.miner.getMiningTime());
-  } else if (!f.miner.isMining && f.miner.x > 282) {
-    // Regresa a la tolva a 2.5 px/frame (escalado por velocidad).
+  } else if (!f.miner.isMining && f.miner.x > 70) {
+    // Regresa a su punto original a 2.5 px/frame (escalado por velocidad).
     f.miner.x -= 2.5 * speedMult;
-    if (f.miner.x <= 282) {
-      f.miner.x = 282;
+    if (f.miner.x <= 70) {
+      f.miner.x = 70;
       if (f.miner.material > 0) {
         f.minerBox.material += f.miner.material;
         spawnParticles(f.minerBox.x + 40, f.minerBox.y + 40, FLOOR_CONFIGS[floorIdx].oreColor, 10);
@@ -60,7 +60,7 @@ function moveMiner(floorIdx) {
 // Bucle de automatización del elevador de un piso:
 // - Baja (direction 1) hasta la caja del minero, recoge material hasta su capacidad
 //   y espera un tiempo proporcional a lo recogido (waitTime = material * ms por unidad).
-// - Sube (direction -1) de vuelta a la superficie (y <= 275) y queda idle,
+// - Sube (direction -1) de vuelta a su punto original (y <= 420) y queda idle,
 //   dejando el material cargado (carrying) para que el almacenamiento lo recoja.
 function moveElevator(floorIdx) {
   const f = floors[floorIdx];
@@ -88,7 +88,7 @@ function moveElevator(floorIdx) {
       }
     } else {
       f.elevator.y -= fu.elevator.getSpeed() * speedMult;
-      if (f.elevator.y <= 275) {
+      if (f.elevator.y <= 420) {
         f.elevator.isMoving = false;
         f.elevator.direction = 1;
         f.elevator.state = "idle";
@@ -175,14 +175,14 @@ function moveStorage(floorIdx) {
 }
 
 // Controla el minado automático del piso: si el auto-minero está activo y el
-// minero está en reposo junto a la tolva (x <= 282), acumula un temporizador
+// minero está en reposo en su punto original (x <= 70), acumula un temporizador
 // (+16 ms por frame ≈ 60 FPS). Al alcanzar el intervalo de mejora, reinicia el
 // temporizador y dispara el minado (isMining = true), reiniciando el ciclo.
 function updateAutoMiner(floorIdx) {
   const f = floors[floorIdx];
   const fu = floorUpgrades[floorIdx];
 
-  if (fu.autoMiner.isActive() && !f.miner.isMining && !f.minerState.isWaiting && f.miner.x <= 282) {
+  if (fu.autoMiner.isActive() && !f.miner.isMining && !f.minerState.isWaiting && f.miner.x <= 70) {
     // Incrementa ~16 ms por frame (asumiendo 60 FPS).
     f.autoMiner.timer += 16;
     if (f.autoMiner.timer >= fu.autoMiner.getInterval()) {
