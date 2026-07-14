@@ -11,21 +11,24 @@ const ctx = canvas.getContext("2d");
 let W = 1000, H = 750;
 // Factor de escala de los personajes/sprites (se recalcula en resizeCanvas según la pantalla)
 let CHAR_SCALE = 3.5;
-// Escala y desplazamiento usados para ajustar el lienzo a la pantalla (sin letterbox)
+// Escala y desplazamiento usados para ajustar el lienzo a la pantalla (el mundo llena la pantalla)
 let viewScale = 1, viewOffX = 0, viewOffY = 0;
 
-// Anclas del escenario expresadas como fracciones del mundo. Al cambiar el tamaño se
-// recalculan para que el juego llene cualquier pantalla (responsive real, sin bandas).
-let ROCK_X = 728, MINER_HOME_X = 110, STORAGE_COLLECT_X = 202, STORAGE_INITIAL_X = 1100;
+// Anclas del escenario como fracciones del mundo. Todas las posiciones son >= 0 y
+// visibles; el único valor fuera de rango es el de espera del almacén (initialX).
+let ROCK_X = 800, MINER_HOME_X = 100, STORAGE_COLLECT_X = 200, STORAGE_INITIAL_X = 1120;
 const LAYOUT = {
-  rockXFrac: 0.728, homeXFrac: 0.11, collectXFrac: 0.202, initialXFrac: 1.10,
-  minerSizeFrac: 0.045, elevatorSizeFrac: 0.068, storageSizeFrac: 0.045,
-  minerBoxWFrac: 0.11, minerBoxHFrac: 0.147
+  // Posiciones horizontales (fracción de W)
+  rockXFrac: 0.80, homeXFrac: 0.10, boxXFrac: 0.02, elevatorXFrac: 0.02,
+  collectXFrac: 0.20, initialXFrac: 1.12,
+  // Tamaños (fracción de W, cuadrados)
+  minerSizeFrac: 0.05, elevatorSizeFrac: 0.07, storageSizeFrac: 0.05,
+  minerBoxWFrac: 0.12, minerBoxHFrac: 0.147
 };
 let lastLayoutW = 0;
 
-// Recalcula posiciones y tamaños de los personajes según el tamaño actual del mundo.
-// Conserva el estado de animación escalando las posiciones dinámicas (minero/elevador/almacén/tolva).
+// Recalcula posiciones y tamaños de los personajes para el tamaño actual del mundo.
+// Conserva el estado de animación escalando las posiciones dinámicas de forma proporcional.
 function relayoutWorld() {
   const sx = W / (lastLayoutW || 1000);
   for (const f of floors) {
@@ -48,7 +51,7 @@ function relayoutWorld() {
 }
 
 // Redimensiona el lienzo al tamaño real del elemento (devicePixelRatio) y ajusta el
-// mundo al aspecto de la pantalla para que lo llene por completo (sin letterbox ni deformar).
+// mundo al aspecto de la pantalla para llenarla por completo (sin letterbox ni deformar).
 function resizeCanvas() {
   const dpr = window.devicePixelRatio || 1;
   const rect = canvas.getBoundingClientRect();
@@ -57,16 +60,16 @@ function resizeCanvas() {
   if (cssW < 10 || cssH < 10) { cssW = 1000; cssH = 750; }
   canvas.width = Math.max(1, Math.round(cssW * dpr));
   canvas.height = Math.max(1, Math.round(cssH * dpr));
-  // Mundo responsivo: altura de referencia fija y ancho proporcional al aspecto de la pantalla.
+  // Mundo responsivo: altura de referencia fija y ancho proporcional al aspecto.
   H = 750;
   W = H * (canvas.width / canvas.height);
-  // Escala uniforme para llenar la pantalla; al coincidir el aspecto, no hay desplazamiento.
+  // Escala uniforme para llenar la pantalla; al coincidir el aspecto no hay desplazamiento.
   viewScale = canvas.height / H;
   viewOffX = (canvas.width - W * viewScale) / 2;
   viewOffY = (canvas.height - H * viewScale) / 2;
   relayoutWorld();
-  // Escala de personajes: mantiene un tamaño constante en pantalla (~95px) en cualquier dispositivo.
-  CHAR_SCALE = Math.min(6.5, Math.max(2.0, 95 / (LAYOUT.minerSizeFrac * cssW)));
+  // Escala de personajes: tamaño constante en pantalla (~100px) en cualquier dispositivo.
+  CHAR_SCALE = Math.min(6.5, Math.max(2.0, 100 / (LAYOUT.minerSizeFrac * cssW)));
   ctx.imageSmoothingEnabled = true;
 }
 
@@ -380,10 +383,10 @@ function initFloor(index) {
   return {
     index: index,
     config: config,
-    miner: { x: 110, y: 620, width: 45, height: 45, material: 0, isMining: false },
-    elevator: { x: -130, y: 380, width: 68, height: 68, carrying: 0, isMoving: false, direction: 1, state: "idle", maxCapacity: 130 },
-    storage: { x: 1100, y: 420, width: 45, height: 45, carrying: 0, isCollecting: false, state: "idle", currentSprite: null, initialX: 1100, maxCapacity: 100, collectionTime: 500 },
-    minerBox: { x: -30, y: 610, width: 110, height: 110, material: 0 },
+    miner: { x: 100, y: 620, width: 45, height: 45, material: 0, isMining: false },
+    elevator: { x: 20, y: 380, width: 68, height: 68, carrying: 0, isMoving: false, direction: 1, state: "idle", maxCapacity: 130 },
+    storage: { x: 1120, y: 420, width: 45, height: 45, carrying: 0, isCollecting: false, state: "idle", currentSprite: null, initialX: 1120, maxCapacity: 100, collectionTime: 500 },
+    minerBox: { x: 20, y: 610, width: 110, height: 110, material: 0 },
     minerState: { isWaiting: false, miningTimeout: null, miningTime: 5000 },
     elevatorState: { isWaiting: false, elevatorTimeout: null },
     storageState: { isWaiting: false, storageTimeout: null },
