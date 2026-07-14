@@ -100,7 +100,8 @@ let combo = {
 // Reduce el combo en 1 cada vez que pasa decayTime sin clic (decaimiento progresivo del combo)
 function updateCombo() {
   const now = Date.now();
-  if (now - combo.lastClick > combo.decayTime && combo.count > 0) {
+  const decayTime = globalUpgrades.comboDuration.getDuration();
+  if (now - combo.lastClick > decayTime && combo.count > 0) {
     combo.count = Math.max(0, combo.count - 1);
     updateComboMultiplier();
   }
@@ -432,6 +433,30 @@ const globalUpgrades = {
     level: 0, maxLevel: 20, baseCost: 5000, costMultiplier: 2.0, currency: "gems",
     getCurrentCost() { return Math.floor(this.baseCost * Math.pow(this.costMultiplier, this.level)); },
     getSpeedMult() { return 1 + this.level * 0.1; }
+  },
+  // goldBoost: multiplicador global del oro obtenido al vender (+10% por nivel)
+  goldBoost: {
+    level: 0, maxLevel: 25, baseCost: 3000, costMultiplier: 2.0, currency: "gems",
+    getCurrentCost() { return Math.floor(this.baseCost * Math.pow(this.costMultiplier, this.level)); },
+    getMult() { return 1 + this.level * 0.1; }
+  },
+  // critChance: probabilidad de golpe crítico (x2 material minado) por nivel (+3%)
+  critChance: {
+    level: 0, maxLevel: 20, baseCost: 4000, costMultiplier: 2.1, currency: "gems",
+    getCurrentCost() { return Math.floor(this.baseCost * Math.pow(this.costMultiplier, this.level)); },
+    getChance() { return this.level * 0.03; }
+  },
+  // drill: reduce globalmente el tiempo de minado (-4% por nivel, hasta un mínimo del 40%)
+  drill: {
+    level: 0, maxLevel: 15, baseCost: 6000, costMultiplier: 2.2, currency: "gems",
+    getCurrentCost() { return Math.floor(this.baseCost * Math.pow(this.costMultiplier, this.level)); },
+    getTimeMult() { return Math.max(0.4, 1 - this.level * 0.04); }
+  },
+  // comboDuration: aumenta el tiempo antes de que el combo decaiga (+250ms por nivel)
+  comboDuration: {
+    level: 0, maxLevel: 15, baseCost: 2500, costMultiplier: 2.0, currency: "gems",
+    getCurrentCost() { return Math.floor(this.baseCost * Math.pow(this.costMultiplier, this.level)); },
+    getDuration() { return 1500 + this.level * 250; }
   }
 };
 

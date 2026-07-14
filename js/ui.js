@@ -54,7 +54,11 @@ const TYPE_NAMES = {
   sellMultiplier: "Multiplicador de Venta",
   autoMiner: "Auto-Minero",
   luck: "Suerte",
-  speedBoost: "Velocidad Global"
+  speedBoost: "Velocidad Global",
+  goldBoost: "Fortuna",
+  critChance: "Golpe Crítico",
+  drill: "Taladro",
+  comboDuration: "Resistencia de Combo"
 };
 
 // ============================================================
@@ -258,6 +262,54 @@ function renderShop() {
       <div class="level">Nivel ${globalUpgrades.speedBoost.level}/${globalUpgrades.speedBoost.maxLevel}</div>
     </div>
     <div class="shop-cost cost-gem">${globalUpgrades.speedBoost.level >= globalUpgrades.speedBoost.maxLevel ? 'MAX' : '💎 ' + speedCost}</div>
+  </div>`;
+
+  const goldCost = globalUpgrades.goldBoost.getCurrentCost();
+  const canGold = game.gems >= goldCost && globalUpgrades.goldBoost.level < globalUpgrades.goldBoost.maxLevel;
+  html += `<div class="shop-item ${!canGold ? (globalUpgrades.goldBoost.level >= globalUpgrades.goldBoost.maxLevel ? 'maxed' : 'cant-afford') : ''}" onclick="buyGlobalUpgrade('goldBoost')">
+    <div class="shop-icon" style="background:rgba(255,215,0,0.15);">💵</div>
+    <div class="shop-info">
+      <div class="name">Fortuna</div>
+      <div class="desc">+10% oro por venta (actual: ${globalUpgrades.goldBoost.getMult().toFixed(1)}x)</div>
+      <div class="level">Nivel ${globalUpgrades.goldBoost.level}/${globalUpgrades.goldBoost.maxLevel}</div>
+    </div>
+    <div class="shop-cost cost-gem">${globalUpgrades.goldBoost.level >= globalUpgrades.goldBoost.maxLevel ? 'MAX' : '💎 ' + goldCost}</div>
+  </div>`;
+
+  const critCost = globalUpgrades.critChance.getCurrentCost();
+  const canCrit = game.gems >= critCost && globalUpgrades.critChance.level < globalUpgrades.critChance.maxLevel;
+  html += `<div class="shop-item ${!canCrit ? (globalUpgrades.critChance.level >= globalUpgrades.critChance.maxLevel ? 'maxed' : 'cant-afford') : ''}" onclick="buyGlobalUpgrade('critChance')">
+    <div class="shop-icon" style="background:rgba(255,69,0,0.15);">🎯</div>
+    <div class="shop-info">
+      <div class="name">Golpe Crítico</div>
+      <div class="desc">+3% de minar x2 material (actual: ${(globalUpgrades.critChance.getChance() * 100).toFixed(0)}%)</div>
+      <div class="level">Nivel ${globalUpgrades.critChance.level}/${globalUpgrades.critChance.maxLevel}</div>
+    </div>
+    <div class="shop-cost cost-gem">${globalUpgrades.critChance.level >= globalUpgrades.critChance.maxLevel ? 'MAX' : '💎 ' + critCost}</div>
+  </div>`;
+
+  const drillCost = globalUpgrades.drill.getCurrentCost();
+  const canDrill = game.gems >= drillCost && globalUpgrades.drill.level < globalUpgrades.drill.maxLevel;
+  html += `<div class="shop-item ${!canDrill ? (globalUpgrades.drill.level >= globalUpgrades.drill.maxLevel ? 'maxed' : 'cant-afford') : ''}" onclick="buyGlobalUpgrade('drill')">
+    <div class="shop-icon" style="background:rgba(96,165,250,0.15);">🛠️</div>
+    <div class="shop-info">
+      <div class="name">Taladro</div>
+      <div class="desc">-4% tiempo de minado (actual: ${Math.round((1 - globalUpgrades.drill.getTimeMult()) * 100)}% más rápido)</div>
+      <div class="level">Nivel ${globalUpgrades.drill.level}/${globalUpgrades.drill.maxLevel}</div>
+    </div>
+    <div class="shop-cost cost-gem">${globalUpgrades.drill.level >= globalUpgrades.drill.maxLevel ? 'MAX' : '💎 ' + drillCost}</div>
+  </div>`;
+
+  const comboCost = globalUpgrades.comboDuration.getCurrentCost();
+  const canComboDur = game.gems >= comboCost && globalUpgrades.comboDuration.level < globalUpgrades.comboDuration.maxLevel;
+  html += `<div class="shop-item ${!canComboDur ? (globalUpgrades.comboDuration.level >= globalUpgrades.comboDuration.maxLevel ? 'maxed' : 'cant-afford') : ''}" onclick="buyGlobalUpgrade('comboDuration')">
+    <div class="shop-icon" style="background:rgba(255,102,0,0.15);">⏳</div>
+    <div class="shop-info">
+      <div class="name">Resistencia de Combo</div>
+      <div class="desc">+0.25s antes de perder combo (actual: ${(globalUpgrades.comboDuration.getDuration() / 1000).toFixed(2)}s)</div>
+      <div class="level">Nivel ${globalUpgrades.comboDuration.level}/${globalUpgrades.comboDuration.maxLevel}</div>
+    </div>
+    <div class="shop-cost cost-gem">${globalUpgrades.comboDuration.level >= globalUpgrades.comboDuration.maxLevel ? 'MAX' : '💎 ' + comboCost}</div>
   </div>`;
 
   html += `</div>`;
@@ -568,6 +620,10 @@ function startNewGame() {
   initFloorUpgrades();
   globalUpgrades.luck.level = 0;
   globalUpgrades.speedBoost.level = 0;
+  globalUpgrades.goldBoost.level = 0;
+  globalUpgrades.critChance.level = 0;
+  globalUpgrades.drill.level = 0;
+  globalUpgrades.comboDuration.level = 0;
   combo.count = 0;
   combo.multiplier = 1;
   bonusEvent.active = false;

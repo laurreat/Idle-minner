@@ -85,7 +85,11 @@ function buildSaveData() {
     })),
     globalUpgrades: {
       luck: { level: globalUpgrades.luck.level },
-      speedBoost: { level: globalUpgrades.speedBoost.level }
+      speedBoost: { level: globalUpgrades.speedBoost.level },
+      goldBoost: { level: globalUpgrades.goldBoost.level },
+      critChance: { level: globalUpgrades.critChance.level },
+      drill: { level: globalUpgrades.drill.level },
+      comboDuration: { level: globalUpgrades.comboDuration.level }
     }
   };
 }
@@ -131,6 +135,10 @@ function applySaveData(save) {
   if (save.globalUpgrades) {
     globalUpgrades.luck.level = save.globalUpgrades.luck.level || 0;
     globalUpgrades.speedBoost.level = save.globalUpgrades.speedBoost.level || 0;
+    globalUpgrades.goldBoost.level = (save.globalUpgrades.goldBoost && save.globalUpgrades.goldBoost.level) || 0;
+    globalUpgrades.critChance.level = (save.globalUpgrades.critChance && save.globalUpgrades.critChance.level) || 0;
+    globalUpgrades.drill.level = (save.globalUpgrades.drill && save.globalUpgrades.drill.level) || 0;
+    globalUpgrades.comboDuration.level = (save.globalUpgrades.comboDuration && save.globalUpgrades.comboDuration.level) || 0;
   }
 
   // Calcula cuánto tiempo estuvo ausente el jugador (en segundos).

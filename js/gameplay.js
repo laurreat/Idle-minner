@@ -23,7 +23,13 @@ function moveMiner(floorIdx) {
   } else if (f.miner.isMining && f.miner.x >= 720 && !f.minerState.isWaiting) {
     f.minerState.isWaiting = true;
     f.minerState.miningTimeout = setTimeout(() => {
-      const amount = fu.miner.getMiningAmount();
+      let amount = fu.miner.getMiningAmount();
+      // Golpe crítico global: duplica el material extraído con cierta probabilidad.
+      const isCrit = Math.random() < globalUpgrades.critChance.getChance();
+      if (isCrit) {
+        amount *= 2;
+        spawnFloatingText(f.miner.x, f.miner.y - 55, "¡CRÍTICO! x2", "#FF4500", 24);
+      }
       f.miner.material = amount;
       game.totalMined += amount;
       // El puntaje se premia según la cantidad extraída y el valor del mineral del piso.
@@ -42,8 +48,8 @@ function moveMiner(floorIdx) {
       spawnParticles(f.miner.x, f.miner.y, FLOOR_CONFIGS[floorIdx].oreColor, 8);
       f.miner.isMining = false;
       f.minerState.isWaiting = false;
-      // Espera el tiempo de minado configurado por mejoras del minero.
-    }, fu.miner.getMiningTime());
+      // Espera el tiempo de minado configurado por mejoras del minero (reducido por el taladro global).
+    }, fu.miner.getMiningTime() * globalUpgrades.drill.getTimeMult());
   } else if (!f.miner.isMining && f.miner.x > 110) {
     // Regresa a su punto original a 2.5 px/frame (escalado por velocidad).
     f.miner.x -= 2.5 * speedMult;
@@ -152,8 +158,8 @@ function moveStorage(floorIdx) {
         // Multiplicador de venta del piso * bonus global (combo/evento).
         const sellMult = fu.sellMultiplier.getMultiplier();
         const bonusMult = getBonusMultiplier();
-        // Ganancia = material vendido * multiplicador de venta * bonus.
-        const earned = f.storage.carrying * sellMult * bonusMult;
+        // Ganancia = material vendido * multiplicador de venta * bonus * fortuna global.
+        const earned = f.storage.carrying * sellMult * bonusMult * globalUpgrades.goldBoost.getMult();
         game.cash += earned;
         game.totalEarned += earned;
         game.score += earned;
