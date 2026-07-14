@@ -285,11 +285,11 @@ body,
   font-weight: 600;
 }
 
-/* Banner de bonus activo en tema claro */
+/* Banner de bonus activo en tema claro (mantiene estilo de tarjeta pixelada) */
 [data-theme="light"] .active-bonus-bar {
-  background: rgba(255, 255, 255, 0.95);
-  border-color: rgba(15, 23, 42, 0.2);
-  box-shadow: 0 8px 32px rgba(15, 23, 42, 0.15);
+  background: rgba(255, 255, 255, 0.96);
+  border-color: rgba(15, 23, 42, 0.25);
+  box-shadow: 4px 4px 0 rgba(15, 23, 42, 0.25);
 }
 
 [data-theme="light"] .bonus-bar-name {

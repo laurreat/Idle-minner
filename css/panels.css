@@ -751,36 +751,37 @@
 /* Banner inferior del bonus/evento activo (centrado sobre el canvas) */
 .active-bonus-bar {
   position: absolute;
-  bottom: 52px;
-  /* Por encima del indicador de profundidad del canvas */
-  left: 50%;
-  transform: translateX(-50%);
+  top: 14px;
+  right: 14px;
+  left: auto;
+  transform: none;
   z-index: 85;
   display: flex;
   align-items: center;
   gap: 10px;
-  padding: 8px 18px;
-  background: rgba(5, 7, 15, 0.88);
-  border: 1.5px solid rgba(255, 255, 255, 0.1);
-  border-radius: 50px;
-  backdrop-filter: blur(16px);
-  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.6);
+  padding: 10px 16px;
+  background: rgba(5, 7, 15, 0.9);
+  border: 2px solid rgba(255, 255, 255, 0.18);
+  border-radius: 4px;
+  box-shadow: 4px 4px 0 rgba(0, 0, 0, 0.55);
+  backdrop-filter: blur(8px);
   pointer-events: none;
   width: fit-content;
   min-width: 220px;
-  max-width: 90vw;
-  animation: bonusBarIn 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  max-width: 92vw;
+  font-family: 'VT323', monospace;
+  animation: bonusBarIn 0.35s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 @keyframes bonusBarIn {
   from {
     opacity: 0;
-    transform: translateX(-50%) translateY(16px);
+    transform: translateY(-14px);
   }
 
   to {
     opacity: 1;
-    transform: translateX(-50%) translateY(0);
+    transform: translateY(0);
   }
 }
 

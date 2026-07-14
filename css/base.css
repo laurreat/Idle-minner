@@ -347,13 +347,13 @@ body::before {
   top: 50%;
   transform: translateY(-50%);
   background: rgba(0, 0, 0, 0.95);
-  color: var(--text-primary);
+  color: #f8fafc;
   padding: 6px 10px;
   border-radius: 6px;
   font-size: clamp(11px, 1.29vw, 18px);
   white-space: nowrap;
   pointer-events: none;
   z-index: 100;
-  border: 1px solid var(--border-subtle);
+  border: 1px solid rgba(255, 255, 255, 0.25);
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
 }
