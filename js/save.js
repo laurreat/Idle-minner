@@ -68,7 +68,7 @@ function buildSaveData() {
     floors: floors.map(f => ({
       miner: f.miner,
       elevator: { x: f.elevator.x, y: f.elevator.y, carrying: f.elevator.carrying, isMoving: false, direction: 1, state: "idle", maxCapacity: f.elevator.maxCapacity },
-      storage: { x: f.storage.x, carrying: f.storage.carrying, isCollecting: false, state: "idle", currentSprite: null, initialX: 600, maxCapacity: f.storage.maxCapacity, collectionTime: f.storage.collectionTime },
+      storage: { x: f.storage.x, carrying: f.storage.carrying, isCollecting: false, state: "idle", currentSprite: null, initialX: 800, maxCapacity: f.storage.maxCapacity, collectionTime: f.storage.collectionTime },
       minerBox: f.minerBox,
       gemsFound: f.gemsFound,
       minerState: { isWaiting: false, miningTimeout: null, miningTime: f.minerState.miningTime },
