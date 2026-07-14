@@ -217,7 +217,7 @@ function drawElevator(floorIdx) {
 function drawStorage(floorIdx) {
   const f = floors[floorIdx];
   // Sprite por defecto si aún no se ha asignado ninguno
-  if (!f.storage.currentSprite) f.storage.currentSprite = sprites.miner_tolva_1;
+  if (!f.storage.currentSprite) f.storage.currentSprite = sprites.miner_tolva;
   const scale = CHAR_SCALE;
 
   // Centra el sprite escalado sobre el punto original; respaldo naranja si no carga

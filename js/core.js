@@ -40,9 +40,8 @@ const sprites = {};
 const spriteNames = [
   "miner_idle", "miner_walk", "miner_walk_reverse",
   "miner_elevador_0", "miner_elevador_1", "miner_elevador_2",
-  "miner_tolva_1", "miner_tolva_2",
-  "miner_tolva_reverse_1", "miner_tolva_reverse_2",
-  "miner_tolva_reverse_3", "miner_tolva_reverse_4",
+  "miner_tolva",
+  "miner_tolva_reverse_Full", "miner_tolva_reverse_Nothing",
   "miner_mine",
   "tolva_miner_0", "tolva_miner_1", "tolva_miner_2", "tolva_miner_3"
 ];

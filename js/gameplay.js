@@ -120,7 +120,7 @@ function moveStorage(floorIdx) {
     if (f.storage.state === "moving") {
       if (f.storage.x > 212) {
         f.storage.x -= 2.5 * speedMult;
-        f.storage.currentSprite = Math.floor(Date.now() / 200) % 2 === 0 ? sprites.miner_tolva_1 : sprites.miner_tolva_2;
+        f.storage.currentSprite = sprites.miner_tolva;
       } else if (!f.storageState.isWaiting) {
         if (f.elevator.carrying > 0) {
           // Toma el mínimo entre el material del elevador y su capacidad máxima.
@@ -144,7 +144,7 @@ function moveStorage(floorIdx) {
   if (f.storage.state === "returning_full") {
     if (f.storage.x < f.storage.initialX) {
       f.storage.x += 2.5 * speedMult;
-      f.storage.currentSprite = Math.floor(Date.now() / 200) % 2 === 0 ? sprites.miner_tolva_reverse_1 : sprites.miner_tolva_reverse_2;
+      f.storage.currentSprite = sprites.miner_tolva_reverse_Full;
     } else {
       if (f.storage.carrying > 0) {
         // Multiplicador de venta del piso * bonus global (combo/evento).
@@ -162,18 +162,18 @@ function moveStorage(floorIdx) {
       }
       f.storage.state = "idle";
       f.storage.isCollecting = false;
-      f.storage.currentSprite = sprites.miner_tolva_1;
+      f.storage.currentSprite = sprites.miner_tolva;
     }
   }
 
   if (f.storage.state === "returning_empty") {
     if (f.storage.x < f.storage.initialX) {
       f.storage.x += 2.5 * speedMult;
-      f.storage.currentSprite = Math.floor(Date.now() / 200) % 2 === 0 ? sprites.miner_tolva_reverse_3 : sprites.miner_tolva_reverse_4;
+      f.storage.currentSprite = sprites.miner_tolva_reverse_Nothing;
     } else {
       f.storage.state = "idle";
       f.storage.isCollecting = false;
-      f.storage.currentSprite = sprites.miner_tolva_1;
+      f.storage.currentSprite = sprites.miner_tolva;
     }
   }
 }
