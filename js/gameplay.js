@@ -17,10 +17,10 @@ function moveMiner(floorIdx) {
   const fu = floorUpgrades[floorIdx];
   const speedMult = getFloorSpeedMult();
 
-  if (f.miner.isMining && f.miner.x < ROCK_X) {
+  if (f.miner.isMining && f.miner.x < 728) {
     // Avanza 2.5 px por frame escalado por la velocidad del piso.
     f.miner.x += 2.5 * speedMult;
-  } else if (f.miner.isMining && f.miner.x >= ROCK_X - f.miner.width * 0.18 && !f.minerState.isWaiting) {
+  } else if (f.miner.isMining && f.miner.x >= 720 && !f.minerState.isWaiting) {
     f.minerState.isWaiting = true;
     f.minerState.miningTimeout = setTimeout(() => {
       let amount = fu.miner.getMiningAmount();
@@ -50,11 +50,11 @@ function moveMiner(floorIdx) {
       f.minerState.isWaiting = false;
       // Espera el tiempo de minado configurado por mejoras del minero (reducido por el taladro global).
     }, fu.miner.getMiningTime() * globalUpgrades.drill.getTimeMult());
-  } else if (!f.miner.isMining && f.miner.x > MINER_HOME_X) {
+  } else if (!f.miner.isMining && f.miner.x > 110) {
     // Regresa a su punto original a 2.5 px/frame (escalado por velocidad).
     f.miner.x -= 2.5 * speedMult;
-    if (f.miner.x <= MINER_HOME_X) {
-      f.miner.x = MINER_HOME_X;
+    if (f.miner.x <= 110) {
+      f.miner.x = 110;
       if (f.miner.material > 0) {
         f.minerBox.material += f.miner.material;
         spawnParticles(f.minerBox.x + 40, f.minerBox.y + 40, FLOOR_CONFIGS[floorIdx].oreColor, 10);
@@ -126,7 +126,7 @@ function moveStorage(floorIdx) {
       f.storage.state = "moving";
     }
     if (f.storage.state === "moving") {
-      if (f.storage.x > STORAGE_COLLECT_X) {
+      if (f.storage.x > 202) {
         f.storage.x -= 2.5 * speedMult;
         f.storage.currentSprite = sprites.miner_tolva;
       } else if (!f.storageState.isWaiting) {
@@ -194,7 +194,7 @@ function updateAutoMiner(floorIdx) {
   const f = floors[floorIdx];
   const fu = floorUpgrades[floorIdx];
 
-  if (fu.autoMiner.isActive() && !f.miner.isMining && !f.minerState.isWaiting && f.miner.x <= MINER_HOME_X) {
+  if (fu.autoMiner.isActive() && !f.miner.isMining && !f.minerState.isWaiting && f.miner.x <= 110) {
     // Incrementa ~16 ms por frame (asumiendo 60 FPS).
     f.autoMiner.timer += 16;
     if (f.autoMiner.timer >= fu.autoMiner.getInterval()) {
