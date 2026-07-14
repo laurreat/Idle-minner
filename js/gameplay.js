@@ -70,9 +70,13 @@ function moveElevator(floorIdx) {
   if (f.elevator.isMoving) {
     if (f.elevator.direction === 1) {
       f.elevator.state = "down";
-      if (f.elevator.y < f.minerBox.y && !f.elevatorState.isWaiting) {
+      // El sprite está centrado en (x,y), así que su borde inferior queda en
+      // y + height*(scale+1)/2. Se detiene justo al alcanzar el borde inferior de la
+      // tolva (minerBox), sin pasarse por el nuevo tamaño del elevador.
+      const elevatorStopY = f.minerBox.y + f.minerBox.height - f.elevator.height * (CHAR_SCALE + 1) / 2;
+      if (f.elevator.y < elevatorStopY && !f.elevatorState.isWaiting) {
         f.elevator.y += fu.elevator.getSpeed() * speedMult;
-      } else if (f.elevator.y >= f.minerBox.y && !f.elevatorState.isWaiting) {
+      } else if (f.elevator.y >= elevatorStopY && !f.elevatorState.isWaiting) {
         // Toma el mínimo entre el material disponible y su capacidad máxima.
         const materialToTake = Math.min(f.minerBox.material, fu.elevator.getCapacity());
         // Tiempo de espera: por cada unidad de capacidad tarda 1000 ms (1 s) lleno.
