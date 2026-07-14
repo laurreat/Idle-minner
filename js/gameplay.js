@@ -100,7 +100,7 @@ function moveElevator(floorIdx) {
       }
     } else {
       f.elevator.y -= fu.elevator.getSpeed() * speedMult;
-      if (f.elevator.y <= 380) {
+      if (f.elevator.y <= 390) {
         f.elevator.isMoving = false;
         f.elevator.direction = 1;
         f.elevator.state = "idle";
@@ -126,7 +126,7 @@ function moveStorage(floorIdx) {
       f.storage.state = "moving";
     }
     if (f.storage.state === "moving") {
-      if (f.storage.x > 202) {
+      if (f.storage.x > 50) {
         f.storage.x -= 2.5 * speedMult;
         f.storage.currentSprite = sprites.miner_tolva;
       } else if (!f.storageState.isWaiting) {
