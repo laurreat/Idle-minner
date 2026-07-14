@@ -7,32 +7,66 @@
 // Lienzo y contexto de dibujo 2D del juego
 const canvas = document.getElementById("gameCanvas");
 const ctx = canvas.getContext("2d");
-// Dimensiones lógicas del mundo (resolución base de dibujo)
-const W = 1000, H = 750;
-// Factor de escala de los personajes/sprites (se recalcula en resizeCanvas segun la pantalla)
+// Dimensiones lógicas del mundo (se recalculan en resizeCanvas según el aspecto de pantalla)
+let W = 1000, H = 750;
+// Factor de escala de los personajes/sprites (se recalcula en resizeCanvas según la pantalla)
 let CHAR_SCALE = 3.5;
-// Escala y desplazamiento usados para ajustar el lienzo a la pantalla (letterboxing)
+// Escala y desplazamiento usados para ajustar el lienzo a la pantalla (sin letterbox)
 let viewScale = 1, viewOffX = 0, viewOffY = 0;
 
-// Redimensiona el lienzo al tamaño real del elemento (teniendo en cuenta el devicePixelRatio)
-// y recalcula la escala/centrado para mantener la proporción del mundo (W x H).
+// Anclas del escenario expresadas como fracciones del mundo. Al cambiar el tamaño se
+// recalculan para que el juego llene cualquier pantalla (responsive real, sin bandas).
+let ROCK_X = 728, MINER_HOME_X = 110, STORAGE_COLLECT_X = 202, STORAGE_INITIAL_X = 1100;
+const LAYOUT = {
+  rockXFrac: 0.728, homeXFrac: 0.11, collectXFrac: 0.202, initialXFrac: 1.10,
+  minerSizeFrac: 0.045, elevatorSizeFrac: 0.068, storageSizeFrac: 0.045,
+  minerBoxWFrac: 0.11, minerBoxHFrac: 0.147
+};
+let lastLayoutW = 0;
+
+// Recalcula posiciones y tamaños de los personajes según el tamaño actual del mundo.
+// Conserva el estado de animación escalando las posiciones dinámicas (minero/elevador/almacén/tolva).
+function relayoutWorld() {
+  const sx = W / (lastLayoutW || 1000);
+  for (const f of floors) {
+    f.miner.width = f.miner.height = LAYOUT.minerSizeFrac * W;
+    f.elevator.width = f.elevator.height = LAYOUT.elevatorSizeFrac * W;
+    f.storage.width = f.storage.height = LAYOUT.storageSizeFrac * W;
+    f.minerBox.width = LAYOUT.minerBoxWFrac * W;
+    f.minerBox.height = LAYOUT.minerBoxHFrac * H;
+    f.miner.x *= sx;
+    f.minerBox.x *= sx;
+    f.elevator.x *= sx;
+    f.storage.x *= sx;
+    f.storage.initialX = LAYOUT.initialXFrac * W;
+  }
+  ROCK_X = LAYOUT.rockXFrac * W;
+  MINER_HOME_X = LAYOUT.homeXFrac * W;
+  STORAGE_COLLECT_X = LAYOUT.collectXFrac * W;
+  STORAGE_INITIAL_X = LAYOUT.initialXFrac * W;
+  lastLayoutW = W;
+}
+
+// Redimensiona el lienzo al tamaño real del elemento (devicePixelRatio) y ajusta el
+// mundo al aspecto de la pantalla para que lo llene por completo (sin letterbox ni deformar).
 function resizeCanvas() {
   const dpr = window.devicePixelRatio || 1;
   const rect = canvas.getBoundingClientRect();
   let cssW = rect.width, cssH = rect.height;
   // Si el canvas aún no tiene tamaño válido, usa las dimensiones base por defecto
-  if (cssW < 10 || cssH < 10) { cssW = W; cssH = H; }
+  if (cssW < 10 || cssH < 10) { cssW = 1000; cssH = 750; }
   canvas.width = Math.max(1, Math.round(cssW * dpr));
   canvas.height = Math.max(1, Math.round(cssH * dpr));
-  // Escala uniforme = la menor relación para que todo el mundo quepa en pantalla
-  viewScale = Math.min(canvas.width / W, canvas.height / H);
+  // Mundo responsivo: altura de referencia fija y ancho proporcional al aspecto de la pantalla.
+  H = 750;
+  W = H * (canvas.width / canvas.height);
+  // Escala uniforme para llenar la pantalla; al coincidir el aspecto, no hay desplazamiento.
+  viewScale = canvas.height / H;
   viewOffX = (canvas.width - W * viewScale) / 2;
   viewOffY = (canvas.height - H * viewScale) / 2;
-  // Escala de personajes adaptativa: en pantallas pequeñas (viewScale bajo) los
-  // sprites crecen para mantenerse legibles, sin recortar el escenario. Se acerca a
-  // un tamaño constante en pantalla y se limita para no solapar elementos del mundo.
-  const csFactor = Math.min(1.6, Math.max(0.75, 1 / viewScale));
-  CHAR_SCALE = Math.min(4.6, Math.max(2.6, 3.5 * csFactor));
+  relayoutWorld();
+  // Escala de personajes: mantiene un tamaño constante en pantalla (~95px) en cualquier dispositivo.
+  CHAR_SCALE = Math.min(6.5, Math.max(2.0, 95 / (LAYOUT.minerSizeFrac * cssW)));
   ctx.imageSmoothingEnabled = true;
 }
 

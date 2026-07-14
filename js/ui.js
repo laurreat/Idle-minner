@@ -109,8 +109,8 @@ function handleCanvasClick(event) {
   const mx = f.miner.x - f.miner.width * (s - 1) / 2;
   const my = f.miner.y - f.miner.height * (s - 1) / 2;
   if (x >= mx && x <= mx + mw && y >= my && y <= my + mh) {
-    // Sólo inicia a minar si no está minando, no está esperando y está en su punto original (x <= 110).
-    if (!f.miner.isMining && !f.minerState.isWaiting && f.miner.x <= 110) {
+    // Sólo inicia a minar si no está minando, no está esperando y está en su punto original.
+    if (!f.miner.isMining && !f.minerState.isWaiting && f.miner.x <= MINER_HOME_X) {
       f.miner.isMining = true;
       game.totalClicks++;
       addComboClick();
@@ -618,6 +618,9 @@ function startNewGame() {
   unlockedAchievements = new Set();
   initAllFloors();
   initFloorUpgrades();
+  // Reaplica el layout responsivo (las posiciones base son del mundo 1000x750).
+  lastLayoutW = 1000;
+  relayoutWorld();
   globalUpgrades.luck.level = 0;
   globalUpgrades.speedBoost.level = 0;
   globalUpgrades.goldBoost.level = 0;

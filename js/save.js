@@ -63,12 +63,13 @@ function deobfuscateSave(str) {
 function buildSaveData() {
   return {
     game: game,
+    layoutW: W,
     unlockedFloors: unlockedFloors,
     unlockedAchievements: [...unlockedAchievements],
     floors: floors.map(f => ({
       miner: f.miner,
       elevator: { x: f.elevator.x, y: f.elevator.y, carrying: f.elevator.carrying, isMoving: false, direction: 1, state: "idle", maxCapacity: f.elevator.maxCapacity },
-      storage: { x: f.storage.x, carrying: f.storage.carrying, isCollecting: false, state: "idle", currentSprite: null, initialX: 1100, maxCapacity: f.storage.maxCapacity, collectionTime: f.storage.collectionTime },
+      storage: { x: f.storage.x, carrying: f.storage.carrying, isCollecting: false, state: "idle", currentSprite: null, initialX: f.storage.initialX, maxCapacity: f.storage.maxCapacity, collectionTime: f.storage.collectionTime },
       minerBox: f.minerBox,
       gemsFound: f.gemsFound,
       minerState: { isWaiting: false, miningTimeout: null, miningTime: f.minerState.miningTime },
@@ -118,6 +119,11 @@ function applySaveData(save) {
       }
     });
   }
+
+  // Recalcula el layout responsivo del escenario según el ancho guardado (layoutW)
+  // para que las posiciones/restauradas se adapten al aspecto actual de la pantalla.
+  lastLayoutW = save.layoutW || 1000;
+  relayoutWorld();
 
   initFloorUpgrades();
   if (save.floorUpgrades) {
@@ -302,6 +308,9 @@ function doPrestige() {
 
   initAllFloors();
   initFloorUpgrades();
+  // Reaplica el layout responsivo (las posiciones base son del mundo 1000x750).
+  lastLayoutW = 1000;
+  relayoutWorld();
   combo.count = 0;
   combo.multiplier = 1;
   bonusEvent.active = false;
